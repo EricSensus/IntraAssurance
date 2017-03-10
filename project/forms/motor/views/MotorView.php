@@ -52,35 +52,37 @@ class MotorView extends View
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [3, 3, 3, 3, 3, 1, 1, 1],
+            'map' => [3, 3, 3, 3, 1, 1, 2, 1],
             'action' => '/motor/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
                 'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
-                'Surname *' => ['text', 'surname', '', ['class' => 'form-control', 'required' => '']],
-                'Other Names *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
-                'Occupation/Profession *' => ['text', 'occupation', '', ['class' => 'form-control', 'required' => '']],
-                'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control', 'required' => '']],
-                'PIN No. *' => ['text', 'pin', '', ['class' => 'form-control', 'required' => '']],
-                'ID or Passport No. *' => ['text', 'idpassport', '', ['class' => 'form-control', 'required' => '']],
-                'Driving Licence No. *' => ['text', 'dlno', '', ['class' => 'form-control', 'required' => '']],
-                'Year First Driving Licence issued *' => ['select', 'dlyearissued', null, $this->data->years, ['class' => 'form-control', 'required' => '']],
-                'No of years driving experience *' => ['select', 'drivingexperience', '', $this->data->numbers, ['class' => 'form-control', 'required' => '']],
-                'Email*' => ['text', 'email', '', ['class' => 'form-control', 'required' => '']],
-                'Mobile Number *' => ['text', 'mobile', '', ['class' => 'form-control', 'required' => '',]],
-                'P.O Box*' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
-                'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
+                'Full Name *' => ['text', 'FullName', '', ['class' => 'form-control', 'required' => '']],
+                'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
+                'Date of Birth *' => ['text', 'DateOfBirth', '', ['class' => 'form-control datepicker', 'required' => '']],
+                'Mobile Number *' => ['text', 'Mobile', '', ['class' => 'form-control', 'required' => '',]],
+                'Email*' => ['text', 'Email', '', ['class' => 'form-control', 'required' => '']],
+                'Address *' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
                 'Town *' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Do you hold a provisional or a permanent driving licence?'
+                => ['radios', 'Type', ['Permanent' => 'Permanent', 'Provisional' => 'Provisional'], 'Permanent'],
+                'Date of issue of first permanent driving licence*' => ['text', 'DateIssued', '', ['class' => 'form-control datepicker', 'required' => '']],
+                'Will anyone holding a provisional driving licence drive the vehicle?'
+                => ['radios', 'ProvisionalDriver', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'Do you (and/or any other persons who to your knowledge will drive the car (s)) suffer from defective vision or hearing, or any physical infirmity including fits?'
-                => ['radios', 'deffectivevision', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Particulars' => ['textarea', 'particulars', '', ['class' => 'form-control', 'rows' => 2]],
+                => ['radios', 'DefectiveVision', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Have you (and/or any other persons who to your knowledge will drive the car (s)) convicted of any offense in connection with driving in the past 5 years?'
+                => ['radios', 'ConvictedOffense', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Do you have any other vehicles insured with the company' => ['radios', 'OtherPolicies', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If so, give particulars (Policy Numbers)' => ['textarea', 'OtherPolicyDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'btn btn-success']]
             ]
         ];
-        
+
         $form = Generate::Form('motor_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
         $this->set('form', $form);
-        
+
         $this->setViewPanel('personal_details');
     }
 
@@ -94,27 +96,29 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/2',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 4, 2, 2, 2, 2, 1, 2, 1,],
+            'map' => [3, 4, 2, 2, 2, 2, 2, 1, 1,],
             'controls' => [
-                'Registration no/mark*' => ['text', 'regno', '', ['class' => 'form-control', 'required' => '']],
-                'Chassis No *' => ['text', 'chassisno', '', ['class' => 'form-control', 'required' => '']],
-                'Engine No *' => ['text', 'engineno', '', ['class' => 'form-control', 'required' => '']],
-                'Make *' => ['select', 'makes', '', $this->data->makes, ['class' => 'form-control', 'required' => '']],
-                'Model *' => ['text', 'model', '', ['class' => 'form-control', 'required' => '']],
-                'Type of body *' => ['text', 'bodytype', '', ['class' => 'form-control', 'required' => '']],
-                'Seating Capacity *' => ['text', 'seatingcapacity', '', ['class' => 'form-control', 'required' => '']],
-                'Year of Manufacture *' => ['select', 'dlyear', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
-                'Estimated Value including accessories and parts in Kshs <span style="font-size: 11px;">(*will be subject to valuation by the insurer)</span> *'
-                => ['text', 'valueestimate', '', ['class' => 'form-control', 'required']],
-                'Is the vehicle fitted with any anti theft device *' => ['radios', 'antitheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, please give particulars below*' => ['textarea', 'antitheftdetails', '', ['class' => 'form-control', 'rows' => 2]],
-                'Where is this car normally parked during daytime?*' => ['select', 'daytimeparking', '', $this->data->parking_lots, ['class' => 'form-control', 'required' => '']],
-                'Tell us the town, estate or road' => ['text', 'daytimeparkingdetails', '', ['class' => 'form-control', 'required']],
-                'Where is this car normally parked at night ? *' => ['select', 'nightparking', '', $this->data->parking_lots, ['class' => 'form-control', 'required']],
-                'Tell us the town, estate or road *' => ['text', 'nighparkingdetails', '', ['class' => 'form-control']],
+                'Registration no*' => ['text', 'RegNo', '', ['class' => 'form-control', 'required' => '']],
+                'Chassis No *' => ['text', 'ChassisNo', '', ['class' => 'form-control', 'required' => '']],
+                'Engine No *' => ['text', 'EngineNo', '', ['class' => 'form-control', 'required' => '']],
+                'Make *' => ['select', 'CarMake', '', $this->data->makes, ['class' => 'form-control', 'required' => '']],
+                'Cubic Capacity (cc)' => ['text', 'CC', '', ['class' => 'form-control', 'required' => '']],
+                'Type of body *' => ['text', 'BodyType', '', ['class' => 'form-control', 'required' => '']],
+                'Seating Capacity *' => ['text', 'SeatingCapacity', '', ['class' => 'form-control', 'required' => '']],
+                'Year of Manufacture *' => ['select', 'ManufactureDate', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
+                'Estimated Value *'
+                => ['text', 'ValueEstimate', '', ['class' => 'form-control', 'required']],
+                'Is the vehicle fitted with any anti theft device *' => ['radios', 'AntiTheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If Yes, please give particulars below (type and condition)*' => ['textarea', 'AntiTheftDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Are there any non-standard accessories in the vehicle (roof rack) *' => ['radios', 'NonStandardAccessories', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If so, please give particulars below (type and value)*' => ['textarea', 'NonStandardAccessoriesDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Is the vehicle subject to any special features (left hand drive,duty free)' => ['radios', 'SpecialFeatures', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If so, please give particulars of the features' => ['textarea', 'SpecialFeaturesDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Are you the owner of the vehicles and are they registered in your name' => ['radios', 'TheOwner', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If not state name and address of owner' => ['textarea', 'NameOfOwner', '', ['class' => 'form-control', 'rows' => 2]],
                 'How do you use this vehicle?' => ['checkboxes', 'carusage', $this->data->car_usage, ['class' => 'form-control', 'rows' => 2]],
-                'Do you want to add another car?' => ['radios', 'somecovers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'How many additional cars? Choose  number' => ['select', 'othercovers', 1, [1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9'], ['class' => 'form-control']],
+                //   'Do you want to add another car?' => ['radios', 'somecovers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                //'How many additional cars? Choose  number' => ['select', 'othercovers', 1, [1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9'], ['class' => 'form-control']],
                 '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
             ]
         ];
@@ -133,24 +137,28 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 4, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 1, 1, 1, 1],
+            'map' => [3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 1, 1, 1, 1],
             'controls' => [
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
                 'Type of cover *' => ['select', 'covertype', '', $this->data->cover_type, ['class' => 'form-control', 'required' => '']],
-                'Riots & Strikes?' => ['radios', 'riotes', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'Windscreen?' => ['radios', 'windscreen', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Audio System?' => ['radios', 'audio', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Passenger Liability' => ['radios', 'passenger', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Terrorism' => ['radios', 'terrorism', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, state value ' => ['textarea', 'WindscreenValue', '', ['class' => 'form-control', 'rows' => 2]],
                 'What is your No Claim Discount entitlement (NCD)(%)? (*Proof letter will be required)' =>
                     ['select', 'ncddiscount', '', [0 => "0", 10 => 10, 20 => 20, 30 => 30, 40 => 40, 50 => 50], ['class' => 'form-control']],
-                'Have you, or anyone else who will drive this vehicle, had any insurance declined, voided or special terms imposed and regardless of blame
-' => ['radios', 'previousdeclines', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Do you require the cover Personal Accidents' => ['radios', 'NeedPersonalCover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, give details ' => ['textarea', 'PersonalCoverDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Have you, or anyone else who will drive this vehicle (s), had any motor related accidents or losses, whether there was a claim or not and regardless of blame' =>
                     ['radios', 'previousaccidents', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company declined your proposal?' => ['radios', 'decline_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company required an increase in premium?' => ['radios', 'demand_increased_rate', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company required your to bear the first portion of the loss?' => ['radios', 'imposed_special_terms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company declined to renew or cover your policy?' => ['radios', 'declined_renewal', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Have you, or anyone else who will drive this vehicle, had any insurance declined, voided or special terms imposed and regardless of blame'
+                => ['radios', 'previousdeclines', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+
                 //some loop
-                '{noted1}' => ['note', 'noted1', "noted1", "If the answer is yes, please provide details for the last five years below"],
+                '{noted1}' => ['note', 'noted1', "noted1", "If the answer is yes, please provide details for the last three years below"],
                 //1
                 // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
                 "Year 1: Claim No" => ['text', "claim_no_yr1", '', ['class' => 'form-control',]],
@@ -169,18 +177,6 @@ class MotorView extends View
                 "Year 3: Claim Amount" => ['text', "claim_amount_yr3", '', ['class' => 'form-control',]],
                 "Year 3: Insurer" => ['text', "insurer_yr3", '', ['class' => 'form-control',]],
                 "Year 3: Claim Details" => ['text', "claim_details_yr3", '', ['class' => 'form-control',]],
-                //4
-                // '{note4}' => ['note', 'note4', "note4", "<h4>Year 4</h4><hr/>"],
-                "Year 4: Claim No" => ['text', "claim_no_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Amount" => ['text', "claim_amount_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Insurer" => ['text', "insurer_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Details" => ['text', "claim_details_yr4", '', ['class' => 'form-control',]],
-                //5
-                //'{note5}' => ['note', 'nots5', "note5", "<h4>Year 5</h4><hr/>"],
-                "Year 5: Claim No" => ['text', "claim_no_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Amount" => ['text', "claim_amount_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Insurer" => ['text', "insurer_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Details" => ['text', "claim_details_yr5", '', ['class' => 'form-control',]],
                 //end
                 ' Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)'
                 => ['select', 'pickat', '', $this->data->pick_cert, ['class' => 'form-control', 'required' => '']],
