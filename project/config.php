@@ -9,7 +9,7 @@ class Config{
     public $mailadmin = 'info@esurance365.com';
     
     /****** Database Settings ***************/
-    public $db = 'esurance_db';
+    public $db = 'intraassurance_db';
     public $dbprefix = 'esu_';
     public $host = 'localhost';
     public $username = 'root';
