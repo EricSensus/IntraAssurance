@@ -58,7 +58,7 @@ class DomesticController extends Controller
 
     public function index($step = "1")
     {
-
+//
 //        if ($step != "1") {
 //            if (empty(Session::get('customer_id')) || (Session::get('type') != 'domestic')) {
 //                Redirect::to('/domestic/step/1');

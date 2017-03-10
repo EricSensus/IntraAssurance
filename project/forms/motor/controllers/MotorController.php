@@ -56,12 +56,12 @@ class MotorController extends Controller
      */
     public function index($step = "1")
     {
-        if ($step != "1") {
-            if (empty(Session::get('customer_id')) || (Session::get('type') != 'motor')) {
-                Redirect::to('/motor/step/1');
-                exit;
-            }
-        }
+//        if ($step != "1") {
+//            if (empty(Session::get('customer_id')) || (Session::get('type') != 'motor')) {
+//                Redirect::to('/motor/step/1');
+//                exit;
+//            }
+//        }
 
         $this->loadData($step);
         $this->view->wizard($this->data);
@@ -112,7 +112,13 @@ class MotorController extends Controller
             'Mombasa', 'Moyale', 'Mumias', 'Muranga', 'Nairobi', 'Naivasha', 'Nakuru', 'Namanga', 'Nanyuki',
             'Naro Moru', 'Narok', 'Nyahururu', 'Nyeri', 'Ruiru', 'Shimoni', 'Takaungu', 'Thika', 'Vihiga', 'Voi'
             , 'Wajir', 'Watamu', 'Webuye', 'Wundanyi']);
-        $this->data->car_usage = ['For social, domestic and pleasure purposes', 'For professional and business purposes'];
+        $this->data->car_usage = $this->__select([
+            'For social, domestic and pleasure purposes',
+            'For professional  purposes',
+            'By personally in connection with connection or your employer\'s business',
+            'By employees or other parties  in connection with connection or your employer\'s business',
+            'For the carriage of samples or trade goods farm requisites, produce of live stock'
+        ]);
         $this->data->parking_lots = [
             'Car Park' => 'Car Park',
             'Driveway' => 'Driveway',
@@ -124,7 +130,12 @@ class MotorController extends Controller
             $make[$one->code] = $one->title;
         }
         $this->data->makes = $make;
-        $this->data->cover_type = $this->__select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
+        $this->data->cover_type = $this->__select([
+            'Comprehensive',
+            'Third Party Fire and Theft',
+            'Third Party Only',
+            'Ordinance Liabilities Only'
+        ]);
         if ($step == 4) {
             $this->data->payments = new MotorQuotation();
         }
