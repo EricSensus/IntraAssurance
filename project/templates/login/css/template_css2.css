@@ -1,0 +1,374 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background-image: url(../images/banner1.jpg);
+  background-repeat: no-repeat;
+  background-position: top;
+  font-family: Calibri;
+  font-size: 14px;
+}
+body.innerbody{
+  background-image: url(../images/inner_banner.jpg);
+  background-repeat: no-repeat;
+  background-position: top;  
+}
+.container {
+  height: auto;
+  width: 1060px;
+  margin-top: 0px;
+  margin-right: auto;
+  margin-left: auto;
+  display: table;
+}
+#top {
+  height: 150px;
+  width: 100%;
+  color: #FFF;
+}
+#logo {
+  float: left;
+  height: 150px;
+  width: 425px;
+}
+#menu {
+  float: right;
+  height: 50px;
+  width: auto;
+  padding-top: 15px;
+}
+#menu li, #footer li{
+  float: left;
+  list-style-type: none;
+  padding-right: 10px;
+  padding-left: 10px;
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: #ecedeb;
+}
+#menu li a{
+  color: #ecedeb;
+  text-decoration: none;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+#login {
+  background-image: url(../images/loginbg.png);
+  background-repeat: no-repeat;
+  float: right;
+  height: 280px;
+  width: 316px;
+  padding-top: 30px;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+.innerbody #login{
+  background-image: url(../images/inner_login.png);
+  background-repeat: no-repeat;
+  height: 83px;
+  width: 546px;
+  margin-top: -60px;
+  margin-right: -40px;
+}
+.innerbody #login #form-sclogin-submitcreate{
+  margin-top: -5px;
+}
+#login h3{
+  font-family: Calibri;
+  font-size: 33px;
+  color: #488032;
+  margin-top: 0px;
+  margin-bottom: 10px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  letter-spacing: -1px;
+}
+
+#login #form-sclogin-submitcreate button{
+  background-image: url(../images/sign_in.png);
+  background-repeat: no-repeat;
+  height: 45px;
+  width: 124px;
+  background-color: transparent;
+  border: 0px none transparent;
+  float: left;
+}
+.innerbody #login #form-sclogin-submitcreate button{
+  background-image: url(../images/innerloginbg.png);
+  background-repeat: no-repeat;
+  height: 40px;
+  width: 80px;
+  background-color: transparent;
+  border: 0px none transparent;
+  float: left;
+  font-size: 13px;
+}
+#login #form-sclogin-submitcreate a.btn, #middle p.readmore{
+  background-image: url(../images/integration_button.png);
+  background-repeat: no-repeat;
+  height: 52px;
+  width: 187px;
+  border: 0px none transparent;
+  background-color: transparent;
+  display: block;
+  float: left;
+  color: #FFF;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  padding-top: 13px;
+}
+.innerbody #login #form-sclogin-submitcreate a.btn{
+  background-image: url(../images/innerregisterbg.png);
+  background-repeat: no-repeat;
+  height: 40px;
+  width: 105px;
+  border: 0px none transparent;
+  background-color: transparent;
+  display: block;
+  float: left;
+  color: #FFF;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  padding-top: 13px;
+  font-size: 14px;
+}
+.innerbody #login a.forgot.btn{
+  padding-left: 5px;
+  padding-right: 5px;
+}
+#middle p.readmore{
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  width: 187px;
+  float: none !important;
+}
+#middle p.readmore a{
+  text-transform: lowercase;
+  color: #FFF;
+  text-decoration: none;
+}
+#login #form-sclogin-remember{
+  width: 100%;
+  clear: both;
+}
+.innerbody #login #form-sclogin-remember{
+  clear: none;  
+}
+#login #form-sclogin-submitcreate button:hover, #login #form-sclogin-submitcreate a:hover{
+  text-decoration: underline;
+}
+#login .Zebra_Form .row{
+	background: none !important;
+}
+#middle {
+  background-color: #ecedeb;
+  background-image: url(../images/middle_shadow.png);
+  background-repeat: no-repeat;
+  background-position: center top;
+  height: auto;
+  width: 100%;
+  clear: both;
+  padding-top: 30px;
+  text-align: center;
+  color: #333;
+}
+#middle div.item-page{
+  text-align: left;
+}
+#middle div.item-page img{
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+.chronoform a{
+  color: #ecedeb;
+}
+#middle h2, #lowermain h3, #middle div.module_lform h3{
+  font-family: Calibri;
+  font-size: 48pt;
+  color: #87b474;
+  font-weight: bold;
+  margin-top: 0px;
+  padding-top: 10px;
+  letter-spacing: -2px;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  text-shadow: 0px 1px 0px rgba(255,255,255,0.5), 0px -1.5px 0px rgba(0,0,0,1.0);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  /*
+  background-image: url(../images/heading_shadow.png);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  */
+}
+#middle div.item-page h2, #middle div.module_lform h2{
+  font-size: 40pt;
+}
+#middle div.module_lform {
+  text-align: left !important;  
+}
+#middle div.item-page table td{
+  padding: 5px;
+}
+#middle div.module_lform h2{
+  color: transparent;
+  font-size: 0pt;
+}
+#middle div.module_lform h3{
+  color: #FFF;
+  width: 73%;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: #FFF;
+  background-color: #87b474;
+  padding-left: 5%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+#lowermain {
+  background-color: #f6f6f6;
+  height: 330px;
+  width: 100%;
+  padding-top: 30px;
+  padding-bottom: 40px;
+}
+#lowermain h3{
+  width: 100%;
+  text-align: center;
+  color: #CCC;
+}
+#lowermain div.bt-inner{
+  background-image: url(../images/highlight_shadow.png);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  height: 164px;
+  padding-bottom: 20px;
+}
+#lowermain div.bt-introtext{
+  height: 164px;
+  background-color: #ecebeb;
+  padding-right: 15px;
+}
+#lowermain a.bt-image-link{
+  float: left;
+  margin-right: 5px;
+}
+#lowermain a.bt-title-nointro{
+  width: 240px;
+  padding-top: 15px;
+  font-size: 22px;
+  color: #488032;
+  font-weight: normal;
+  letter-spacing: -1px;
+  line-height: 25px;
+  padding-top: 10px;
+}
+#lowermain p.readmore a{
+  float: right;
+  color: #060;
+}
+#lowermain .bt-row-first, #lowermain .bt-row-last{
+	float: left;
+	margin-right: 10px;
+}
+#footer {
+  background-color: #393939;
+  background-image: url(../images/middle_shadow.png);
+  background-repeat: no-repeat;
+  background-position: center top;
+  height: 80px;
+  width: 100%;
+  clear: both;
+  padding-top: 30px;
+  color: #CCC;
+}
+#footer h3{
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+#footer a{
+  text-decoration: none;
+  color: #CCC;
+}
+#footer p.credits{
+  float: right;
+}
+/*----------------------------Form Styles--------------------------------*/
+#chronoform_PartnershipForm input[type="text"], #chronoform_PartnershipForm input[type="password"] {
+  background: -moz-linear-gradient(center top , #ffffff, #eeeeee 1px, #ffffff 25px) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 0 8px #f0f0f0;
+  display: block;
+  font-size: 16px;
+  padding: 9px;
+  width: 50%;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+#chronoform_PartnershipForm textarea{
+  background: -moz-linear-gradient(center top , #ffffff, #eeeeee 1px, #ffffff 25px) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 0 8px #f0f0f0;
+  display: block;
+  font-size: 16px;
+  padding: 9px;
+  width: 50%;
+  margin-top: 5px;
+  margin-bottom: 0;
+  height: 150px;
+}
+#chronoform_PartnershipForm{
+  width: 100%;
+}
+#name1_container_div, #input_text_21_container_div, #input_text_41_container_div, #input_text_51_container_div{
+  width: 40%;
+  float: left;
+}
+#input_text_31_container_div, #input_text_91_container_div{
+  clear: both;
+}
+.ccms_form_element label{
+  padding-right: 10px;
+}
+.ccms_form_element {
+  clear: none;
+   margin-bottom: 10px;
+    padding: 10px 0 10px 5px;
+    position: relative;
+}
+#chronoform_PartnershipForm input[type="submit"] {
+  background: none repeat scroll 0 0 #e3e3e3;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 0 2px #fff inset;
+  color: #333;
+  cursor: pointer;
+  float: right;
+  font-family: "Trebuchet MS","Myriad Pro",sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 0 1px 0 #fff;
+  width: auto;
+  margin-top: 15px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  padding-top: 8px;
+  padding-right: 25;
+  padding-bottom: 9px;
+  padding-left: 25;
+}
+#chronoform_PartnershipForm #chrono_verification1_container_div input{
+  width: 15%;
+  float: left;
+}
+#chrono_verification1_container_div img{
+  float: left;
+  margin-left: 10px;
+}
+/*------------------------Menu Styles--------------------------------------------*/
+div#maximenuck102.maximenuckh ul.maximenuck{
+  background-image: none;
+  background-color: transparent;  
+}

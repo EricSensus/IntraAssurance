@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link href="css/styles-inner.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+    	<div class="header-inner row">
+        	<div class="logobox col-md-3 col-sm-6 col-xs-12 pull-left">
+            	<div class="logo">
+        			<img src="images/logo.png" width="225px" height="94px"/>
+        		</div>
+            </div>
+        	<div class="usersection col-md-3 col-sm-6 col-xs-12 pull-right">
+            	<div class="selectclaim">
+                    <a href="/index.php/selectclaim">Select Claim</a>
+            	</div>
+				<div class="go">
+                    <a href="/index.php/go">GO</a>
+                </div>                                
+                <div class="signintomyesurance">
+                    <a href="/index.php/signintonyesurance">Sign into my Esurance</a>
+            	</div>
+            </div>
+         </div>
+    </div>
+    <div class="menubar">
+    	<div class="menubar-inner row">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="true" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+        <div id="navbar" class="navbar-collapse collapse" aria-expanded="true">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Contact</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li class="dropdown-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+              <li><a href="../navbar-static-top/">Static top</a></li>
+              <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+            </ul>
+          </div>
+    	</div>
+    </div>
+    <div class="middlesection">
+    	<div class="contentbox">
+            <div class="motorinsuranceheader row">
+                <div class="motorinsurance col-md-4 col-sm-12 col-xs-12">
+                	<h2>Motor Insurance</h2>
+                </div>
+            </div>
+            <table class="motorheading row">
+            	<tr>
+                	<th class="heading col-md-3 col-sm-12 col-xs-12">
+                    	<a class="active" href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes"><h5>Stage 1</h5></a>
+                        <a class="active" href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes">
+                    	<h6>Proposer Personal Details</h6></a>
+                    </th>
+                    <th class="heading col-md-3 col-sm-12 col-xs-12">
+                    	<a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes"><h5>Stage 2</h5></a>
+                        <a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes">
+                    	<h6>Card Details</h6></a>
+                    </th>
+                    <th class="heading col-md-3 col-sm-12 col-xs-12">
+                    	<a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes"><h5>Stage 3</h5></a>
+                        <a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes">
+                    	<h6>Cover Details</h6></a>
+                    </th>
+                    <th class="heading col-md-3 col-sm-12 col-xs-12">
+                    	<a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes"><h5>Stage 4</h5></a>
+                        <a href="?content=com_motor&amp;folder=same&amp;file=motor_form&amp;step=one&amp;return=yes">
+                    	<h6>Quotation & Payment</h6></a>
+                    </th>
+                </tr>
+             </table>
+             <div class="formheading row">
+             	<div class="formheadingcaption col-md-12 col-sm-12 col-xs-12"><p>Please enter your personal details below so that we can find the best insurance quote for you. Don't forget that you can always came back later to retrieve your quote or change your details.</p>
+                </div>
+             </div>
+             <form action="/action_page.php" method="post">
+             	<div class="rows row">
+             		<div class="leftsection col-md-4 col-sm-12 col-xs-12">
+             			<label>Select Title</label>
+             			<select name="selecttitle">
+                			<option value="Mr">Mr</option>
+                   	 		<option value="Mrs">Mrs</option>
+                    		<option value="Other">Other</option>
+             			</select>
+             			<br />
+             		</div>
+             		<div class="leftsection col-md-4 col-sm-12 col-xs-12">
+             			<label>Proposer Surname</label>
+                        <input class="heading" type="text" name="proposersurname"/>
+                    </div>
+                    <div class="rightsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Other Names</label>
+                        <input class="heading" type="text" name="othernames" />
+                    </div>
+                </div>
+                <div class="rows row">
+                	<div class="leftsection col-md-4 col-md-12 col-md-12">
+                    	<label>Occupation / Profession</label>
+                        <input class="heading" type="text" name="occupation/profession" />
+                    </div>
+                </div>
+                <div class="formheading row">
+                	<div class="formheadingcaption col-md-12 col-sm-12 col-xs-12"><p class="dateofbirth">Date of Birth</p>
+                    </div>
+                </div>
+                <div class="rows row">
+                	<div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Day</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Month</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="rightsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Year</label>
+                        <input class="heading" type="text" name="othernames" />
+                    </div>
+                </div>
+                <div class="rows row">
+                	<div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Day</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Month</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="rightsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Year</label>
+                        <input class="heading" type="text" name="othernames" />
+                    </div>
+                </div>
+                <div class="rows row">
+                	<div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Day</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="leftsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Month</label>
+                        <input class="heading" type="text" name="day" />
+                    </div>
+                    <div class="rightsection col-md-4 col-sm-12 col-xs-12">
+                    	<label>Year</label>
+                        <input class="heading" type="text" name="othernames" />
+                    </div>
+                </div>
+                <div class="formheading2 row">
+                	<div class="formheadingcaption col-md-12 col-sm-12 col-xs-12"><p>Do you (and/or any other persons who to your knowledge will drive the car (s)) suffer from defective vision or hearing, or any physical infirmity including fits?</p>
+                    </div>
+                </div>
+                <div class="rows row">
+                    <div class="yes-nosection col-md-2 col-sm-4 col-xs-6">
+                   		<input type="radio" name="yes-no" id="r1">
+                        <label for="r1">Yes</label>
+                    </div>
+                   <div class="yes-nosection col-md-2 col-sm-4 col-xs-6"> 
+                        <input type="radio" name="yes-no" id="r2">
+                        <label for="r2">No</label>
+                   </div>
+                </div>
+                <div class="formheading2 row">
+                	<div class="formheadingcaption col-md-12 col-sm-12 col-xs-12"><p>If yes, please give particulars below</p>
+                    </div>
+                </div>
+                <div class="rows row">
+                	<div class="leftsection col-md-12 col-sm-12 col-xs-12">
+                    <textarea name="message" rows="3" cols="139"></textarea>
+                	</div>
+                </div>
+                <div class="buttonsection row">
+                	<div class="leftsection col-md-4 col-sm-12 col-xs-12 pull-right">
+                		<button type="button" onclick="alert"><label class="proceedtomotor">Proceed to Motor Details</label></button>
+                	</div>
+                </div>
+                <div class="bottomcaption row">
+                	<div class="importantnotice col-md-12 col-sm-12 col-xs-12"><p>IMPORTANT NOTICE: You are applying for insurance cover and entering a legally binding contractual relationship so you must make sure you have all the key details and input them
+correctly when completing the proposal forms. NOT DOING THIS CORRECTLY MAY MEAN YOUR POLICY IS INVALID, which also means that any claim from that will not be paid. It is
+therefore important that you ensure your details are not just input correctly but that they are correct.</p>
+                	</div>
+                </div>
+             </form>
+        </div>
+    </div>
+    <div class="footer">
+    	<div class="footer-inner row">
+      		<div class="logo2 col-md-2 col-sm-12 col-xs-12">
+            	<img src="images/logo2.jpg" width="202px" height="105px"/>
+            </div>
+      		<div class="footerlinks col-md-7 col-sm-12 col-xs-12">
+           		<a href="/index.php/aboutus">ABOUT US</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/motor">MOTOR</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/domesticpackage">DOMESTIC PACKAGE</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/medical">MEDICAL</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/travel">TRAVEL</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/personalaccident">PERSONAL ACCIDENT</a>
+                <div class="seperator2"><p>|</p></div>
+                <a href="/index.php/blog">BLOG</a> 
+            </div>
+      		<div class="socialmedia col-md-3 col-sm-6 col-xs-12">
+                	<a href="/facebook"><img src="images/facebook.jpg" width="43px" height="45px"/></a>
+                	<a twitter="/twitter"><img src="images/twitter.jpg" width="43px" height="45px"/></a>
+                	<a href="/blog"><img src="images/blog.jpg" width="43px" height="45px"/></a>
+                	<a href="/google+"><img src="images/google+.jpg" width="43px" height="45px"/></a>
+            </div>
+    	</div>
+    </div>
+</div>
+</body>
+</html>

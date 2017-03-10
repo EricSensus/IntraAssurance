@@ -1,0 +1,545 @@
+<?php
+namespace Jenga\App\Core;
+
+use Jenga\App\Request\Input;
+use Jenga\App\Request\Session;
+use Jenga\App\Controllers\ControllerEvent;
+use Jenga\App\Project\EventsHandler\Events;
+
+use Jenga\MyProject\Config;
+use Jenga\MyProject\Elements;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
+
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+
+use Symfony\Component\HttpKernel;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+
+class App extends HttpKernel\HttpKernel{  
+    
+    public static $config;
+    public static $shell;
+    public static $ioc;
+    public static $kernel;
+    public static $elements;
+    
+    public $request;
+    public $project;
+    public $mode;
+    public $response;
+
+    protected $defaultElement;
+    protected $defaultModel;
+    protected $defaultController;
+    protected $defaultView;
+    
+    protected $eventshandler;
+    protected $dispatcher;
+    protected $matcher;
+    protected $urlgenerator;
+    protected $resolver;
+    protected $requestStack;
+
+    public function __construct($jconfig, $jroutes, $jevents = null){
+        
+        self::$config = $this->loadConfigs($jconfig);
+       
+        //initiate and run the handlers
+        $ioc = new IoC(self::$config);        
+        $ioc->registerHandlers();
+        
+        //register the IoC shell into the application as the shell
+        self::$shell = $ioc->register();
+        self::$ioc = $ioc;
+        
+        //set the development environment
+        self::setReporting();
+        
+        //add configurations to App shell
+        self::$shell->set('_config', self::$config);
+        
+        //get current request
+        $this->request = Input::load(true);
+        self::$shell->set('_request', $this->request);
+        
+        //start and load the Project
+        $this->project = $this->buildProject();
+        self::$shell->set('_project', $this->project);
+        
+        //bypass process if on startup mode
+        $this->mode = $this->project->mode;
+        
+        if($this->project->mode != 'startup'){
+            
+            //process the routing section
+            $routes = $this->router($jroutes);
+
+            //assign the resources
+            self::$shell->set('_resources', $routes->resources);
+
+            //process current request
+            $request_context = $this->buildRequestContext();
+            $this->requestStack = new RequestStack();
+
+            //process routes based on current request
+            $urlmatch = $this->mapUrl($routes->collector, $request_context);
+
+            //add generator to shell
+            self::$shell->set('_urlgenerator', $this->urlgenerator);
+
+            //resolve the linked controller in the processed route
+            $controller = $this->resolveController();
+
+            //process the events and route events
+            self::$shell->set('_jevents', $jevents);
+            
+            $this->eventshandler = self::$shell->get(Events::class);
+            $this->eventshandler->addRouteEvents($routes->eventscheduler);
+
+            //translate Symfony Kernel Events
+            $this->eventshandler->translateKernelEventClasses();
+            $this->eventshandler->registerKernelEvents();
+
+            $this->dispatcher = $this->eventshandler->process();
+
+            Events::addQueue( new HttpKernel\EventListener\RouterListener($urlmatch, new RequestStack()) );
+            Events::addQueue( new HttpKernel\EventListener\ResponseListener('UTF-8') );
+
+            //match the url to processed controller
+            parent::__construct($this->dispatcher, $controller);
+            
+            $this->response = new Response();
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * Overloads the App class to allow the IoC shell to be called directly
+     * 
+     * @param type $name
+     * @param type $arguments
+     * @return type
+     */
+    public static function __callStatic($name, $arguments) {
+        
+        if($name == 'call'){
+            return self::$shell->$name($arguments[0]);
+        }
+        else{
+            
+            if(method_exists(self::$shell, $name)){
+                return call_user_func_array([self::$shell, $name], $arguments);
+            }
+        }
+    }
+    
+    /**
+     * Extends the PHP-DI shell to resolve class construct parameters defined in the shell 
+     * but can only be inserted with annotations
+     * 
+     * @param string $class Fully Namespaced ClassName
+     */
+    public static function resolve($class){
+        
+        if(class_exists($class)){
+            
+            $reflectionclass = new \ReflectionClass($class);
+            
+            if ($reflectionclass->isInstantiable()) {
+                
+                $construct = $reflectionclass->getConstructor();
+                
+                //check for construct
+                if(!is_null($construct)){
+                    
+                    $params = $construct->getParameters();
+
+                    if(count($params) >= 1){
+
+                        $args = [];
+
+                        foreach ($params as $arg) {
+
+                            $name = $arg->getName();
+
+                            if(self::$shell->has($name)){
+                                $args[$name] = self::$shell->get($name);
+                            }
+                            elseif(!is_null($arg->getClass())){
+
+                                $reflectclass = $arg->getClass();
+                                $ctrl = Elements::resolveControllerInArgument($reflectclass->name);
+
+                                $args[$name] = $ctrl;
+                            }
+                        }
+
+                        return self::$shell->make($class, $args);
+                    }
+                }
+                else{
+                    
+                    return self::$shell->make($class);
+                }
+            }
+        }
+        else{
+            throw self::exception('The "'.$class.'" does not exists');
+        }
+    }
+    
+    /**
+     * Binds sent name and value into IoC shell
+     * 
+     * @param type $name
+     * @param type $value
+     */
+    public static function bind($name, $value) {
+        
+        return self::$shell->set($name, $value);
+    }
+
+
+    /**
+     * Sets the system development environment
+     */
+    public static function setReporting() {
+        
+        if(self::$config->development_environment == TRUE){
+    
+            // Set the error_reporting
+            switch (self::$config->error_reporting){
+                
+                case 'default':
+                case '-1':
+                        break;
+
+                case 'none':
+                case '0':
+                    error_reporting(0);
+                    break;
+
+                case 'simple':
+                    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+                    ini_set('display_errors', 1);
+                    break;
+
+                case 'maximum':
+                    error_reporting(E_ALL);
+                    ini_set('display_errors', 1);
+                    break;
+
+                case 'development':
+                    error_reporting(-1);
+                    ini_set('display_errors', 1);
+                    break;
+
+                default:
+                    error_reporting(self::$config->error_reporting);
+                    ini_set('display_errors', 1);
+                    break;
+            }
+        }
+        else{
+
+            error_reporting(0);
+        }
+        
+        if (self::$config->development_environment == true) {
+            
+            error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
+            ini_set('display_errors','On');            
+        } 
+        else {
+            
+            error_reporting(E_ALL);
+            ini_set('display_errors','Off');
+            ini_set('log_errors', 'On');
+            ini_set('error_log', ROOT.DS.'tmp'.DS.'logs'.DS.'error.log');            
+        }  
+        
+        //system user vaiables
+        define('PROJECT_NAME', self::$config->project);
+    }
+    
+    protected function loadConfigs($config_file){
+        
+        require_once $config_file;
+        $cfg = new Config();
+        
+        return $cfg;
+    }
+    
+    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true){
+        
+        //start the session
+        Session::start();
+        $request->headers->set('X-Php-Ob-Level', ob_get_level());
+        
+        try{            
+            return $this->parseHandler($request, $type);            
+        } catch (\Exception $e) {
+            if (false === $catch) {
+                $this->finishRequest($request, $type);
+
+                throw $e;
+            }
+
+            return $this->handleException($e, $request, $type);
+        }
+    }  
+    
+    public function parseHandler(Request $request, $type = self::MASTER_REQUEST){
+        
+        $this->requestStack->push($request);
+
+        // run symfony kernel request event     
+        $event = new \JRequestEvent($this, $request, $type);
+        $this->dispatcher->dispatch(KernelEvents::REQUEST, $event);
+        
+        //initialize project
+        $this->project->init($request, $event);
+        
+        //fire the before:request route events
+        Events::fireOnRoute($this->project->current_route, KernelEvents::REQUEST);
+        
+        if (!is_null($event) && $event->hasResponse()) {
+            return $this->filterResponse($event->getResponse(), $request, $type);
+        }
+        
+        if (false === $controller = $this->project->getController()) {
+            throw new NotFoundHttpException(sprintf('Unable to find the controller for path "%s". The route is wrongly configured.', $request->getPathInfo()));
+        }
+        
+        $event = new ControllerEvent($this, $controller, $request, $type);
+        
+        //fire the on:request and before route events
+        Events::fireOnRoute($this->project->current_route, KernelEvents::CONTROLLER);        
+        $controller = $event->getController();
+        
+        // controller arguments
+        $arguments = $this->project->getArguments($request, $controller);
+        
+        // call controller and output buffer
+        //ob_start();
+        
+        $this->project->run($controller, $arguments);
+        
+        $output = ob_get_contents();
+        ob_end_clean();
+        
+        $this->response->setContent($output);
+        
+        //fire the on:complete and after route events
+        Events::fireOnRoute($this->project->current_route, KernelEvents::TERMINATE);  
+        
+        // view
+        $response = $this->response;
+        
+        if(!is_null($response)){
+            
+            if (!$response instanceof Response) {
+
+                $event = new \JViewEvent($this, $request, $type, $response);
+                $this->dispatcher->dispatch(KernelEvents::VIEW, $event);
+
+                if ($event->hasResponse()) {
+                    $response = $event->getResponse();
+                }
+
+                if (!$response instanceof Response) {
+                    $msg = sprintf('The controller must return a response (%s given).', $this->varToString($response));
+
+                    // the user may have forgotten to return something
+                    if (null === $response) {
+                        $msg .= ' Did you forget to add a return statement somewhere in your controller?';
+                    }
+                    throw new \LogicException($msg);
+                }
+            }
+
+            return $this->filterResponse($response, $request, $type);
+        }
+    }     
+    
+    /**
+     * Process the available routes
+     */
+    protected function router($routesfile){  
+        
+        self::$shell->set('routesfile', $routesfile);
+        return self::$shell->get('Jenga\App\Project\Routing\Router');
+    }
+    
+    /**
+     * Return information based on current request
+     */
+    protected function buildRequestContext(){   
+        return new RequestContext();
+    }
+
+    /**
+     * Matches the sent routes to the current context
+     *  
+     * @param type $routes
+     * @param type $context
+     */
+    protected function mapUrl($routes, $context){
+        
+        $this->matcher = new UrlMatcher($routes, $context);
+        $this->urlgenerator = new UrlGenerator($routes, $context);
+        
+        return $this->matcher;
+    }
+    
+    protected function resolveController() {
+        
+        $this->resolver = new ControllerResolver();
+        return $this->resolver;
+    }
+    
+    protected function buildProject(){ 
+        
+        $project = self::$shell->get('Jenga\App\Project\Core\Project');
+        $project->boot();
+        
+        return $project;
+    }
+    
+    /**
+     * Publishes the finish request event, then pop the request from the stack.
+     *
+     * Note that the order of the operations is important here, otherwise
+     * operations such as {@link RequestStack::getParentRequest()} can lead to
+     * weird results.
+     *
+     * @param Request $request
+     * @param int     $type
+     */
+    public function finishRequest(Request $request, $type)
+    {
+        $this->dispatcher->dispatch(KernelEvents::FINISH_REQUEST, new \JResponseEvent($this, $request, $type));
+        $this->requestStack->pop();
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function terminate(Request $request, Response $response)
+    {
+        $this->dispatcher->dispatch(KernelEvents::TERMINATE, new \JTerminateEvent($this, $request, $response));
+    }
+    
+    /**
+     * Handles an exception by trying to convert it to a Response.
+     *
+     * @param \Exception $e       An \Exception instance
+     * @param Request    $request A Request instance
+     * @param int        $type    The type of the request
+     *
+     * @return Response A Response instance
+     *
+     * @throws \Exception
+     */
+    private function handleException(\Exception $e, $request, $type)
+    {
+        $event = new \JExceptionEvent($this, $request, $type, $e);
+        $this->dispatcher->dispatch(KernelEvents::EXCEPTION, $event);
+
+        // a listener might have replaced the exception
+        $e = $event->getException();
+
+        if (!$event->hasResponse()) {
+            $this->finishRequest($request, $type);
+
+            throw $e;
+        }
+
+        $response = $event->getResponse();
+
+        // the developer asked for a specific status code
+        if ($response->headers->has('X-Status-Code')) {
+            $response->setStatusCode($response->headers->get('X-Status-Code'));
+
+            $response->headers->remove('X-Status-Code');
+        } elseif (!$response->isClientError() && !$response->isServerError() && !$response->isRedirect()) {
+            // ensure that we actually have an error response
+            if ($e instanceof HttpExceptionInterface) {
+                // keep the HTTP status code and headers
+                $response->setStatusCode($e->getStatusCode());
+                $response->headers->add($e->getHeaders());
+            } else {
+                $response->setStatusCode(500);
+            }
+        }
+
+        try {
+            return $this->filterResponse($response, $request, $type);
+        } catch (\Exception $e) {
+            return $response;
+        }
+    }
+    
+    /**
+     * Throws a critical error
+     * @param type $message
+     * @throws \Exception
+     */
+    public static function critical_error($message){
+        //throw new \Exception($message);
+        trigger_error("<div class='message error'>System Error: " . $message . "</div>", E_USER_ERROR);
+    }
+    
+    /**
+     * Throws a warning
+     * @param type $message
+     * @throws \Exception
+     */
+    public static function warning($message){
+        //throw new \Exception($message);
+        trigger_error("<div class='message error'>System Error: " . $message . "</div>", E_USER_WARNING);
+    }
+    
+    /**
+     * Throws an exception
+     * @param type $message
+     * @throws NotFoundHttpException
+     */
+    public static function exception($message){
+        
+        throw new \Exception($message);
+    }
+    
+    /**
+     * Filters a response object.
+     *
+     * @param Response $response A Response instance
+     * @param Request  $request  An error message in case the response is not a Response object
+     * @param int      $type     The type of the request (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
+     *
+     * @return Response The filtered Response instance
+     *
+     * @throws \RuntimeException if the passed object is not a Response instance
+     */
+    private function filterResponse(Response $response, Request $request, $type){
+        
+        $event = new FilterResponseEvent($this, $request, $type, $response);
+
+        $this->dispatcher->dispatch(KernelEvents::RESPONSE, $event);
+
+        $this->finishRequest($request, $type);
+
+        return $event->getResponse();
+    }
+}

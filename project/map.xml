@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Esurance 365 Portal">
+    <elements>
+        <element name="motor" path="forms/motor">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="schema">schema</folder>
+            <folder function="view">views</folder>
+        </element>
+        <element name="domestic" path="forms/domestic">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+        <element name="accident" path="forms/accident">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="schema">schema</folder>
+            <folder function="view">views</folder>
+        </element>
+        <element name="travel" path="forms/travel">
+            <folder function="model">models</folder>
+            <folder function="schema">schema</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="medical" path="forms/medical">
+            <folder function="model">models</folder>
+            <folder function="schema">schema</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+        <element name="agents" path="admin/agents" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="companies" path="admin/companies" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="insurers" path="admin/insurers" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="products" path="admin/products" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="cms" path="admin/cms" scope="system" disable="disable">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="customers" path="admin/customers" attachto="users" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="schema">schema</folder>
+            <folder function="view">views</folder>
+        </element>
+        
+        <element name="navigation" path="admin/unac/navigation" attachto="users" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="users" path="admin/unac/users" attachto="navigation" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="data" path="admin/data" scope="system" disable="disable">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="policies" path="admin/policies" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="schema">schema</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="quotes" path="admin/quotes" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="schema">schema</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="entities" path="admin/entities" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="forms" path="admin/forms" scope="system" visibility="private">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="documents" path="admin/documents" scope="system" visibility="private">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="tasks" path="admin/tasks" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="rates" path="admin/rates" scope="system" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="schema">schema</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="front" path="front" scope="system" default="true" visibility="public">
+            <folder function="model">models</folder>
+            <folder function="controller">controllers</folder>
+            <folder function="view">views</folder>
+        </element>
+
+        <element name="templates" function="templates" path="templates" scope="system" visibility="private">
+            <folder>admin</folder>
+            <folder>login</folder>
+            <folder>preview</folder>
+            <folder primary="true">frontend</folder>
+        </element>
+    </elements>
+</project>

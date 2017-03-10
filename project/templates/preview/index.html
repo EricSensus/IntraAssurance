@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Quote Preview</title>
+<style type="text/css">
+body {
+	background-color: #e7e6e6;
+	font-family: Calibri;
+	margin: 0;
+	padding: 0;
+}
+#top {
+	background-color: #538b3e;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+	color: #fff;
+	height: 75px;
+	left: 0;
+	position: relative;
+	top: 0;
+	transition: all 0.25s ease-in 0s;
+	width: 100%;
+	z-index: 1030;
+}
+
+.content-container {
+        background: #fff none repeat scroll 0 0;
+        margin-left: auto;
+        margin-right: auto;
+        padding-bottom: 20px;
+        padding-top: 20px;
+        width: calc(100% - 120px);
+}
+.shadow {
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.2s ease-in 0s;
+}
+</style>
+</head>
+
+<body>
+<div id="top">
+  <div id="logo"><img width="215" height="75" src="http://localhost/esurance/project/templates/admin/images/esurance_logo.png"></div>
+</div>
+<div class="content-container shadow">
+  <h2>Insurance Quotation No. [00100] dated [07 July 2016]</h2>
+  <hr />
+  <p>[Customer Name]</p>
+  <p>Please confirm the proposal information detailed below for you by [company name]</p>
+  <h3>[Product name]</h3>
+  <hr />
+  <ul>
+    <li>[Product Details]</li>
+  </ul>
+  <table class="table table-striped" width="100%" border="0" cellpadding="10">
+    <tr>
+      <td>[Insurance Company 1]</td>
+      <td>[Insurance Company 2]</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+  <p>[Agent Name] has recommended the package offered by [Insurance Company 1]</p>
+  <hr />
+  <p>[Own company contact details]</p>
+</div>
+</body>
+</html>

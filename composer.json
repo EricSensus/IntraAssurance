@@ -1,0 +1,18 @@
+{
+    "require": {
+        "symfony/console": "^3.0",
+        "symfony/http-kernel": "^3.0",
+        "symfony/http-foundation": "^3.0",
+        "symfony/routing": "^3.0",
+        "symfony/config": "^3.0",
+        "php-di/php-di": "^5.3",
+        "doctrine/annotations": "^1.2",
+        "ocramius/proxy-manager": "~1.0",
+        "jan-swiecki/simple-annotations": "^0.3.1",
+        "phpmailer/phpmailer": "^5.2",
+        "smodav/mpesa": "^1.0"
+    },
+    "config": {
+        "vendor-dir" : "plugins"
+    }
+}
