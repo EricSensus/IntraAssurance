@@ -49,8 +49,8 @@ class DomesticView extends View {
             'attributes' => ['data-parsley-validate' => ''],
             'map' => [2, 3, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 4, 4, 4, 4, 4, 1, 1, 1, 1],
             'controls' => [
-                'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '', 'readonly' => 'true']],
-                'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '', 'readonly' => 'true']],
+                'Period of Insurance: From:' => ['select', 'period_of_insurance_from', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Period of Insurance: To:' => ['select', 'period_of_insurance_to', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
                 'Current or past insurer *' => ['select', 'previous_insurer', '', $this->data->insurer, ['class' => 'form-control', 'required' => '']],
                 'Policy No' => ['text', 'policyno', '', ['class' => 'form-control']],
                 'Currrent renewal premium (Kshs)' => ['text', 'premium', '', ['class' => 'form-control']],
@@ -145,7 +145,7 @@ class DomesticView extends View {
             'attributes' => ['data-parsley-validate' => ''],
             'map' => [3, 1, 2, 1, 2, 1, 1, 1, 3, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1],
             'controls' => [
-                'Plot No.*' => ['text', 'plotno', '', ['class' => 'form-control', 'required' => '']],
+                'Situation of Premises: Plot No: ' => ['text', 'plot_no', '', ['class' => 'form-control', 'required' => '']],
                 'Road/Street *' => ['text', 'road', '', ['class' => 'form-control', 'required' => '']],
                 'Town *' => ['text', 'town', '', ['class' => 'form-control', 'required' => '']],
                 '{note1}' => ['note', 'my_note', '<p>What material has been used to construct the building(s) </p>'],
@@ -199,23 +199,21 @@ class DomesticView extends View {
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [3, 3, 3, 3, 3, 1, 1, 1],
+            'map' => [2, 2, 2, 2, 2, 1],
             'action' => '/domestic/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
-                'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
-                'Surname *' => ['text', 'surname', '', ['class' => 'form-control', 'required' => '']],
+                'Proposer Surname *' => ['text', 'surname', '', ['class' => 'form-control', 'required' => '']],
                 'Other Names *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
-                'Occupation/Profession *' => ['text', 'occupation', '', ['class' => 'form-control', 'required' => '']],
-                'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control', 'required' => '', 'readonly' => 'true']],
                 'PIN No. *' => ['text', 'pin', '', ['class' => 'form-control', 'required' => '']],
                 'ID or Passport No. *' => ['text', 'idnumber', '', ['class' => 'form-control', 'required' => '']],
+                'Telephone Contacts*' => ['text', 'telephone_contacts', '', ['class' => 'form-control', 'required' => '']],
                 'Email*' => ['text', 'email', '', ['class' => 'form-control', 'required' => '']],
-                'Mobile Number *' => ['text', 'mobile', '', ['class' => 'form-control', 'required' => '']],
-                'P.O Box*' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Address: P.O Box*' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
                 'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
-                'Town *' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Property Details >>', ['class' => 'btn btn-success']]
+                'Street *' => ['text', 'street', '', '', ['class' => 'form-control', 'required' => '']],
+                'Town *:' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Property Details >>', ['class' => 'btn btn-success pull-right']]
             ]
         ];
         $form = Generate::Form('domestic_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
