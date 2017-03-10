@@ -47,86 +47,58 @@ class DomesticView extends View {
             'method' => 'post',
             'action' => '/domestic/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [2, 3, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 4, 4, 4, 4, 4, 1, 1, 1, 1],
+            'map' => [2,1,1,2,1,1,1,1,1,1,1,1,1,1],
             'controls' => [
-                'Period of Insurance: From:' => ['select', 'period_of_insurance_from', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                'Period of Insurance: To:' => ['select', 'period_of_insurance_to', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                'Current or past insurer *' => ['select', 'previous_insurer', '', $this->data->insurer, ['class' => 'form-control', 'required' => '']],
-                'Policy No' => ['text', 'policyno', '', ['class' => 'form-control']],
-                'Currrent renewal premium (Kshs)' => ['text', 'premium', '', ['class' => 'form-control']],
-                'Do you require SECTION A: BUILDINGS * cover?' =>
-                ['radios', 'section_a_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Please indicate total sum insured for SECTION A Kshs' => ['text', 'a_premium', '', ['class' => 'form-control']],
-                'Do you require SECTION B: CONTENTS* cover?' =>
-                ['radios', 'section_b_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Please indicate total sum insured for SECTION B Kshs' => ['text', 'b_premium', '', ['class' => 'form-control']],
-                '{funitures}' => ['note', 'funitures', '<strong>Furniture and fittings: Specify any item over Kshs. 50,000/= or 5% of Total Sum Insured under section B</strong>'],
-                '{furniture1}' => ['textarea', 'funiture1', '', ['placeholder' => 'Item (s) and value (s)', 'rows' => 2, 'class' => 'form-control']],
-                '{furniture2}' => ['textarea', 'funiture2', '', ['placeholder' => 'Value (s) in Kshs - figures only separate using commas', 'rows' => 2, 'class' => 'form-control']],
-                //furnishing
-                '{furnishing}' => ['note', 'furnishing', '<strong>Furnishing, linen, clothing (including beddings, carpets, curtains, showers etc.): Specify any item over Kshs. 50,000/= or 5% of Total Sum Insured under section B</strong>'],
-                '{furnishing1}' => ['textarea', 'furnishing1', '', ['placeholder' => 'Item (s) and value (s)', 'rows' => 2, 'class' => 'form-control']],
-                '{furnishing2}' => ['textarea', 'furnishing2', '', ['placeholder' => 'Value (s) in Kshs - figures only separate using commas', 'rows' => 2, 'class' => 'form-control']],
-                //furnishing
-                '{miscellaneous}' => ['note', 'miscellaneous', '<strong>Miscellaneous (including wines and spirits, tools, toys, gadgets, cutery, crockery, lighting accessories, etc.): Specify any item over Kshs. 50,000/= or 5% of Total Sum Insured under section B</strong>'],
-                '{miscellaneous1}' => ['textarea', 'miscellaneous1', '', ['placeholder' => 'Item (s) and value (s)', 'rows' => 2, 'class' => 'form-control']],
-                '{miscellaneous2}' => ['textarea', 'miscellaneous2', '', ['placeholder' => 'Value (s) in Kshs - figures only separate using commas', 'rows' => 2, 'class' => 'form-control']],
-                //lasty
-                'Do you require SECTION C All RISKS* cover?' =>
-                ['radios', 'section_c_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Please indicate total sum insured for SECTION C Kshs' => ['text', 'c_premium', '', ['class' => 'form-control']],
-                //creepy
-                //furnishing
-                // '{furnishing}' => ['note', 'furnishing', '<strong>Furnishing, linen, clothing (including beddings, carpets, curtains, showers etc.): Specify any item over Kshs. 50,000/= or 5% of Total Sum Insured under section B</strong>'],
-                '{extra1}' => ['textarea', 'extra1', '', ['placeholder' => 'Item (s) and value (s)', 'rows' => 2, 'class' => 'form-control']],
-                '{extra2}' => ['textarea', 'extra2', '', ['placeholder' => 'Value (s) in Kshs - figures only separate using commas', 'rows' => 2, 'class' => 'form-control']],
-                // '{noted3}' => ['note', 'noted1', "noted1", "If the answer is yes, please provide details for the last five years below"],
-                'Do you require any of of the following additional cover? (subject to additional charge)' =>
-                ['checkboxes', 'addons', $this->data->addons],
-                'Specify No of Domestic servants' => ['text', 'domestic_servants', '', ['class' => 'form-control']],
-                'Owner Liablity' => ['select', 'owner_liabilty', '', $this->data->liabilities, ['class' => 'form-control']],
-                'Occupiers Liability' => ['select', 'occupiers_liabilty', '', $this->data->liabilities, ['class' => 'form-control']],
-                'Have you had any claims or losses in respect of any of the risks to which this proposal applies' =>
-                ['radios', 'claims_lost', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                '{space4}' => ['note', 'space4', '<p>If the answer is yes, please provide details for the last five years below</p>'],
-                // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
-                "Year 1: Claim No" => ['text', "claim_no_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Amount" => ['text', "claim_amount_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Details" => ['text', "claim_details_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Insurer" => ['select', "insurer_yr1", '', $this->data->insurer, ['class' => 'form-control',]],
-                //2
-                // '{note2}' => ['note', 'note2', "note2", "<h4>Year 2</h4><hr/>"],
-                "Year 2: Claim No" => ['text', "claim_no_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Amount" => ['text', "claim_amount_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Details" => ['text', "claim_details_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Insurer" => ['select', "insurer_yr2", '', $this->data->insurer, ['class' => 'form-control',]],
-                //3
-                //'{note3}' => ['note', 'note3', "note3", "<h4>Year 3</h4><hr/>"],
-                "Year 3: Claim No" => ['text', "claim_no_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Amount" => ['text', "claim_amount_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Details" => ['text', "claim_details_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Insurer" => ['select', "insurer_yr3", '', $this->data->insurer, ['class' => 'form-control',]],
-                //4
-                // '{note4}' => ['note', 'note4', "note4", "<h4>Year 4</h4><hr/>"],
-                "Year 4: Claim No" => ['text', "claim_no_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Amount" => ['text', "claim_amount_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Details" => ['text', "claim_details_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Insurer" => ['select', "insurer_yr4", '', $this->data->insurer, ['class' => 'form-control',]],
-                //5
-                //'{note5}' => ['note', 'nots5', "note5", "<h4>Year 5</h4><hr/>"],
-                "Year 5: Claim No" => ['text', "claim_no_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Amount" => ['text', "claim_amount_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Details" => ['text', "claim_details_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Insurer" => ['select', "insurer_yr5", '', $this->data->insurer, ['class' => 'form-control',]],
-                //end
-                ' Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)'
-                => ['select', 'pickat', '', $this->data->pick_cert, ['class' => 'form-control', 'required' => '']],
-                '{dec}' => ['note', 'declaration', 'accceptterms',
-                    '<p><strong>The liability of the Jubilee Insurance Company of Kenya Limited does not commence until the proposal has been accepted and the premium paid and cover confirmed by Jubilee.</strong></p><p></p>
-                    <p><strong>DECLARATION</strong></p><p></p>
-                    <p>I/We do hereby declare that the above answers and statements are true and that I/We have withheld no material information regarding this proposal. I/We agree that this Declaration and the answers given above, as well as any proposal or declaration or statement made in writing by me/us or anyone acting on my/our behalf shall form the basis of the contract between me/us and The Jubilee Insurance Company of Kenya Limited, and I/We further agree to accept indemnity subject to the conditions in and endorsed on the The Jubilee Insurance Company of Kenya Limited Policy. I/We also declare that any sums expressed in this proposal represent not less that the full value of the insurable property mentioned above.</p>'],
-                'I hereby agree to all the above terms and conditions' => ['radios', 'acceptterms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
+                'Period of Insurance: From:*' => ['select', 'period_of_insurance_from', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Period of Insurance: To:*' => ['select', 'period_of_insurance_to', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                '{note1}' => ['note', 'note3', 'note3', 'If yes, state amount and number of months for which the cover is required?'],
+                'Do you wish to insure rent receivable or rent payable?' =>
+                    ['radios', 'insure_rent_receivable',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'Amount*' => ['text', 'cover_amount', '', ['class' => 'form-control']],
+                'Number of Months*' => ['text', 'no_of_months', '', ['class' => 'form-control']],
+                'Do you wish to enhance the value of your building automatically at the end of every insurance period?' =>
+                    ['radios', 'enhance_value_auto',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'If so indicate the percentage increase required. Tick appropriate option below: ' => [
+                    'checkboxes', 'percetage_increase', [
+                        '0.05' => 'Five Percent',
+                        '0.10' => 'Ten Percent',
+                        '0.15' => 'Fifteen Percent',
+                        '0.20' => 'Twenty Percent',
+                    ]
+                ],
+                '{note2' => ['note', 'note2', 'note2', '<h4>Section A - The Buildings</h4>'],
+                "The proposer's residence being a private dwelling house or flat and all the domestic offices, stables, garage,
+                and outbuildings on the same premises and used in connection therewith and the walls, gates and fences around,
+                and pertaining thereto, including Landlord's fixtures and fittings in the said building all situated above: 
+                (<i style='font-weight: normal;'>All the said buildings are brick, stone or concrete built, with tile, concrete, or metal roof</i>)" =>
+                ['text', 'dwelling_value', '', ['class' => 'form-control']],
+                "Total Sum Insured on Buildings Kshs." => ['text', 'total_sum_insured', '', ['class' => 'form-control']],
+                '{note3}' => ['note', 'note3', 'note3', '(<i style=\'font-weight: normal;\'><small>Note: The sum insured for the buildings should be the reinstatement value
+                . i.e. the cost of rebuilding the house including walls and outbuildings, making allowance for Architects and Surveyors, 
+                consultancy fees and cost of Debris removal</small></i>)'],
+                '{note3}' => ['note', 'note3', 'note3', '<h4>Section B - Contents</h4>'],
+                '{note4}' => ['note', 'note4', 'note4', '<b>Note 1:</b> The sum Insured should be the replacement value less depreciation, 
+                wear and tear of the property.'],
+                '{note5}' => ['note', 'note5', 'note5', '<b>Note 2:</b> No one article (furniture excepted) shall be deemed of greater value
+                than 5% of the total sum Insured on the contents unless such article is specifically Insured.'],
+                '{note6}' => ['note', 'note6', 'note6', '<b>Note 3:</b> The total value of platinum, gold and silver articles, jewelry will be
+                deemed not to exceed one thirth of the total sum insured on the said contents unless specifically agreed upon with the insurer.
+                If the said value exceeds this portion on the total value of such property should be specified.'],
+                '{note7}' => ['note', 'note7', 'note7', '<b>Option 1:</b> On furniture, household goods and personal effects of every
+                description the property of the proposer or any member of the proposer\'s family normally residing with the 
+                proposer, and fixtures and fittings the proposer\'s own for which proposer is legally responsible, not being
+                landlord\'s fixtures and fittings, in the building of the proposer\'s residense.'],
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >', ['class' => 'btn btn-success']]
             ],
         ];
         $form = Generate::Form('domestic_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
@@ -143,48 +115,73 @@ class DomesticView extends View {
             'method' => 'post',
             'action' => '/domestic/save/2',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 1, 2, 1, 2, 1, 1, 1, 3, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1],
+            'map' => [1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             'controls' => [
                 'Situation of Premises: Plot No: ' => ['text', 'plot_no', '', ['class' => 'form-control', 'required' => '']],
-                'Road/Street *' => ['text', 'road', '', ['class' => 'form-control', 'required' => '']],
-                'Town *' => ['text', 'town', '', ['class' => 'form-control', 'required' => '']],
-                '{note1}' => ['note', 'my_note', '<p>What material has been used to construct the building(s) </p>'],
-                'Walls *' => ['select', 'wall_materials', '', $this->data->walls, ['class' => 'form-control', 'required' => '']],
-                'Roofs *' => ['select', 'roof_material', '', $this->data->roofs, ['class' => 'form-control', 'required' => '']],
-                'Are there any outbuildings?' => ['radios', 'outbuildimgs', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Outbuilding Walls *' => ['select', 'outbuilding_wall_materials', '', $this->data->walls, ['class' => 'form-control', 'required' => '']],
-                'Outbuilding Roofs *' => ['select', 'outbuilding_roof_material', '', $this->data->roofs, ['class' => 'form-control', 'required' => '']],
-                '* Is any business, profession or trade carried on in any portion of the premises of which the dwelling forms a part?' =>
-                ['radios', 'anybusiness', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, please give particulars below' => ['textarea', 'particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'What type of dwelling is it?' =>
-                ['select', 'dwelling_type', '', $this->data->dwelling, ['class' => 'form-control', 'required' => '']],
-                'Do you own the dwelling?' => ['radios', 'ownership', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If No, who owns it' => ['text', 'owner_of_dwelling', '', ['class' => 'form-control', 'required']],
-                'Give Financier Name' => ['text', 'financier', '', ['class' => 'form-control', 'required']],
-                'Is the dwelling solely in your occupation?' => ['radios', 'sole_occupation_dwelling', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'if No, do you let or receive boarders?' => ['radios', 'to_let', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Will the dwelling be left without an inhabitant for more than seven consecutive days?' =>
-                ['radios', 'dwelling_inhabitation', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'if so, state to what extent (in weeks)' =>
-                ['select', 'state_period', '', [1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6], ['class' => 'form-control',]],
-                'Are the Buildings in a good state of repair and will they be so maintained' =>
-                ['radios', 'good_state_building', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'What security is in place (tick all that is appropriate)' =>
-                ['checkboxes', 'security', $this->data->security, ['class' => 'form-control', 'rows' => 2]],
-                'If Others, please specify' => ['textarea', 'other_security', '', ['class' => 'form-control', 'rows' => 2]],
-                'Has any Company or Insurer, in respect of any of the risks to which the proposal applies, declined to insure you' =>
-                ['radios', 'previous_declined', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Required special terms?' => ['radios', 'special_terms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Cancelled or refused to renew your Insurance?' => ['radios', 'cancelled_insurance', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Increased your premium at renewal?' => ['radios', 'increased_premium', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If the answer to any of the above is Yes, then please provide details below' =>
-                ['textarea', 'specific_details', '', ['class' => 'form-control', 'rows' => 2]],
-                'Do you have any other policies in force covering the property to which the proposal applies' =>
-                ['radios', 'other_policies', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, please give particulars' =>
-                ['textarea', 'details_other_policies', '', ['class' => 'form-control', 'rows' => 2]],
-                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
+                'Of what material was the dwelling constructed?' =>['radios', 'construction_material',
+                    [
+                        'walls' => 'Walls',
+                        'roof' => 'Roof'
+                    ]
+                ],
+                'What is the height in storeys?' => ['text', 'height_in_storeys', '', ['class' => 'form-control']],
+                'Is any business, profession or trade carried on in any of the section of the premises of which the dwelling forms a part?' =>
+                ['radios', 'activities_carried',
+                    [
+                        'yes' => 'Yes',
+                        'no' => 'No'
+                    ]
+                ],
+                'If so, give particulars' => ['textarea', 'activities_particulars', '', ['class' => 'form-control']],
+                '{note}' => ['note', 'note1', 'note1', 'Is the premises:'],
+                'a) A private dwelling house?' =>
+                    ['radios', 'private_dwelling',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'If not, please explain' => ['textarea', 'pdwelling_particulars', '', ['class' => 'form-control']],
+                'b) A self contained flat with separate entrance exclusively under your control' =>
+                    ['radios', 'self_contained_flat',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'Is the dwelling solely in your occupation? (Including your family and servants)' =>
+                    ['radios', 'solely_occupation',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'Will the dwelling be left without an inhabitant for more than seven (7) days?' =>
+                    ['radios', 'without_inhabitant_7days',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'If so, state the extent' => ['text', 'no_inhabitant7days_extent', '', ['class' => 'form-control']],
+                'Will the dwelling be left without an inhabitant for more than thirty (30) days?' =>
+                    ['radios', 'withoutinhabitant30days',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                'If so, state the extent ' => ['text', 'inhabitant30days_particulars', '', ['class' => 'form-control']],
+                '{note2}' => ['note', 'note2', 'note2', '<b>Note</b> <p>Whenever the dwelling is to be left unoccupied
+                for a period exceeding the above stated days please notify the company.</p>'],
+                'Are the buildings in good state of repair and will they be so maintained?' =>
+                    ['radios', 'good_state',
+                        [
+                            'yes' => 'Yes',
+                            'no' => 'No'
+                        ]
+                    ],
+                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >', ['class' => 'btn btn-success pull-right',]]
             ]
         ];
         $form = Generate::Form('domestic_property_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4'], TRUE);
@@ -213,7 +210,7 @@ class DomesticView extends View {
                 'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
                 'Street *' => ['text', 'street', '', '', ['class' => 'form-control', 'required' => '']],
                 'Town *:' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Property Details >>', ['class' => 'btn btn-success pull-right']]
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Property Details >', ['class' => 'btn btn-success pull-right']]
             ]
         ];
         $form = Generate::Form('domestic_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
