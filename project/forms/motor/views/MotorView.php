@@ -64,7 +64,7 @@ class MotorView extends View
                 'Email*' => ['text', 'Email', '', ['class' => 'form-control', 'required' => '']],
                 'Address *' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
                 'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
-                'Town *' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
                 'Do you hold a provisional or a permanent driving licence?'
                 => ['radios', 'Type', ['Permanent' => 'Permanent', 'Provisional' => 'Provisional'], 'Permanent'],
                 'Date of issue of first permanent driving licence*' => ['text', 'DateIssued', '', ['class' => 'form-control datepicker', 'required' => '']],
@@ -196,7 +196,7 @@ class MotorView extends View
     private function showQuotations()
     {
         $this->set('data', $this->data);
-        $this->setViewPanel('show_quotations');
+        $this->setViewPanel('data');
     }
 
     private function otherCarDetails()

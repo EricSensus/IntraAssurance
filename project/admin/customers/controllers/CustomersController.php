@@ -767,7 +767,7 @@ class CustomersController extends Controller
         $entity = Elements::call('Entities/EntitiesController');
         $entities = $entity->getCustomerEntity($id);
 
-        //process the form values to make the script  
+        //process the form values to make the script
         foreach ($entities[0]['entity'] as $key => $value) {
             $rawscript .= "$('#" . $key . "').val('" . trim($value) . "');\n";
         }
@@ -893,35 +893,35 @@ class CustomersController extends Controller
      */
     public function saveCustomer($data = null)
     {
-        if (empty($data))
+        if (empty($data)) {
             $data = Input::post();
+        }
         $customer = $this->model->find(['email' => $data['email']]);
         if ($customer->count() > 0) {
             Session::set('customer_id', $customer->id);
             return $customer->id;
         }
-
-        $customer->name = $data['surname'] . ' ' . $data['names'];
-        $customer->mobile_no = $data['mobile'];
-        $customer->email = $data['email'];
+        $customer->name = $data['FullName'];
+        $customer->mobile_no = $data['Mobile'];
+        $customer->email = $data['Email'];
         $customer->enabled = 'yes';
-        $customer->postal_address = $data['address'];
-        $customer->date_of_birth = strtotime($data['dob']);
+        $customer->postal_address = $data['Address'];
+        $customer->date_of_birth = strtotime($data['DateOfBirth']);
         $customer->regdate = time();
-        $customer->postal_code = $data['code'];
+        $customer->postal_code = $data['Code'];
         $customer->additional_info = json_encode(array_except($data,
-            ['surname', 'names', 'mobile', 'address', 'dob', 'code']));
-
-
+            ['FullName', 'Mobile', 'Address', 'DateOfBirth', 'Code']));
         $customer->save();
         if ($customer->hasNoErrors()) {
             Session::set('customer_id', $customer->last_altered_row);
             return $customer->last_altered_row;
         }
+        exit;
         return false;
     }
 
-    public function attachAgentToCustomer($customer_id, $agent_id){
+    public function attachAgentToCustomer($customer_id, $agent_id)
+    {
         $this->model->attachAgentToCustomer($customer_id, $agent_id);
     }
 }
