@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Esurance 365 Portal">
+<project name="Intra Assurance Portal">
     <elements>
         <element name="motor" path="forms/motor">
             <folder function="model">models</folder>
