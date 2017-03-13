@@ -883,15 +883,44 @@ class CustomersController extends Controller
             echo $save['ERROR'];
         }
     }
-
-
-    //feature
     /**
      * Save customer data from other elements. Also sets customer_id to session
      * @param array|null $data
      * @return bool
      */
     public function saveCustomer($data = null)
+    {
+        if (empty($data))
+            $data = Input::post();
+        $customer = $this->model->find(['email' => $data['email']]);
+        if ($customer->count() > 0) {
+            Session::set('customer_id', $customer->id);
+            return $customer->id;
+        }
+        $customer->name = $data['surname'] . ' ' . $data['names'];
+        $customer->mobile_no = $data['mobile'];
+        $customer->email = $data['email'];
+        $customer->enabled = 'yes';
+        $customer->postal_address = $data['address'];
+        $customer->date_of_birth = strtotime($data['dob']);
+        $customer->regdate = time();
+        $customer->postal_code = $data['code'];
+        $customer->additional_info = json_encode(array_except($data,
+            ['surname', 'names', 'mobile', 'address', 'dob', 'code']));
+        $customer->save();
+        if ($customer->hasNoErrors()) {
+            Session::set('customer_id', $customer->last_altered_row);
+            return $customer->last_altered_row;
+        }
+        return false;
+    }
+
+    /**
+     * Save customer data from other elements. Also sets customer_id to session
+     * @param array|null $data
+     * @return bool
+     */
+    public function saveMyCustomer($data = null)
     {
         if (empty($data)) {
             $data = Input::post();
