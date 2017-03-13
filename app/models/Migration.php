@@ -28,10 +28,19 @@ class Migration {
         
         $this->loadConfigurations();
         
-        $this->mysqli = new \mysqli($this->db_host, $this->db_user, $this->db_pass, $this->db_name);
+        $this->mysqli =@ new \mysqli($this->db_host, $this->db_user, $this->db_pass);
+        
         if (mysqli_connect_errno()) {
             echo "Failed to connect to MySQL: " . mysqli_connect_error();
+            exit;
         }
+        elseif(!$this->mysqli->select_db($this->db_name)){
+            
+            //create the database
+            $this->createDatabase();
+        }
+        
+        $this->mysqli->select_db($this->db_name);
     }
     
     /**
@@ -47,6 +56,20 @@ class Migration {
         $this->db_pass = $configs->password;
         $this->db_port = $configs->port;
         $this->db_prefix = $configs->dbprefix;
+    }
+    
+    protected function createDatabase() {
+        
+        $sql = 'CREATE DATABASE '.$this->db_name;
+        
+        if($this->mysqli->query($sql) === TRUE){
+            echo 'Database: '.$this->db_name.' created \n';
+            return TRUE;
+        }
+        else{
+            echo 'Database of '.$this->db_name.' has failed';
+            exit;
+        }
     }
 
     /**
