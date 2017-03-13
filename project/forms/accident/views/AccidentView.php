@@ -50,21 +50,26 @@ class AccidentView extends View
             'method' => 'post',
             'action' => '/accident/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [1, 1, 1, 2, 1, 1, 1, 1],
+            'map' => [2, 2, 2, 1, 1, 3, 1, 1,1],
             'controls' => [
-                'Class' => ['select', 'cover_class', '', ['classI' => 'Class I', 'classII' => 'Class II'], ['class' => 'form-control']],
-                '{deta}' => ['note', 'cool_note', '<strong>NOTE:</strong><small>Free air evacuation to Nairobi and delivery after evacuation to a hospital'
-                    . ' of your choice in Nairobi as well as free evacuation'
-                    . ' as a result of life threatening accident or sickness.</small>'],
-                '{bands}' => ['radios', 'cover_type', $this->data->bands, '', ['class' => 'form-control']],
-                'In addition to taking cover on yourself, do you wish to cover your spouse and children?'
-                => ['radios', 'other_covers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If yes, How many others would you like to cover?' => ['select', 'howmany', '', ['1'=>1, '2'=>2, '3'=>3, '4'=>4, '5'=>5, '6'=>6, '7'=>7, '8'=>8, '9'=>9, '10'=>10], ['class' => 'form-control']],
-                '{trap}' => ['note', 'others', '<div id="other_covers_div"></div>'],
+                'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
+                'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
+                'Amount of Insurance for death or P.D' => ['text', 'InsuredAmount', '', ['class' => 'form-control']],
+                'Class' => ['select', 'cover_class', '', ['classI' => 'Class I', 'classII' => 'Class II', 'classIII' => 'Class III', 'classIV' => 'Class IV'], ['class' => 'form-control']],
+                'Accidental Medical Expenses' => ['text', 'MedicalExpenses', '', ['class' => 'form-control']],
+                'Temporary Total Disablement' => ['text', 'TotalDisablement', '', ['class' => 'form-control']],
+                'Is this Insurance to be additional to any other Accident and/or sickness Policy' => $this->yesNo('ToCompliment'),
+                '{deta}' => ['note', 'cool_note', 'If so give particulars of all other policies.'],
+                'Name of company' => ['text', 'OtherCompanyName', '', ['class' => 'form-control']],
+                'Sum Insured' => ['text', 'OtherCompanySumInsured', '', ['class' => 'form-control']],
+                'Policy No' => ['text', 'OtherCompanyPolicyNo', '', ['class' => 'form-control']],
+
                 '{dec}' => ['note', 'declaration', 'accceptterms',
-                    '<p><strong>The liability of the Jubilee Insurance Company of Kenya Limited does not commence until the proposal has been accepted and the premium paid and cover confirmed by Jubilee.</strong></p><p></p>
-                    <p><strong>DECLARATION</strong></p><p></p>
-                    <p>I/We do hereby declare that the above answers and statements are true and that I/We have withheld no material information regarding this proposal. I/We agree that this Declaration and the answers given above, as well as any proposal or declaration or statement made in writing by me/us or anyone acting on my/our behalf shall form the basis of the contract between me/us and The Jubilee Insurance Company of Kenya Limited, and I/We further agree to accept indemnity subject to the conditions in and endorsed on the The Jubilee Insurance Company of Kenya Limited Policy. I/We also declare that any sums expressed in this proposal represent not less that the full value of the insurable property mentioned above.</p>'],
+                    '<p><strong>DECLARATION</strong></p><p></p>
+                    <p>I hereby warrant and declare the truth of all the above statements and that I have not withheld any material information
+and I agree that this proposal shall be the basis of the contract between me and Intra Africa Assurance Co. Ltd. And I
+agree to notify the company of any material alteration in my occupation, health or habits and to accept a policy subject
+to the terms, exceptions and conditions prescribed by the company</p>'],
                 'I hereby agree to all the above terms and conditions' => ['radios', 'acceptterms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
             ]
@@ -84,24 +89,44 @@ class AccidentView extends View
             'method' => 'post',
             'action' => '/accident/save/2',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [1, 2, 2, 2, 2, 2, 2, 1],
+            'map' => [2, 2, 1, 1, 3, 3, 3, 3, 3, 2, 2, 1, 2, 2, 1],
             'controls' => [
+                'Profession/Occupation' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
+                'Please describe your occupation fully' => ['textarea', 'OccupationDescription', '', ['class' => 'form-control', 'rows' => 2]],
+                'Does your occupation, require you to engage in manual labour' => $this->yesNo('ManualLabour'),
+                'Give details' => ['textarea', 'ManualLabourDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'What is your average monthly income' => ['text', 'Salary', '', ['class' => 'form-control', 'required' => '']],
+                //ETRA Fileds
+                '{quest3}' => ['note', 'question34', '<strong>Have you suffered from:</strong>'],
+                'Rupture(hernia)' => $this->yesNo('Rupture(hernia)'),
+                'Varicose veins' => $this->yesNo('Varicose veins'),
+                'Slipped disc' => $this->yesNo('Slipped disc'),
+                'Impairment of sight' => $this->yesNo('Impairment of sight'),
+                'Infection of eyes' => $this->yesNo('Infection of eyes'),
+                'Heart disease' => $this->yesNo('Heart disease'),
+                'Fits or blackouts' => $this->yesNo('Fits or blackouts'),
+                'Any form of chronic' => $this->yesNo('Any form of chronic'),
+                'Back strain' => $this->yesNo('Back strain'),
+                'Impairment of hearing' => $this->yesNo('Impairment of hearing'),
+                'Hearing complaint' => $this->yesNo('Hearing complaint'),
+                'Discharge from the ear' => $this->yesNo('Discharge from the ear'),
+                'Duodenal or gastric ulcer' => $this->yesNo('Duodenal or gastric ulcer'),
+                'Any form or paralysis' => $this->yesNo('Any form or paralysis'),
+                //other details
+                'Have you any physical defect or infirmity?' => $this->yesNo('Have you any physical defect or infirmity?'),
+                'Have you sustained injury by accident(s) during the last five years' => $this->yesNo('RecentInjuries'),
+                'If so, give dates, nature of injury(ies) and period(s) of disablement' => ['textarea', 'RecentInjuryDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Have you ever proposed for Personal Accident and/or Life Insurance' => $this->yesNo('Have you ever proposed for Personal Accident and/or Life Insurance'),
+                //'If so, give name of each Company and amount of Insurance' => ['textarea', 'RecentInsurances', '', ['class' => 'form-control', 'rows' => 2]],
+
+                //company details
+
                 '{quest}' => ['note', 'question3', 'Has any company in respect of life assurance or accident insurance ever:'],
-                'Refused you cover?' => ['radios', 'refused_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars' => ['textarea', 'cover_refused_particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'Declined to renew your insurance?' => ['radios', 'decline_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars ' => ['textarea', 'cover_decline_particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'Demanded an increased rate?' => ['radios', 'demand_increased_rate', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars  ' => ['textarea', 'increased_rate_particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'Imposed any special terms?' => ['radios', 'imposed_special_terms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars   ' => ['textarea', 'special_terms_particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'Are there circumstances connected with your pursuits or mode of life or
-                    hobbies which render you specially liable for injury?'
-                => ['radios', 'hobbies_injury_liable', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars    ' => ['textarea', 'injury_liable_particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                'Has any proposed insured ever made a claim in respect to Personal Accident?' =>
-                    ['radios', 'ever_made_claims', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, Please provide particulars     ' => ['textarea', 'made_claims_particulars', '', ['class' => 'form-control', 'rows' => 2]],
+                'Declined to issue a policy to you?' => $this->yesNo('Declined to issue a policy to you?'),
+                'Declined to continue your insurance?' => $this->yesNo('Declined to continue your insurance'),
+                'Not invited the renewal of your policy' => $this->yesNo('Not invited the renewal of your policy'),
+                'Imposed any restrictions or special conditions' => $this->yesNo('Imposed any restrictions or special conditions'),
+                'If so, give names of each Company' => ['textarea', 'CoverDeclineParticulars', '', ['class' => 'form-control', 'rows' => 2]],
                 '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
             ]
         ];
@@ -118,34 +143,39 @@ class AccidentView extends View
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [3, 3, 2, 3, 2, 1, 1, 3, 1],
+            'map' => [3, 3, 3, 3, 1, 3, 1],
             'action' => '/accident/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
                 'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
-                'Surname *' => ['text', 'surname', '', ['class' => 'form-control', 'required' => '']],
-                'Other Names *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
-                'Occupation' => ['text', 'occupation', '', ['class' => 'form-control', 'required' => '']],
-                'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control', 'required' => '', 'readonly' => 'true']],
-                'Age Bracket *' => ['select', 'age_bracket', '', $this->data->age_bracket, ['class' => 'form-control', 'required' => '']],
-                'Height *' => ['text', 'height', '', ['class' => 'form-control', 'placeholder' => 'Metres', 'required' => '']],
-                'Weight *' => ['text', 'weight', '', ['class' => 'form-control', 'placeholder' => 'Ponds', 'required' => '']],
-                'Postal Address' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
-                'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
-                'Town *' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                'Email*' => ['text', 'email', '', ['class' => 'form-control', 'required' => '']],
-                'Mobile Number *' => ['text', 'mobile', '', ['class' => 'form-control', 'required' => '']],
-                '{notice}' => ['note', 'notice2', '<p>Please let us know here about your Beneficiary (s) or Trustee in the event of Accidental Death.</p>'],
-                'Name *' => ['text', 'beneficiary_name', '', ['class' => 'form-control', 'required' => '']],
-                'P.O Box' => ['text', 'beneficiary_address', '', ['class' => 'form-control', 'required' => '']],
-                'Postal Code ' => ['text', 'beneficiary_code', '', ['class' => 'form-control', 'required' => '']],
-                'Town' => ['select', 'beneficiary_town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Full Name *' => ['text', 'FullName', '', ['class' => 'form-control', 'required' => '']],
+
+                'PIN No *' => ['text', 'PIN', '', ['class' => 'form-control', 'required' => '']],
+                'Certificate of Registration/Incorporation/ID/Passport *' =>
+                    ['text', 'Certificate', '', ['class' => 'form-control', 'required' => '']],
+                'Mobile Number *' => ['text', 'Mobile', '', ['class' => 'form-control', 'required' => '']],
+                'Email*' => ['text', 'Email', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Address' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
+                'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                'Website *' => ['text', 'Website', '', ['class' => 'form-control', 'required' => '']],
+                'Telephone Number *' => ['text', 'Telephone', '', ['class' => 'form-control',]],
+                'Fax *' => ['text', 'Fax', '', ['class' => 'form-control', 'required' => '']],
+                '{notice}' => ['note', 'notice2', '<p>Beneficiary in the event of death:</p>'],
+                'Name *' => ['text', 'BeneficiaryName', '', ['class' => 'form-control', 'required' => '']],
+                'Age' => ['text', 'beneficiaryAge', '', ['class' => 'form-control', 'required' => '']],
+                'Relationship' => ['select', 'BeneficiaryRelationship', '', $this->data->relationships, ['class' => 'form-control', 'required' => '']],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Personal Accident Details >>', ['class' => 'btn btn-success']]
             ]
         ];
         $form = Generate::Form('accident_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('personal_details');
+    }
+
+    private function yesNo($name)
+    {
+        return ['radios', $name, ['yes' => 'Yes', 'no' => 'No'], 'no'];
     }
 
     private function showQuotations()

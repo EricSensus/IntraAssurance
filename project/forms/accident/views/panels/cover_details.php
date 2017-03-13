@@ -31,9 +31,9 @@ use Jenga\App\Request\Url;
 <div class="row setup-content" id="step-3">
     <div class="col-xs-12">
         <div class="col-md-12 well">
-            <p>Please now enter your cover details below so that we can find the best insurance quote for you.
+          <!--  <p>Please now enter your cover details below so that we can find the best insurance quote for you.
                 <br/>Do not forget that you can always come back later to retrieve your quote or change your details</p>
-            <small>
+       <small>
                 CLASSIFICATION OF OCCUPATIONS INSURABLE UNDER THE POLICY
                 <br/>
                 <strong>CLASS I:</strong> Persons engaged solely in professional, administrative, clerical
@@ -47,7 +47,23 @@ use Jenga\App\Request\Url;
                 plumbers (superintending), salesmen, tailors.
             </small>
             <br/><br/>
+            -->
             <?= $form ?>
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#coverstart").datepicker({
+                minDate: 0, dateFormat: 'yy-mm-dd', changeMonth: true,
+                onSelect: function (date) {
+                    var date2 = new Date(date);
+                    date2.setFullYear(date2.getFullYear() + 1);
+                    $('#coverend').datepicker('setDate', date2);
+                }
+            }
+        );
+        $("#coverend").datepicker({dateFormat: 'yy-mm-dd', disabled: true});
+    });
+</script>

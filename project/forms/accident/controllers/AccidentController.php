@@ -52,12 +52,12 @@ class AccidentController extends Controller
 
     public function index($step = "1")
     {
-        if ($step != "1") {
-            if (empty(Session::get('customer_id')) || (Session::get('type') != 'accident')) {
-                Redirect::to('/accident/step/1');
-                exit;
-            }
-        }
+//        if ($step != "1") {
+//            if (empty(Session::get('customer_id')) || (Session::get('type') != 'accident')) {
+//                Redirect::to('/accident/step/1');
+//                exit;
+//            }
+//        }
         $this->loadData($step);
         $this->view->wizard($this->data);
     }
@@ -86,7 +86,7 @@ class AccidentController extends Controller
 
     private function savePersonalDetails()
     {
-        if ($this->_customer->saveCustomer($this->filteredData())) {
+        if ($this->_customer->saveMyCustomer($this->filteredData())) {
             Session::set('type', 'accident');
             Redirect::to('/accident/step/2');
         } else {
@@ -179,6 +179,7 @@ class AccidentController extends Controller
             'Nyeri, Sohan Plaza, Moi Nyayo Way',
             'Thika, Thika Arcade, Thika Town, 4th Floor',
             'Post to my address in your records (a small extra charge will apply)']);
+        $this->data->relationships = $this->__select(["Wife", "Husband", "Son", "Daughter", "Other"]);
         if ($step == "4") {
             $this->data->quotation = new AccidentQuotation();
         }
