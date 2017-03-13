@@ -42,6 +42,7 @@ Route::get('/domestic/step/{step}', 'DomesticController@index')
         'top' => 'FrontController@loadNavigation:navigation'
     ])
     ->assignResources([
+        "<script src='" . RELATIVE_PROJECT_PATH . '/' . $domestic_path . "/assets/js/common.js'></script>",
         "<script src='" . RELATIVE_PROJECT_PATH . '/' . $domestic_path . "/assets/js/domestic.js'></script>"
     ]);
 Route::post('/domestic/save/{step}', 'DomesticController@save');

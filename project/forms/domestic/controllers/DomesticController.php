@@ -115,6 +115,7 @@ class DomesticController extends Controller
             'Nyeri, Sohan Plaza, Moi Nyayo Way',
             'Thika, Thika Arcade, Thika Town, 4th Floor',
             'Post to my address in your records (a small extra charge will apply)']);
+        $this->data->no_of_items = $this->noOfItems();
         if ($step == "4") {
             $this->data->quotation = new DomesticQuotation();
         }
@@ -201,5 +202,12 @@ class DomesticController extends Controller
             'name_domestic_cover_details', 'zebra_honeypot_domestic_cover_details',
             'zebra_csrf_token_domestic_cover_details'];
         return array_except(Input::post(), $block);
+    }
+
+    private function noOfItems(){
+        for($i = 1; $i <= 10; $i++){
+            $return[$i] = $i;
+        }
+        return $return;
     }
 }
