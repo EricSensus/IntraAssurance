@@ -52,12 +52,12 @@ class AccidentController extends Controller
 
     public function index($step = "1")
     {
-//        if ($step != "1") {
-//            if (empty(Session::get('customer_id')) || (Session::get('type') != 'accident')) {
-//                Redirect::to('/accident/step/1');
-//                exit;
-//            }
-//        }
+        if ($step != "1") {
+            if (empty(Session::get('customer_id')) || (Session::get('type') != 'accident')) {
+                Redirect::to('/accident/step/1');
+                exit;
+            }
+        }
         $this->loadData($step);
         $this->view->wizard($this->data);
     }

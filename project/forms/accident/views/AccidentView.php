@@ -50,7 +50,7 @@ class AccidentView extends View
             'method' => 'post',
             'action' => '/accident/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [2, 2, 2, 1, 1, 3, 1, 1,1],
+            'map' => [2, 2, 2, 1, 1, 3, 1, 1, 1],
             'controls' => [
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
@@ -158,9 +158,9 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
                 'Postal Address' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
                 'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
                 'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                'Website *' => ['text', 'Website', '', ['class' => 'form-control', 'required' => '']],
-                'Telephone Number *' => ['text', 'Telephone', '', ['class' => 'form-control',]],
-                'Fax *' => ['text', 'Fax', '', ['class' => 'form-control', 'required' => '']],
+                'Website ' => ['text', 'Website', '', ['class' => 'form-control',]],
+                'Telephone Number ' => ['text', 'Telephone', '', ['class' => 'form-control',]],
+                'Fax ' => ['text', 'Fax', '', ['class' => 'form-control',]],
                 '{notice}' => ['note', 'notice2', '<p>Beneficiary in the event of death:</p>'],
                 'Name *' => ['text', 'BeneficiaryName', '', ['class' => 'form-control', 'required' => '']],
                 'Age' => ['text', 'beneficiaryAge', '', ['class' => 'form-control', 'required' => '']],
@@ -181,7 +181,7 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
     private function showQuotations()
     {
         $this->set('data', $this->data);
-        $this->setViewPanel('quotations');
+        $this->setViewPanel('data');
     }
 
 }
