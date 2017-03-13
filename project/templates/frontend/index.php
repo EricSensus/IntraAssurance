@@ -39,13 +39,13 @@ use Jenga\App\Request\Url;
          </div>
     </div>
     <?php
-    
+
         if($this->isPanelActive('top'))
             $this->loadPanelPosition('top');
-        
+
         if($this->isPanelActive('banner'))
             $this->loadPanelPosition('banner');
-        
+
         if($this->isPanelActive('lowermain')){
             $this->loadPanelPosition('lowermain');
         }
