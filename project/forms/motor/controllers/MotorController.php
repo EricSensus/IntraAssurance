@@ -171,7 +171,7 @@ class MotorController extends Controller
 
     private function savePersonalDetails()
     {
-        if ($this->_customer->saveCustomer($this->filteredData())) {
+        if ($this->_customer->saveMyCustomer($this->filteredData())) {
             Session::set('type', 'motor');
             Redirect::to('/motor/step/2');
         } else {

@@ -181,9 +181,11 @@ class MotorView extends View
                 ' Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)'
                 => ['select', 'pickat', '', $this->data->pick_cert, ['class' => 'form-control', 'required' => '']],
                 '{dec}' => ['note', 'declaration', 'accceptterms',
-                    '<p><strong>The liability of the Jubilee Insurance Company of Kenya Limited does not commence until the proposal has been accepted and the premium paid and cover confirmed by Jubilee.</strong></p><p></p>
-                    <p><strong>DECLARATION</strong></p><p></p>
-                    <p>I/We do hereby declare that the above answers and statements are true and that I/We have withheld no material information regarding this proposal. I/We agree that this Declaration and the answers given above, as well as any proposal or declaration or statement made in writing by me/us or anyone acting on my/our behalf shall form the basis of the contract between me/us and The Jubilee Insurance Company of Kenya Limited, and I/We further agree to accept indemnity subject to the conditions in and endorsed on the The Jubilee Insurance Company of Kenya Limited Policy. I/We also declare that any sums expressed in this proposal represent not less that the full value of the insurable property mentioned above.</p>'],
+                    '<p><strong>DECLARATION</strong></p><p></p>
+                    <p>I hereby warrant and declare the truth of all the above statements and that I have not withheld any material information
+and I agree that this proposal shall be the basis of the contract between me and Intra Africa Assurance Co. Ltd. And I
+agree to notify the company of any material alteration in my occupation, health or habits and to accept a policy subject
+to the terms, exceptions and conditions prescribed by the company</p>'],
                 'I hereby agree to all the above terms and conditions' => ['radios', 'acceptterms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
             ]
