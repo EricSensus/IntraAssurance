@@ -44,7 +44,7 @@ $pesa = $data->payments;
                             <tr>
                                 <td><?= ucwords($key) ?></td>
                                 <td>
-                                    <?php if ($key == 'date_of_birth'):
+                                    <?php if ($key == 'date_of_birth' || $key=='regdate'):
                                         echo date('d/m/Y', $show);
                                     elseif ($key == 'additional_info'):
                                         ?>
@@ -65,6 +65,67 @@ $pesa = $data->payments;
                                 </td>
                             </tr>
                             <?php
+                        endforeach;
+                        ?>
+                        <?php
+                        foreach (get_object_vars($pesa->main_entity) as $key => $show):?>
+                            <?php if ($key == 'entity_values'): ?>
+                                <tr>
+                                    <td><?= ucwords($key) ?></td>
+                                    <td>
+                                        <?php if ($key == 'date_of_birth'):
+                                            echo date('d/m/Y', $show);
+                                        elseif ($key == 'entity_values'):
+                                            ?>
+                                            <dl class="dl-horizontal">
+                                                <?php
+                                                foreach (json_decode($show) as $k => $v):
+                                                    ?>
+                                                    <dt><?= ucwords($k) ?></dt>
+                                                    <dd><?= $v ?></dd>
+                                                    <?php
+                                                endforeach;
+                                                ?>
+                                            </dl>
+                                            <?php
+                                        else:
+                                            echo $show;
+                                        endif; ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            endif;
+                        endforeach;
+                        ?>
+
+                        <?php
+                        foreach (get_object_vars($pesa->quote) as $key => $show):?>
+                            <?php if ($key == 'entity_values'): ?>
+                                <tr>
+                                    <td><?= ucwords($key) ?></td>
+                                    <td>
+                                        <?php if ($key == 'date_of_birth'):
+                                            echo date('d/m/Y', $show);
+                                        elseif ($key == 'product_info'):
+                                            ?>
+                                            <dl class="dl-horizontal">
+                                                <?php
+                                                foreach (json_decode($show) as $k => $v):
+                                                    ?>
+                                                    <dt><?= ucwords($k) ?></dt>
+                                                    <dd><?= $v ?></dd>
+                                                    <?php
+                                                endforeach;
+                                                ?>
+                                            </dl>
+                                            <?php
+                                        else:
+                                            echo $show;
+                                        endif; ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            endif;
                         endforeach;
                         ?>
                     </table>
