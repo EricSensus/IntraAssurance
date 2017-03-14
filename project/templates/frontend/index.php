@@ -106,15 +106,18 @@ HTML::notifications();
 
 if($this->isPanelActive('banner'))
     $this->loadPanelPosition('banner');
-
+else{
 ?>
-<div class="middlesection">
-    <div class="contentbox">
-        <?php
-        $this->loadMainPanel();
-        ?>
+    <div class="middlesection">
+        <div class="contentbox">
+            <?php
+            $this->loadMainPanel();
+            ?>
+        </div>
     </div>
-</div>
+<?php
+}
+?>
 <!----start-find-place---->
 <div class="find-place">
     <div class="wrap">
