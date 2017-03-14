@@ -10,7 +10,7 @@ include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 </div>
 
 <?php
-    echo wizardHTML('2');
+    echo wizardHTML('domestic','2');
 ?>
 
 <div class="row setup-content" id="step-2">

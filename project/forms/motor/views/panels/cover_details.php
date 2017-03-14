@@ -17,7 +17,7 @@ include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 </div>
 
 <?php
-    echo wizardHTML('3');
+    echo wizardHTML('motor','3');
 ?>
 
 <?= $form ?>

@@ -11,7 +11,7 @@ include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 </div>
 
 <?php
-    echo wizardHTML('1');
+    echo wizardHTML('motor','1');
 ?>
 <div class="row setup-content" id="step-1">
     <div class="col-xs-12">

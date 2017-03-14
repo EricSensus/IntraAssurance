@@ -12,7 +12,7 @@ include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 </div>
 
 <?php
-    echo wizardHTML('4');
+    echo wizardHTML('accident','4');
 ?>
 
 <div class="panel panel-primary">
