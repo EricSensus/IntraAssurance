@@ -137,7 +137,7 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 1, 1, 1, 1],
+            'map' => [3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4,  1, 1, 1],
             'controls' => [
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
@@ -158,28 +158,28 @@ class MotorView extends View
                 => ['radios', 'previousdeclines', ['yes' => 'Yes', 'no' => 'No'], 'no'],
 
                 //some loop
-                '{noted1}' => ['note', 'noted1', "noted1", "If the answer is yes, please provide details for the last three years below"],
+                '{noted1}' => ['note', 'noted1', "noted1", "Give a record of accident and/or losses during the past three years
+                in connection to any motor vehicle owned or driven by you "],
                 //1
                 // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
-                "Year 1: Claim No" => ['text', "claim_no_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Amount" => ['text', "claim_amount_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Insurer" => ['text', "insurer_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Details" => ['text', "claim_details_yr1", '', ['class' => 'form-control',]],
-                //2
-                // '{note2}' => ['note', 'note2', "note2", "<h4>Year 2</h4><hr/>"],
-                "Year 2: Claim No" => ['text', "claim_no_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Amount" => ['text', "claim_amount_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Insurer" => ['text', "insurer_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Details" => ['text', "claim_details_yr2", '', ['class' => 'form-control',]],
-                //3
-                //'{note3}' => ['note', 'note3', "note3", "<h4>Year 3</h4><hr/>"],
-                "Year 3: Claim No" => ['text', "claim_no_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Amount" => ['text', "claim_amount_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Insurer" => ['text', "insurer_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Details" => ['text', "claim_details_yr3", '', ['class' => 'form-control',]],
+                "Year 1: No of vehicles owned" => ['text', "record_no_of_vehicles_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Total no. of accidents" => ['text', "record_of_of_accidents_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Paid Amount" => ['text', "record_paid_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Outstanding Amount" => ['text', "record_outstanding_yr1", '', ['class' => 'form-control',]],
+                // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
+
+                "Year 2: No of vehicles owned" => ['text', "record_no_of_vehicles_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Total no. of accidents" => ['text', "record_of_of_accidents_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Paid Amount" => ['text', "record_paid_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Outstanding Amount" => ['text', "record_outstanding_yr2", '', ['class' => 'form-control',]],
+
+                // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
+                "Year 3: No of vehicles owned" => ['text', "record_no_of_vehicles_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Total no. of accidents" => ['text', "record_of_of_accidents_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Paid Amount" => ['text', "record_paid_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Outstanding Amount" => ['text', "record_outstanding_yr3", '', ['class' => 'form-control',]],
+
                 //end
-                ' Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)'
-                => ['select', 'pickat', '', $this->data->pick_cert, ['class' => 'form-control', 'required' => '']],
                 '{dec}' => ['note', 'declaration', 'accceptterms',
                     '<p><strong>DECLARATION</strong></p><p></p>
                     <p>I hereby warrant and declare the truth of all the above statements and that I have not withheld any material information
