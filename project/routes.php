@@ -47,20 +47,6 @@ Route::get('/domestic/step/{step}', 'DomesticController@index')
     ]);
 Route::post('/domestic/save/{step}', 'DomesticController@save');
 
-#### Medical
-$medical_path = Project::elements()['medical']['path'];
-Route::get('/medical/step/{step}', 'MedicalController@index')
-    ->assignPanels('frontend', [
-        'top' => 'FrontController@loadNavigation:navigation'
-    ])->assignResources([
-        '<link href="' . RELATIVE_PROJECT_PATH . '/templates/frontend/datepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/templates/frontend/datepicker/js/bootstrap-datetimepicker.min.js"></script>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/' . $medical_path . '/assets/js/common.js"></script>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/' . $medical_path . '/assets/js/medical.js"></script>',
-        '<link href="' . RELATIVE_PROJECT_PATH . '/' . $medical_path . '/assets/css/medical.css" rel="stylesheet"/>'
-    ]);
-Route::post('/medical/save/{step}', 'MedicalController@saveForm');
-
 ### motor
 $motor_path = Project::elements()['motor']['path'];
 Route::get('/motor/step/{step}', 'MotorController@index')
@@ -71,19 +57,6 @@ Route::get('/motor/step/{step}', 'MotorController@index')
         "<script src='" . RELATIVE_PROJECT_PATH . '/' . $motor_path . "/assets/js/motor.js'></script>"
     ]);
 Route::post('/motor/save/{step}', 'MotorController@save');
-
-#### Travel
-$travel_path = Project::elements()['travel']['path'];
-Route::get('/travel/step/{step}', 'TravelController')
-    ->assignPanels('frontend', [
-        'top' => 'FrontController@loadNavigation:navigation',
-    ])->assignResources([
-        '<link href="' . RELATIVE_PROJECT_PATH . '/templates/frontend/datepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/templates/frontend/datepicker/js/bootstrap-datetimepicker.min.js"></script>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/' . $travel_path . '/assets/js/common.js"></script>',
-        '<script src="' . RELATIVE_PROJECT_PATH . '/' . $travel_path . '/assets/js/travel.js"></script>'
-    ]);
-Route::post('/travel/save/{step}', 'TravelController@saveForm');
 
 Route::any('/quotes/previewquote/{id}/{view}', 'QuotesController@previewQuote')
     ->attachTemplate('preview')->assignPanels([

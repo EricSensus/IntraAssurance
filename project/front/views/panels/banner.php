@@ -1,3 +1,6 @@
+<?php
+use Jenga\App\Request\Url;
+?>
 <div class="index_files-slider">
 			<!-- start slider -->
 		    <div id="fwslider" style="height: 554px;">
@@ -18,8 +21,7 @@
 		                        <!-- /Text description -->
 		                        <div class="slide-btns description" style="opacity: 1;">
 		                        	<ul>
-		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=16">Learn more</a></li>
-		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=16">Contact us</a></li>
+		                        		<li><a class="minfo" href="<?= Url::base().'/domestic/step/1' ?>">Get Instant Quote</a></li>
 		                        		<div class="clear"> </div>
 		                        	</ul>
 		                        </div>
@@ -41,8 +43,7 @@
 		                        <!-- /Text description -->
 		                        <div class="slide-btns description" style="opacity: 0;">
 		                        	<ul>
-		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=14">Learn more</a></li>
-		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=14">Contact us</a></li>
+		                        		<li><a class="minfo" href="<?= Url::base().'/motor/step/1' ?>">Contact us</a></li>
 		                        		<div class="clear"> </div>
 		                        	</ul>
 		                        </div>
@@ -64,31 +65,7 @@
 		                        <!-- /Text description -->
 		                        <div class="slide-btns description" style="opacity: 0;">
 		                        	<ul>
-		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=25">Learn more</a></li>
-		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=25">Contact us</a></li>
-		                        		<div class="clear"> </div>
-		                        	</ul>
-		                        </div>
-		                    </div>
-		                </div>
-		                 <!-- /Texts container -->
-		            </div><div class="slide" style="z-index: 0; opacity: 1; display: none;"> 
-		                <!-- Slide image -->
-		                    <img src="<?php echo TEMPLATE_URL ?>frontend/images/slider-bg2.jpg" alt="">
-		                <!-- /Slide image -->
-		                <!-- Texts container -->
-		                <div class="slide_content">
-		                    <div class="slide_content_wrap">
-		                        <!-- Text title -->
-		                        <h4 class="title" style="opacity: 0;">School Package Insurance</h4>
-		                        <!-- /Text title -->
-		                        <!-- Text description -->
-		                        <p class="description" style="opacity: 0;">IAA is now offering a comprehensive package to cater for insurance needs of learning institutions.</p>
-		                        <!-- /Text description -->
-		                        <div class="slide-btns description" style="opacity: 0;">
-		                        	<ul>
-		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=36">Learn more</a></li>
-		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=36">Contact us</a></li>
+		                        		<li><a class="minfo" href="<?= Url::base().'/domestic/step/1' ?>">Get Instant Quote</a></li>
 		                        		<div class="clear"> </div>
 		                        	</ul>
 		                        </div>

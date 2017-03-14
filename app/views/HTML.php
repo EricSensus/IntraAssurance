@@ -115,7 +115,7 @@ class HTML {
                 $resource = [];
                 $resource[] = $str;
             }
-            elseif(is_null($resource)){
+            else{
                 $resource = [];
             }
         }
@@ -182,9 +182,16 @@ class HTML {
         }
     }
 
-    public static function css($csspath, $disable_template = FALSE, $inline_css = FALSE){
+    /**
+     * Loads the referenced CSS file
+     * 
+     * @param type $csspath
+     * @param type $removetemplatepath
+     * @param type $inline_css
+     */
+    public static function css($csspath, $removetemplatepath = FALSE, $inline_css = FALSE){
         
-        if($disable_template == FALSE){            
+        if($removetemplatepath == FALSE){            
             $tmp_path = TEMPLATE_URL;
         }
         
@@ -234,6 +241,17 @@ class HTML {
         }
     }
     
+    /**
+     * Function synonym for self::script() within the templates
+     * 
+     * @param type $script_path
+     * @param type $return
+     */
+    public static function js($script_path, $return = FALSE) {
+        self::script(TEMPLATE_URL.$script_path, 'file', $return);
+    }
+
+
     /**
      * Load the HTML head section
      */

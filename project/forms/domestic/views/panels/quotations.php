@@ -2,10 +2,8 @@
 use Jenga\App\Request\Url;
 
 $quotation = $data->quotation;
-//ss($quotation);
 ?>
-<div class="middlesection">
-    <div class="contentbox">
+
         <div class="motorinsuranceheader row">
             <div class="motorinsurance col-md-12 col-sm-12 col-xs-12">
                 <h2>Domestic Insurance</h2>
@@ -110,11 +108,3 @@ $quotation = $data->quotation;
                 </div>
             </div>
         </div>
-    </div>
-</div>
-<style>
-    th:last-child,
-    td:last-child {
-        text-align: right;
-    }
-</style>

@@ -1,44 +1,21 @@
 <?php
 use Jenga\App\Request\Url;
 
+include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 ?>
-<div class="motorinsuranceheader row">
-    <div class="motorinsurance col-md-12 col-sm-12 col-xs-12">
-        <h2>Domestic Insurance</h2>
+<div class="insuranceheader row">
+    <div class="insurance col-md-12 col-sm-12 col-xs-12">
+        <h2>Fire and Domestic Insurance</h2>
     </div>
 </div>
-<table>
-    <tr class="motorheading row">
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/domestic/step/1') ?>"><h5>
-                    Stage 1</h5></a>
-            <a href="<?= Url::link('/domestic/step/1') ?>">
-                <h6>Proposer Personal Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a class="active" href="<?= Url::link('/domestic/step/2') ?>"><h5>
-                    Stage 2</h5></a>
-            <a class="active" href="<?= Url::link('/domestic/step/2') ?>">
-                <h6>Property Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/domestic/step/3') ?>"><h5>
-                    Stage 3</h5></a>
-            <a href="<?= Url::link('/domestic/step/3') ?>">
-                <h6>Cover Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/domestic/step/4') ?>"><h5>
-                    Stage 4</h5></a>
-            <a href="<?= Url::link('/domestic/step/4') ?>">
-                <h6>Quotation & Payment</h6></a>
-        </th>
-    </tr>
-</table>
 
-<div class="row setup-content" id="step-1">
+<?php
+    echo wizardHTML('2');
+?>
+
+<div class="row setup-content" id="step-2">
     <div class="col-xs-12">
-        <div class="col-md-12 well">
+        <div class="col-md-12">
             <?= $form ?>
         </div>
     </div>

@@ -1,5 +1,5 @@
 /* reset */
-html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,dl,dt,dd,ol,nav ul,nav li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;color: #2C3E50;}
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,dl,dt,dd,ol,nav ul,nav li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;}
 
 h3.careers-hh3 {
     text-transform: uppercase;
@@ -225,7 +225,7 @@ li.sbox {
 	/* margin-top: 2.2em; */
 }
 .top-nav{
-	float:left;
+	float:right;
 	position: relative;
 	width: 66%;
 }
@@ -304,8 +304,8 @@ li.sbox {
 	text-decoration:none;
 	display:inline-block;
 	float:left;
-	clear:both
-	box-sizing:border-box;
+	clear:both;
+	box-sizing: border-box;
 	-moz-box-sizing:border-box;
 	-webkit-box-sizing:border-box;
 	-webkit-transition:color .2s linear,background .2s linear;
@@ -1845,6 +1845,86 @@ span.mail a:hover{
 	margin-bottom: 1em;
 }
 /*----//End-contact----*/
+.insurance h2 {
+    margin: 0;
+    font-family: "Bauhaus Md Bt";
+    font-size: 34px;
+    font-color: #3f3f3f;
+    padding-bottom: 30px;
+}
+.wizard-heading {
+    background-color: #3f3f3f;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: auto;
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+table.wizard-heading th.heading a {
+    color: #c4d8e5;
+    display: block;
+}
+
+th.heading a:hover, 
+th.heading a.description:hover, 
+th.heading a.active h5:hover, 
+th.heading a.active h6:hover {
+    text-decoration: none;
+    color: #c4d8e5;
+    display: block;
+}
+th.heading a h5 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 26.05px;
+    font-weight: bold;
+    margin-bottom: 0px;
+    display: block;
+    padding-top: 8px;
+    padding-bottom: 0px;
+}
+th.heading a.active h5 {
+    color: #ffffff;
+    display: block;
+}
+th.heading a.active h6 {
+    color: #ffffff;
+    display: block;
+}
+th.heading a h6 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    margin-top: 7px;
+    display: block;
+    padding-bottom: 10px;
+}
+.middlesection{
+      background-color:#0080b6;
+      background-repeat:no-repeat;
+      height:auto;
+      width:100%;
+      margin:auto;
+      padding-top: 45px;
+      padding-bottom:45px;
+      padding-left:8.96%;
+      padding-right:8.96%;
+  }
+  .contentbox {
+    background-color: #d2e8f6;
+    background-repeat: no-repeat;
+    width: 100%;
+    padding-bottom: 43px;
+    padding-left: 75px;
+    padding-right: 75px;
+    padding-top: 33px;
+    margin: auto;
+    display: table;
+}
+.parsley-required {
+    color: red;
+    font-size: 12px;
+}
 /*----//End-wrap----*/
 /*----start-responsive-design----*/
 @media only screen and (max-width:1440px) and (min-width:1366px){
@@ -1857,7 +1937,7 @@ span.mail a:hover{
 		width: 95%;
 	}
 	.top-nav {
-		width: 69%;
+		width: 39%;
 	
 		margin-top: 41px;
 }

@@ -7,10 +7,20 @@ use Jenga\App\Request\Url;
 <head>
     <title><?php echo PROJECT_NAME; ?></title>
     <?php
-    HTML::head();
-    HTML::css('frontend/css/style.css');
+        HTML::head();
+        HTML::css('frontend/css/style.css');
     ?>
     <link href="<?php echo TEMPLATE_URL ?>frontend/images/esurance_favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+    <?php
+        //menu navigation
+        HTML::js('frontend/js/flexy-menu.js');
+        HTML::script('$(document).ready(function(){$(".flexy-menu").flexymenu({speed: 400,type: "horizontal",align: "left"});});');
+        
+        //slider navigation
+        HTML::css('frontend/css/fwslider.css');
+        HTML::js('frontend/js/jquery-ui.min.js');
+        HTML::js('frontend/js/fwslider.js');
+    ?>
 </head>
 
 <body>
@@ -49,47 +59,25 @@ HTML::notifications();
     <div class="wrap">
         <!--- start-logo---->
         <div class="logo">
-            <a href="http://www.intraafrica.co.ke/index.php?id=1"><img src="<?php echo TEMPLATE_URL ?>frontend/images/logo.png" title="Intra Africa Assurance"></a>
+            <a href="<?= Url::base() ?>"><img src="<?php echo TEMPLATE_URL ?>frontend/images/logo.png" title="Intra Africa Assurance"></a>
         </div>
         <!--- //End-logo---->
         <!--- start-top-nav---->
         <div class="top-nav">
-            <ul id="" class="flexy-menu thick orange"><li class="showhide right" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
-
-
-
-                <li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=5" title="Contact Us">Contact Us</a></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=4" title="About IAA">About IAA</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=39" title="The Company">The Company</a></li>
+            <ul id="" class="flexy-menu thick orange"><li class="showhide" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
+                    <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style="">
+                            <li class=""><a href="<?= Url::base().'/domestic/step/1' ?>" title="Domestic Package">Domestic Package</a></li>
+                            <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor cycles">Motor cycles</a></li>
+                        <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor Private Insurance">Motor Private Insurance</a></li>
+                        <li class=""><a href="<?= Url::base().'/accident/step/1' ?>" title="Personal Accident">Personal Accident</a></li>
+                    </ul></li>
+                    <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=4" title="About IAA">About IAA</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=39" title="The Company">The Company</a></li>
                         <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=45" title="Management Team">Management Team</a></li>
                         <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=44" title="Board of Directors">Board of Directors</a></li>
                         <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=41" title="Financial Statements">Financial Statements</a></li>
-                    </ul></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=3" title="Corporate Products &amp; Services">Corporate Products &amp; Services</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=18" title="All Risks Insurance">All Risks Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=19" title="Burglary Insurance">Burglary Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=20" title="Cash in Transit Insurance">Cash in Transit Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=21" title="Consequential Loss (Fire) Insurance">Consequential Loss (Fire) Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=22" title="Contractor&#39;s All Risk Insurance">Contractor's All Risk Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=23" title="Employers Liability (Common Law) Insurance">Employers Liability (Common Law) Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=24" title="Fidelity Guarantee Insurance">Fidelity Guarantee Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=25" title="Fire Insurance">Fire Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=26" title="Plate Glass Insurance">Plate Glass Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=27" title="Goods in Transit Insurance">Goods in Transit Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=28" title="Group Personal Accident Insurance">Group Personal Accident Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=29" title="Machinery Insurance">Machinery Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=30" title="Marine Cargo Insurance">Marine Cargo Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=31" title="Motor Private Fleet Insurance">Motor Private Fleet Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=32" title="Motor Commercial vehicles Fleet Insurance">Motor Commercial vehicles Fleet Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=33" title="Work Injury Benefits Act (WIBA)">Work Injury Benefits Act (WIBA)</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=34" title="Motor cycles Fleet Insurance">Motor cycles Fleet Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=35" title="Professional Indemnity Insurance">Professional Indemnity Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=36" title="School Package Insurance">School Package Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=37" title="Terrorism and Political Risks Insurance">Terrorism and Political Risks Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=38" title="Public Liability Insurance">Public Liability Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=70" title="Bonds">Bonds</a></li>
-                    </ul></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=16" title="Domestic Package">Domestic Package</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=15" title="Motor Commercial Insurance">Motor Commercial Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=17" title="Motor cycles">Motor cycles</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=14" title="Motor Private Insurance">Motor Private Insurance</a></li>
-                        <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=13" title="Personal Accident">Personal Accident</a></li>
-                    </ul></li></ul>
+                    </ul></li>
+                    <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=5" title="Contact Us">Contact Us</a></li>
+                    </ul>
             <!--<div class="search-box">
                 <div id="sb-search" class="sb-search">
                     <form>
@@ -116,27 +104,17 @@ HTML::notifications();
 <!----start-index_files-slider---->
 <?php
 
-if($this->isPanelActive('top'))
-    $this->loadPanelPosition('top');
-
 if($this->isPanelActive('banner'))
     $this->loadPanelPosition('banner');
 
-if($this->isPanelActive('lowermain')){
-    $this->loadPanelPosition('lowermain');
-}
-else{
-    ?>
-    <div class="middlesection">
-        <div class="contentbox">
-            <?php
-            $this->loadMainPanel();
-            ?>
-        </div>
-    </div>
-    <?php
-}
 ?>
+<div class="middlesection">
+    <div class="contentbox">
+        <?php
+        $this->loadMainPanel();
+        ?>
+    </div>
+</div>
 <!----start-find-place---->
 <div class="find-place">
     <div class="wrap">
@@ -168,112 +146,12 @@ else{
     </div>
 </div>
 <!----//End-find-place---->
-<!----start-offers---->
-<div class="offers">
-    <div class="offers-head">
-        <h3>Our Products</h3>
-        <p>At IAA we offer the following packages:</p>
-    </div>
-    <!-- start content_slider -->
-    <!-- FlexSlider -->
-    <!-- jQuery -->
-    <link rel="stylesheet" href="<?php echo TEMPLATE_URL ?>frontend/css/flexslider.css" type="text/css" media="screen">
-    <!-- FlexSlider -->
-    <script defer src="<?php echo TEMPLATE_URL ?>frontend/js/jquery.flexslider.js.download"></script>
-    <script type="text/javascript">
-        $(function(){
-            SyntaxHighlighter.all();
-        });
-        $(window).load(function(){
-            $('.flexslider').flexslider({
-                animation: "slide",
-                animationLoop: true,
-                itemWidth:250,
-                itemMargin: 5,
-                start: function(slider){
-                    $('body').removeClass('loading');
-                }
-            });
-        });
-    </script>
-    <!-- Place somewhere in the <body> of your page -->
-    <section class="slider">
-        <div class="flexslider carousel">
 
-            <div class="flex-viewport" style="overflow: hidden; position: relative;"><ul class="slides" style="width: 5400%; transition-duration: 1s; transform: translate3d(0px, 0px, 0px);">
-
-                    <!--
-                   <li onclick="location.href=&#39;index.php?id=18&#39;;" style="width: 1px; float: left; display: block;">
-   <img src="./images/all-risk.jpg" height="100">
-                         <!----place-caption-info----> <!--
-		  	    	    <div class="caption-info">
-		  	    	    	 <div class="caption-info-head">
-		  	    	    	 	<div class="caption-info-head-left">
-			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=18">All Risks Insurance</a></h4>
-
-		  	    	    	 	</div>
-		  	    	    	 	<div class="caption-info-head-right">
-		  	    	    	 		<span> </span>
-		  	    	    	 	</div>
-		  	    	    	 	<div class="clear"> </div>
-		  	    	    	 </div>
-		  	    	    </div>
-		  	    	     <!----//place-caption-info--
-		  	    		</li>-->
-                    <li onclick="location.href=&#39;index.php?id=70&#39;;" style="width: 350px; float: left; display: block;">
-                        <img src="<?php echo TEMPLATE_URL ?>frontend/images/motor-insurance.jpg" height="100">
-                        <!----place-caption-info---->
-                        <div class="caption-info">
-                            <div class="caption-info-head">
-                                <div class="caption-info-head-left">
-                                    <h4><a href="http://www.intraafrica.co.ke/index.php?id=70">Motor Insurance</a></h4>
-
-                                </div>
-                                <div class="caption-info-head-right">
-                                    <span> </span>
-                                </div>
-                                <div class="clear"> </div>
-                            </div>
-                        </div>
-                        <!----//place-caption-info---->
-                    </li>
-                    <li onclick="location.href=&#39;index.php?id=19&#39;;" style="width: 240.4px; float: left; display: block;">
-                        <img src="<?php echo TEMPLATE_URL ?>frontend/images/fire&domestic.jpg" height="100">
-                        <!----place-caption-info---->
-                        <div class="caption-info">
-                            <div class="caption-info-head">
-                                <div class="caption-info-head-left">
-                                    <h4><a href="http://www.intraafrica.co.ke/index.php?id=19">Fire & Domestic Package</a></h4>
-
-                                </div>
-                                <div class="caption-info-head-right">
-                                    <span> </span>
-                                </div>
-                                <div class="clear"> </div>
-                            </div>
-                        </div>
-                        <!----//place-caption-info---->
-                    </li>
-                    <li onclick="location.href=&#39;index.php?id=31&#39;;" style="width: 240.4px; float: left; display: block;">
-                        <img src="<?php echo TEMPLATE_URL ?>frontend/images/personal-accident.jpg" height="100">
-                        <!----place-caption-info---->
-                        <div class="caption-info">
-                            <div class="caption-info-head">
-                                <div class="caption-info-head-left">
-                                    <h4><a href="http://www.intraafrica.co.ke/index.php?id=31">Personal Accident</a></h4>
-
-                                </div>
-                                <div class="caption-info-head-right">
-                                    <span> </span>
-                                </div>
-                                <div class="clear"> </div>
-                            </div>
-                        </div>
-                    </li>
-                </ul></div></div>
-    </section>
-    <!-- //End content_slider -->
-</div>
+    <?php
+        if($this->isPanelActive('lowermain')){
+            $this->loadPanelPosition('lowermain');
+        }
+    ?>
 <!----//End-offers---->
 <!---start-holiday-types---->
 <div class="holiday-types">

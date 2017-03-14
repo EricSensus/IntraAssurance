@@ -4,7 +4,7 @@ namespace Jenga\MyProject;
 class Config{
     
     /***** Project settings ************************/
-    public $project = 'Esurance 365 Portal';
+    public $project = 'Intra Assurance Portal';
     public $mailfrom = 'noreply@esurance365.com';
     public $mailadmin = 'info@esurance365.com';
     

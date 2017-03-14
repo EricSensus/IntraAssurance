@@ -4,11 +4,22 @@ use Jenga\App\Request\Url;
 $quotation = $data->quotation;
 $more = json_decode($quotation->customer->additional_info);
 
+include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
+?>
+
+<div class="insuranceheader row">
+    <div class="insurance col-md-12 col-sm-12 col-xs-12">
+        <h2>Fire and Domestic Insurance</h2>
+    </div>
+</div>
+
+<?php
+    echo wizardHTML('4');
 ?>
 
 <div class="row setup-content" id="step-1">
     <div class="col-xs-12">
-        <div class="col-md-12 well">
+        <div class="col-md-12">
             <!--Personal Details-->
             <div class="panel panel-primary">
                 <div class="panel-heading">
