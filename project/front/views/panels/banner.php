@@ -43,7 +43,7 @@ use Jenga\App\Request\Url;
 		                        <!-- /Text description -->
 		                        <div class="slide-btns description" style="opacity: 0;">
 		                        	<ul>
-		                        		<li><a class="minfo" href="<?= Url::base().'/motor/step/1' ?>">Contact us</a></li>
+		                        		<li><a class="minfo" href="<?= Url::base().'/motor/step/1' ?>">Get Instant Quote</a></li>
 		                        		<div class="clear"> </div>
 		                        	</ul>
 		                        </div>
