@@ -12,7 +12,7 @@ body.innerbody{
 }
 .container {
   height: auto;
-  width: 1060px;
+  width:100%;
   margin-top: 0px;
   margin-right: auto;
   margin-left: auto;
@@ -50,10 +50,10 @@ body.innerbody{
   text-transform: uppercase;
 }
 #login {
-	background-image: url(../images/esurance-front-login-bg.jpg);
+	background-image: url(../images/intraassurance-front-login_03.png);
 	background-repeat: repeat-x;
-	height: 400px;
-	width: 450px;
+	height: 431px;
+	width: 448px;
 	padding-top: 0px;
 	padding-right: 20px;
 	padding-left: 20px;
