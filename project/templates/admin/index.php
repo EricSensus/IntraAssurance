@@ -20,7 +20,7 @@ HTML::start();
     HTML::notifications();
 ?>
 <div id="top">
-  <div id="logo"><img src="<?php echo TEMPLATE_URL ?>admin/images/esurance_logo.png" width="215" height="75" /></div>
+  <div id="logo"><img src="<?php echo TEMPLATE_URL ?>admin/images/intraasurance-logo.jpg" width="243" height="80" /></div>
   <div id="logout">
       <?php
         $this->loadPanel('logout');

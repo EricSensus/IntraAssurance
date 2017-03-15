@@ -13,7 +13,7 @@ a:hover, a:active{
     text-decoration: none;
 }
 #top {
-	height: 75px;
+	height: 80px;
 	width: 100%;
 	position: relative;
 	left: 0px;
@@ -25,8 +25,8 @@ a:hover, a:active{
 }
 #logo {
 	float: left;
-	height: 75px;
-	width: 215px;
+	height: 80px;
+	width: 243px;
 }
 #logout{
 	width: 43px;
@@ -359,7 +359,8 @@ form.Zebra_Form textarea{
 	background-color: #FFF;
 }
 #top{
-	background-color: #538b3e;
+	background-image: url(../images/top.png);
+	background-repeat:repeat-x;
 }
 #navigation ul li a.navitem{
 	color: #333;
