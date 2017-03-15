@@ -50,9 +50,9 @@ body.innerbody{
   text-transform: uppercase;
 }
 #login {
-	background-image: url(../images/intraassurance-front-login_03.png);
+	background-image: url(../images/intraassurance-background.png);
 	background-repeat: repeat-x;
-	height: 431px;
+	height: 413px;
 	width: 448px;
 	padding-top: 0px;
 	padding-right: 20px;
@@ -64,12 +64,13 @@ body.innerbody{
 }
 #login div.logintop{
 	width: 100%;
-	padding-left: 13%;
-	margin-bottom: 20px;
+	padding-left: 1.5%;
+	margin-bottom: 46px;
+	padding-top:12px;
 }
 #login .Zebra_Form .row{
 	border-bottom: 0px none transparent;	
-	padding-left: 10%;
+	padding-left: 14%;
 	padding-top: 15px;
 }
 #login .Zebra_Form .button, 
@@ -80,20 +81,20 @@ body.innerbody{
 #login .Zebra_Form textarea, 
 #login .Zebra_Form label.button{
 	border-radius: 0px;
-	background-image: url(../images/front-input-bg.jpg);
-	height: 45px;
-	border: 1px solid #577c48;
-	color: #b7d8ab !important;
+	background-image: url(../images/front-input.png);
+	height: 48px;
+	border: 1px solid #83c0da;
+	color: #a5ddf6 !important;
 }
 #login .Zebra_Form input.password, 
 #login .Zebra_Form input.text{
-    width: 350px;
+    width: 320px;
 }
 *::-moz-placeholder{
 	color: #b7d8ab !important;
 }
 #login a, .Zebra_Form span.required, .Zebra_Form, .Zebra_Form label, .Zebra_Form input, .Zebra_Form select, .Zebra_Form textarea{
-	color: #b7d8ab !important;
+	color: #a5ddf6 !important;
 }
 #login input#userlogin{
 	float: right;
