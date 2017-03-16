@@ -1939,23 +1939,23 @@ th.heading a h6 {
 	}
 }
 @media only screen and (max-width:1366px) and (min-width:1280px){
-	.wrap {
-		width: 95%;
-	}
-	.top-nav {
-		width: 39%;
-	
-		margin-top: 41px;
+    .wrap {
+            width: 95%;
+    }
+    .top-nav {
+            width: 45%;
+
+            margin-top: 41px;
 }
-	.p-ww span {
-		margin: 0 0.5em;	
-	}
-	.destination-places-grid {
-		width: 31.8%;
-	}
-	.dest-place-opt-fea li {
-		margin-right: 0.9em;
-	}
+    .p-ww span {
+            margin: 0 0.5em;	
+    }
+    .destination-places-grid {
+            width: 31.8%;
+    }
+    .dest-place-opt-fea li {
+            margin-right: 0.9em;
+    }
 }
 @media only screen and (max-width:1280px) and (min-width:1024px){
 	.wrap {

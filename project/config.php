@@ -10,7 +10,7 @@ class Config{
     
     /****** Database Settings ***************/
     public $db = 'intraassurance_db';
-    public $dbprefix = 'esu_';
+    public $dbprefix = 'itr_';
     public $host = 'localhost';
     public $username = 'root';
     public $password = '';

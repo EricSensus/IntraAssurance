@@ -10,7 +10,7 @@ use Jenga\App\Request\Url;
         HTML::head();
         HTML::css('frontend/css/style.css');
     ?>
-    <link href="<?php echo TEMPLATE_URL ?>frontend/images/esurance_favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+    <link href="<?php echo TEMPLATE_URL ?>frontend/images/favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
     <?php
         //menu navigation
         HTML::js('frontend/js/flexy-menu.js');
@@ -104,9 +104,10 @@ HTML::notifications();
 <!----start-index_files-slider---->
 <?php
 
-if($this->isPanelActive('banner'))
+if($this->isPanelActive('banner')){
     $this->loadPanelPosition('banner');
-
+}
+else{
 ?>
 <div class="middlesection">
     <div class="contentbox">
@@ -115,6 +116,9 @@ if($this->isPanelActive('banner'))
         ?>
     </div>
 </div>
+<?php
+}
+?>
 <!----start-find-place---->
 <div class="find-place">
     <div class="wrap">

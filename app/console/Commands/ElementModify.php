@@ -68,7 +68,7 @@ class ElementModify extends Command{
             if(!is_null($element) && array_key_exists($element, $elements)){
 
                 $xml = $di->get(XmlElements::class);
-                $xml->loadXMLFile('project.map.xml', PROJECT_PATH);
+                $xml->loadXMLFile('map.xml', PROJECT_PATH);
 
                 $xml->selectXMLElement($element);
 

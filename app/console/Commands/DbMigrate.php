@@ -45,6 +45,9 @@ class DbMigrate extends Command{
         
         $io = new SymfonyStyle($input, $output);
         
+        //bind io to shell
+        App::bind('migrator_io', $io);
+        
         $migrator_instance = App::get(Migration::class);
         $configs = App::get('_config');
         
@@ -178,12 +181,12 @@ class DbMigrate extends Command{
                 if(count($table) === 0){
                     
                     $human_file_name = $configs->db.'-'.$timestamp.'.sql';
-                    $filename = $path['full'] .DS. $configs->db.'-'.$timestamp.'.sql';
+                    $filename = $path['full'] .DS. $configs->db.'-'.$timestamp;
                 }
                 else{
                     
                     $human_file_name = rtrim(join('_', $table),'_').'_table_export.sql';
-                    $filename = $path['full'] .DS. rtrim(join('_', $table),'_').'_table_export.sql';
+                    $filename = $path['full'] .DS. rtrim(join('_', $table),'_').'_table_export';
                 }
                 
                 $io->newLine();
@@ -214,7 +217,7 @@ class DbMigrate extends Command{
                             $drop = $input->getOption ('drop');
                         
                         if($migrator_instance->import($path['full'], $drop)){
-                            $io->success('The import has been successfull.');
+                            $io->success('The database import has been successfull.');
                         }
                         else{
                             $io->error('The import has failed.');
