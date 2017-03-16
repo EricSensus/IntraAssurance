@@ -33,7 +33,7 @@ a:hover, a:active{
 	height: 41px;
 	float: right;
 	margin-right: 40px;
-	margin-top: 15px;
+	margin-top: 19px;
 	-webkit-box-shadow: 0px 0px 14px 0px rgba(0,0,0,0.75);
 	-moz-box-shadow: 0px 0px 14px 0px rgba(0,0,0,0.75);
 	box-shadow: 0px 0px 14px 0px rgba(0,0,0,0.75);
@@ -385,11 +385,11 @@ form.Zebra_Form textarea{
   border-bottom: 1px solid #ddd;
 }
 .btn-primary {
-	background-color: #538b3e;
-	border-bottom-color: #0C0;
+	background-color: #0d9bd7;
+	border: 1px solid #265685 !important;
 }
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover {
-	background-color: #538b3e;
+	background-color: #0d9bd7 !important;
 }
 .nav-pills a{
 	color: #538b3e;
@@ -607,7 +607,7 @@ div#tasks ul.tasks li.selected{
 }
 .tabs .nav-pills > li > a{
     border-radius: 0px;
-    background-color: #538b3e;
+    background-color: #0d9bd7;
     color: #fff;
 }
 .tabs .nav-pills > li.active > a, .tabs .nav-pills > li.active > a:hover {
@@ -630,7 +630,7 @@ div#tasks ul.tasks li.selected{
 
 /****************Policy Table Colors****************************/
 table.policy td.heading, div.greenheading{
-	background-color: #538b3e;
+	background-color: #0d9bd7;
 	color: #FFF;
 }
 table.policy > tbody > tr:nth-of-type(2n+1), div.coverage table > tbody > tr:nth-of-type(2n+1) {
