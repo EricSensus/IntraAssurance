@@ -108,6 +108,15 @@ class HTML {
 
             $resource = App::$shell->get('current_page');
 
+            if(!is_null($resource)){
+                
+                foreach($resource as $htmlresource){
+
+                    if(!in_array($htmlresource, self::$keywords))
+                        echo html_entity_decode($htmlresource);
+                }
+            }
+            
             if(is_string($resource)){
 
                 $str = $resource;
@@ -115,7 +124,7 @@ class HTML {
                 $resource = [];
                 $resource[] = $str;
             }
-            else{
+            elseif(is_null($resource)){
                 $resource = [];
             }
         }

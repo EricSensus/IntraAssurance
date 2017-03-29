@@ -183,17 +183,20 @@ class Session {
         
         $sessionkeys = self::all();
         
-        if(array_key_exists($key, $sessionkeys)){            
-            return TRUE;
-        }
-        else{    
+        if(is_string($key) || is_int($key)){
             
-            //also check the flash massages
-            if(self::$_flash->has($key)){
+            if(array_key_exists($key, $sessionkeys)){            
                 return TRUE;
             }
-            else{
-                return FALSE;
+            else{    
+
+                //also check the flash massages
+                if(self::$_flash->has($key)){
+                    return TRUE;
+                }
+                else{
+                    return FALSE;
+                }
             }
         }
     }

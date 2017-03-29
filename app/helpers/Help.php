@@ -28,11 +28,17 @@ class Help {
         $keys = array_keys( $input );
         $offset = array_search( $key, $keys );
 
-        if($replacement){
+        if(!is_null($replacement)){
+            
             $values = array_values($input);
-            $extracted_elements = array_combine(array_splice($keys, $offset, $length, array_keys($replacement)),array_splice($values, $offset, $length, array_values($replacement)));
+            $extracted_elements = array_combine(
+                        array_splice($keys, $offset, $length,array_keys($replacement)),
+                        array_splice($values, $offset, $length, array_values($replacement))
+                    );
+            
             $input = array_combine($keys, $values);
-        } else {
+        } 
+        else {
             $extracted_elements = array_slice($input, $offset, $length);
         }
 
