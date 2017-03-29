@@ -12,7 +12,7 @@ HTML::start();
     HTML::head();
     HTML::css('admin/css/admin_css.css');
 ?>
-<link href="<?php echo TEMPLATE_URL ?>admin/images/esurance_favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+<link href="<?php echo TEMPLATE_URL ?>frontend/images/favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
 </head>
 
 <body>

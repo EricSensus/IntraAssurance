@@ -43,9 +43,10 @@ class MotorController extends Controller
      */
     private $_quotes;
 
-    public function __construct()
-    {
+    public function __construct(){
+        
         parent::__construct();
+        
         $this->_customer = Elements::call('Customers/CustomersController');
         $this->_entity = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
@@ -54,16 +55,33 @@ class MotorController extends Controller
     /**
      * @param string $step
      */
-    public function index($step = "1")
-    {
+    public function index($step = "1", $commercial = false){
+        
+        //check for commercial session key and remove it
+        if($commercial === false && Session::has('motor_commercial') && $step == "1"){
+            Session::delete('motor_commercial');
+        }
+        else{
+            
+        }
+        
         if ($step != "1") {
             if (empty(Session::get('customer_id')) || (Session::get('type') != 'motor')) {
                 Redirect::to('/motor/step/1');
-                exit;
             }
         }
+        
         $this->loadData($step);
         $this->view->wizard($this->data);
+    }
+    
+    /**
+     * Sets the session to reconfigure the forms to show comercial fields
+     */
+    public function commercialCfg(){
+        
+        Session::set('motor_commercial', true);
+        $this->index('1', TRUE);
     }
 
     /**
@@ -95,9 +113,10 @@ class MotorController extends Controller
      * Load data for the view
      * @param $step
      */
-    private function loadData($step)
-    {
+    private function loadData($step){
+        
         $this->data = new \stdClass();
+        
         $this->data->step = $step;
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
         $this->data->numbers = $this->__select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
@@ -130,13 +149,13 @@ class MotorController extends Controller
         $this->data->makes = $make;
         $this->data->cover_type = $this->__select([
             'Comprehensive',
-            'Third Party Fire and Theft',
-            'Third Party Only',
-            'Ordinance Liabilities Only'
+            'Third Party Only'
         ]);
+        
         if ($step == 4) {
             $this->data->payments = new MotorQuotation();
         }
+        
         $this->data->pick_cert = $this->__select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',
             'Nairobi, Mombasa Road, Tulip House, Ground Floor',
@@ -153,10 +172,11 @@ class MotorController extends Controller
             'Post to my address in your records (a small extra charge will apply)']);
     }
 
-    private function saveOtherCarDetails()
-    {
+    private function saveOtherCarDetails(){
+        
         $count = Session::get('other_covers');
         $saved = [];
+        
         for ($i = 1; $i <= $count; $i++) {
             $got = $this->__buildStack($i);
             $entity_id = $this->_entity->getEntityIdByAlias('vehicle')->id;
@@ -165,6 +185,7 @@ class MotorController extends Controller
                 json_encode($got));
 
         }
+        
         Session::set('other_id', serialize($saved));
         Redirect::to('/motor/step/3');
     }
@@ -190,30 +211,34 @@ class MotorController extends Controller
         return $build;
     }
 
-    private function saveCarDetails()
-    {
+    private function saveCarDetails(){
+        
         $entity_id = $this->_entity->getEntityIdByAlias('vehicle')->id;
         $car_details = json_encode($this->filteredData());//some zebra stuff
         $saved = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id, $car_details);
+        
         Session::set('main_id', $saved);
         Session::set('other_id', serialize([]));
+        
         if (!empty(Input::post('othercovers'))) {
             Session::set('other_covers', Input::post('othercovers'));
             Redirect::to('/motor/step/22');
         } else {
             Redirect::to('/motor/step/3');
         }
-
     }
 
-    private function saveCoverDetails()
-    {
+    private function saveCoverDetails(){
+        
         $ids['customer_id'] = Session::get('customer_id');
         $ids['product_id'] = 1;
+        
         $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById(Session::get('customer_id'), null)));
         $entities = unserialize(Session::get('other_id'));
+        
         array_push($entities, Session::get('main_id'));
         $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->filteredData(), null, $entities);
+        
         Session::set('quote_id', $id);
         Redirect::to('/motor/step/4');
     }
@@ -247,6 +272,7 @@ class MotorController extends Controller
             'zebra_csrf_token_motor_car_details', 'btnSubmitSpecial', 'name_motor_cover_details',
             'zebra_csrf_token_motor_cover_details', 'btnsubmit',
         ];
+        
         return array_except(Input::post(), $block);
     }
 }

@@ -49,6 +49,17 @@ Route::post('/domestic/save/{step}', 'DomesticController@save');
 
 ### motor
 $motor_path = Project::elements()['motor']['path'];
+
+//commercial
+Route::get('/motor/commercial', 'MotorController@commercialCfg')
+    ->assignPanels('frontend', [
+        'top' => 'FrontController@loadNavigation:navigation'
+    ])
+    ->assignResources([
+        "<script src='" . RELATIVE_PROJECT_PATH . '/' . $motor_path . "/assets/js/motor.js'></script>"
+    ]);
+
+//private 
 Route::get('/motor/step/{step}', 'MotorController@index')
     ->assignPanels('frontend', [
         'top' => 'FrontController@loadNavigation:navigation'

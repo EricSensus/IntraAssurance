@@ -36,7 +36,7 @@ class RatesController extends Controller
     private function setInsurer()
     {
         $this->insurer = Elements::call('Insurers/InsurersController')->getInsurerByFinder([
-            'email_address' => 'info@jubilee.co.ke'
+            'email_address' => 'info@intraafrica.co.ke'
         ]);
     }
 
@@ -73,8 +73,8 @@ class RatesController extends Controller
         $this->view->set('rate_cats', $this->rate_cats);
     }
 
-    public function add()
-    {
+    public function add(){
+        
         $this->setInsurer();
         $this->view->showAddRateForm($this->rate_types, $this->rate_cats, $this->insurer);
     }
@@ -82,8 +82,8 @@ class RatesController extends Controller
     /**
      * Save a Rate
      */
-    public function store()
-    {
+    public function store(){
+        
         $this->setInsurer();
         $state = 'error';
         if (!$this->model->rateExists(['rate_name' => Input::post('rate_name')])) {
@@ -173,12 +173,15 @@ class RatesController extends Controller
     public function update()
     {
         $this->setInsurer();
+        
         if ($this->model->updateRate($this->insurer)) {
+            
             Session::flash('status', 'success');
             Session::flash('message', 'Success! The Rate has been updated');
 
             Redirect::withNotice('Success! The Rate has been updated', 'success')->to(Input::post('destination'));
         } else {
+            
             Session::flash('status', 'error');
             Session::flash('message', 'Encountered an error');
 

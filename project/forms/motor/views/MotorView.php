@@ -13,12 +13,12 @@ namespace Jenga\MyProject\Motor\Views;
 use Jenga\App\Html\Generate;
 use Jenga\App\Request\Session;
 use Jenga\App\Views\View;
+use Jenga\App\Helpers\Help;
 
 /**
  * Class MotorView
  */
-class MotorView extends View
-{
+class MotorView extends View {
 
     private $data;
 
@@ -52,31 +52,21 @@ class MotorView extends View
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [3, 3, 3, 3, 1, 1, 2, 1],
+            'map' => [2, 2, 3, 3, 1],
             'action' => '/motor/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
                 'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
                 'Full Name *' => ['text', 'FullName', '', ['class' => 'form-control', 'required' => '']],
-                'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
                 'Date of Birth *' => ['text', 'DateOfBirth', '', ['class' => 'form-control datepicker', 'required' => '']],
+                'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
                 'Mobile Number *' => ['text', 'Mobile', '', ['class' => 'form-control', 'required' => '',]],
                 'Email*' => ['text', 'Email', '', ['class' => 'form-control', 'required' => '']],
+                'PIN Number*' => ['text', 'pin', '', ['class' => 'form-control', 'required' => '']],
                 'Address *' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
                 'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
                 'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
-                'Do you hold a provisional or a permanent driving licence?'
-                => ['radios', 'Type', ['Permanent' => 'Permanent', 'Provisional' => 'Provisional'], 'Permanent'],
-                'Date of issue of first permanent driving licence*' => ['text', 'DateIssued', '', ['class' => 'form-control datepicker', 'required' => '']],
-                'Will anyone holding a provisional driving licence drive the vehicle?'
-                => ['radios', 'ProvisionalDriver', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Do you (and/or any other persons who to your knowledge will drive the car (s)) suffer from defective vision or hearing, or any physical infirmity including fits?'
-                => ['radios', 'DefectiveVision', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Have you (and/or any other persons who to your knowledge will drive the car (s)) convicted of any offense in connection with driving in the past 5 years?'
-                => ['radios', 'ConvictedOffense', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Do you have any other vehicles insured with the company' => ['radios', 'OtherPolicies', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If so, give particulars (Policy Numbers)' => ['textarea', 'OtherPolicyDetails', '', ['class' => 'form-control', 'rows' => 2]],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'btn btn-success']]
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'pull-right btn btn-success']]
             ]
         ];
 
@@ -86,8 +76,15 @@ class MotorView extends View
         $this->setViewPanel('personal_details');
     }
 
-    private function carDetails()
-    {
+    private function carDetails(){
+        
+        if(!Session::has('motor_commercial')){
+            $map = [4, 4, 2, 2, 2, 2, 2, 1, 1,];
+        }
+        else{
+            $map = [4, 3, 2, 2, 2, 2, 2, 2, 1, 1,];
+        }
+        
         $schematic = [
             'preventjQuery' => true,
             'engine' => 'bootstrap',
@@ -96,18 +93,20 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/2',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 4, 2, 2, 2, 2, 2, 1, 1,],
+            'map' => $map,
             'controls' => [
+                '{type}' => ['hidden','type','private'],
                 'Registration no*' => ['text', 'RegNo', '', ['class' => 'form-control', 'required' => '']],
-                'Chassis No *' => ['text', 'ChassisNo', '', ['class' => 'form-control', 'required' => '']],
-                'Engine No *' => ['text', 'EngineNo', '', ['class' => 'form-control', 'required' => '']],
+                'Vehicle Color*' => ['text', 'vehicle_color', '', ['class' => 'form-control', 'required' => '']],
+                'Chassis No' => ['text', 'ChassisNo', '', ['class' => 'form-control']],
+                'Engine No' => ['text', 'EngineNo', '', ['class' => 'form-control']],
                 'Make *' => ['select', 'CarMake', '', $this->data->makes, ['class' => 'form-control', 'required' => '']],
-                'Cubic Capacity (cc)' => ['text', 'CC', '', ['class' => 'form-control', 'required' => '']],
+                'Cubic Capacity (cc)' => ['text', 'CC', '', ['class' => 'form-control']],
                 'Type of body *' => ['text', 'BodyType', '', ['class' => 'form-control', 'required' => '']],
                 'Seating Capacity *' => ['text', 'SeatingCapacity', '', ['class' => 'form-control', 'required' => '']],
                 'Year of Manufacture *' => ['select', 'ManufactureDate', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
-                'Estimated Value *'
-                => ['text', 'ValueEstimate', '', ['class' => 'form-control', 'required']],
+                'Insured Value (Estimated Value of Vehicle)*'
+                => ['text', 'ValueEstimate', '', ['class' => 'form-control', 'required' => '']],
                 'Is the vehicle fitted with any anti theft device *' => ['radios', 'AntiTheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If Yes, please give particulars below (type and condition)*' => ['textarea', 'AntiTheftDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Are there any non-standard accessories in the vehicle (roof rack) *' => ['radios', 'NonStandardAccessories', ['yes' => 'Yes', 'no' => 'No'], 'no'],
@@ -119,9 +118,30 @@ class MotorView extends View
                 'How do you use this vehicle?' => ['checkboxes', 'carusage', $this->data->car_usage, ['class' => 'form-control', 'rows' => 2]],
                 //   'Do you want to add another car?' => ['radios', 'somecovers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 //'How many additional cars? Choose  number' => ['select', 'othercovers', 1, [1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9'], ['class' => 'form-control']],
-                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
+                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success pull-right',]]
             ]
         ];
+        
+        //add tonnage select field
+        if(Session::has('motor_commercial') 
+                && Session::get('motor_commercial') === TRUE){
+            
+            $tonnage_list = [
+                ''=>'Select Tonnage',
+                'tpc03' => '0-3 tons',
+                'tpc37' => '3-7 tons',
+                'tpc715' => '7-15 tons',
+                'tpc15p' => 'Above 15 tons'
+            ];
+            
+            $tonfield = [
+                '{type}' => ['hidden','type','commercial'],
+                'Vehicle Tonnage *' => ['select','tonnage','', $tonnage_list, ['class' => 'form-control', 'required' => '']]
+            ];
+            
+            Help::array_splice_assoc($schematic['controls'], array_search('Cubic Capacity (cc)', $schematic['controls']), 1, $tonfield);            
+        }
+        
         $form = Generate::Form('motor_car_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-6,col-sm-6'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('car_details');
@@ -137,15 +157,28 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4,  1, 1, 1],
+            'map' => [1, 2, 1, 1, 2, 2, 4, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4,  1, 1, 1],
             'controls' => [
+                '{cover details}' => ['note', 'cover_heading', "benefits", "<span style=\"font-weight:bold\">Enter the cover type and life span</span>"],
+                
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
+                
                 'Type of cover *' => ['select', 'covertype', '', $this->data->cover_type, ['class' => 'form-control', 'required' => '']],
+                
+                '{Additional Benefits}' => ['note', 'benefits', "benefits", "<span style=\"font-weight:bold\">Choose Additional Benefits to include in cover</span>"],
+                
                 'Windscreen?' => ['radios', 'windscreen', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If yes, state value ' => ['textarea', 'WindscreenValue', '', ['class' => 'form-control', 'rows' => 2]],
-                'What is your No Claim Discount entitlement (NCD)(%)? (*Proof letter will be required)' =>
-                    ['select', 'ncddiscount', '', [0 => "0", 10 => 10, 20 => 20, 30 => 30, 40 => 40, 50 => 50], ['class' => 'form-control']],
+                'If yes, state value' => ['text', 'WindscreenValue', '', ['class' => 'form-control', 'rows' => 2]],
+                
+                'Entertainment Equipment?' => ['radios', 'entertainment_equipment', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, state value of equipment' => ['text', 'entertainmentvalue', '', ['class' => 'form-control', 'rows' => 2]],
+                
+                'Political Violence?' => ['radios', 'political_violence', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'SRCC (Strikes, Riots and Civil Commotion)?' => ['radios', 'srcc', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Excess Protector' => ['radios', 'excess_protector', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Loss of Use' => ['radios', 'loss_of_use', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                
                 'Do you require the cover Personal Accidents' => ['radios', 'NeedPersonalCover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If yes, give details ' => ['textarea', 'PersonalCoverDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Have you, or anyone else who will drive this vehicle (s), had any motor related accidents or losses, whether there was a claim or not and regardless of blame' =>
@@ -187,18 +220,20 @@ and I agree that this proposal shall be the basis of the contract between me and
 agree to notify the company of any material alteration in my occupation, health or habits and to accept a policy subject
 to the terms, exceptions and conditions prescribed by the company</p>'],
                 'I hereby agree to all the above terms and conditions' => ['radios', 'acceptterms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success pull-right']]
             ]
         ];
+        
         $form = Generate::Form('motor_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+        
         $this->set('form', $form);
         $this->setViewPanel('cover_details');
     }
 
-    private function showQuotations()
-    {
+    private function showQuotations(){
+        
         $this->set('data', $this->data);
-        $this->setViewPanel('data');
+        $this->setViewPanel('show_quotations');
     }
 
     private function otherCarDetails()

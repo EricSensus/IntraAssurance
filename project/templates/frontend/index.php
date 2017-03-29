@@ -66,9 +66,10 @@ HTML::notifications();
         <div class="top-nav">
             <ul id="" class="flexy-menu thick orange"><li class="showhide" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
                     <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style="">
-                            <li class=""><a href="<?= Url::base().'/domestic/step/1' ?>" title="Domestic Package">Domestic Package</a></li>
-                            <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor cycles">Motor cycles</a></li>
+                        <li class=""><a href="<?= Url::base().'/domestic/step/1' ?>" title="Domestic Package">Domestic Package</a></li>
+                        <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor cycles">Motor cycles</a></li>
                         <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor Private Insurance">Motor Private Insurance</a></li>
+                        <li class=""><a href="<?= Url::base().'/motor/commercial' ?>" title="Motor Private Insurance">Motor Commercial Insurance</a></li>
                         <li class=""><a href="<?= Url::base().'/accident/step/1' ?>" title="Personal Accident">Personal Accident</a></li>
                     </ul></li>
                     <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=4" title="About IAA">About IAA</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=39" title="The Company">The Company</a></li>

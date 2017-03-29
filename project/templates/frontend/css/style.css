@@ -1867,6 +1867,7 @@ span.mail a:hover{
     padding-top: 5px;
     padding-bottom: 5px;
     margin-bottom: 20px;
+    margin-left: 0px;
 }
 table.wizard-heading th.heading a {
     color: #c4d8e5;

@@ -130,6 +130,7 @@ class RatesView extends View
     }
 
     public function showAddRateForm($rate_types, $rate_cats, $insurer){
+        
         $schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
@@ -137,6 +138,7 @@ class RatesView extends View
             'controls' => [
                 'destination' => ['hidden', 'destination', '/admin/rates'],
                 'Rate Name' => ['text', 'rate_name', ''],
+                'Rate Alias' => ['text', 'alias', ''],
                 'Rate Value' => ['text', 'rate_value', ''],
                 'Rate Type' => ['select', 'rate_type', '', $rate_types],
                 'Rate Category' => ['select', 'rate_category', '', $rate_cats],
@@ -199,6 +201,7 @@ class RatesView extends View
                 'destination' => ['hidden', 'destination', '/admin/rates'],
                 'edit' => ['hidden', 'edit', $rate->id],
                 'Rate Name' => ['text', 'rate_name', $rate->rate_name],
+                'Alias' => ['text', 'alias', $rate->alias],
                 'Rate Value' => ['text', 'rate_value', $rate->rate_value],
                 'Rate Type' => ['select', 'rate_type', $rate->rate_type, $rate_types],
                 'Rate Category' => ['select', 'rate_category', $rate->rate_category, $rate_cats],

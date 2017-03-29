@@ -12,7 +12,7 @@ use Jenga\App\Views\HTML;
 ?>
 
 <link href="<?php echo TEMPLATE_URL ?>login/images/logo.png" rel="shortcut icon" type="image/x-icon" />
-<link href="<?php echo TEMPLATE_URL ?>login/images/esurance_favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+<link href="<?php echo TEMPLATE_URL ?>frontend/images/favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
 </head>
 
 <body>
