@@ -33,7 +33,9 @@ class Input {
             self::$parameters = new ParameterBag(self::$request->request->all());
         
         //set the localhost to always be a trusted proxy
-        Request::setTrustedProxies(App::get('_config')->trustedips);
+        if(!is_null(App::get('_config'))){
+            Request::setTrustedProxies(App::get('_config')->trustedips);
+        }
         
         //hack to go around the trailing slash oversight in Symfony Routing component
         if(substr(self::$request->getPathInfo(), -1) == '/'){

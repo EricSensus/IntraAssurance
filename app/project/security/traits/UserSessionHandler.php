@@ -30,15 +30,12 @@ trait UserSessionHandler {
      */
     public function configureSession(){
         
-        $this->createUserState();
-        
-        if(!is_null($this->user)){
-            Session::add('user_'.Session::get('token'), serialize($this->user));
+        if(!is_null($this->user) && !is_null(Session::getSecurityToken())){
+            Session::add('user_'.Session::getSecurityToken(), serialize($this->user));
         }
     }
     
-    public function destroyUserState(){
-        
+    public function destroyUserState(){        
         return Session::delete('user_'.Session::get('token'));     
     }
 }

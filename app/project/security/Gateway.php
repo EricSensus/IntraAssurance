@@ -22,16 +22,6 @@ class Gateway extends ORM implements UserPermissionsInterface {
      * Checks if the user is a guest or has been logged in
      * @return boolean
      */
-    public static function isGuest(){
-        
-        if(Session::has('token')){             
-            return FALSE;
-        }
-        else{
-            return true;
-        }
-    }
-    
     public static function isLogged(){
         
         if(is_int(self::user()->loggedin))

@@ -12,7 +12,6 @@ class AgentsModel extends ORM {
     public $table = 'insurer_agents';
     
     public function getAgents($id = null){
-        
         if(is_null($id)){
             
             $agents = $this->show();

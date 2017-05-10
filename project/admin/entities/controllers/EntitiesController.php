@@ -425,12 +425,13 @@ class EntitiesController extends Controller
      * @return object $results
      */
 
-    public function saveEntityDataRemotely($customerid, $entityid, $data, $cdataid = null)
+    public function saveEntityDataRemotely($customerid, $entityid, $data, $cdataid = null, $product_id)
     {
         $entity = $this->model->customerEntityData($cdataid);
         $entity->customers_id = $customerid;
         $entity->entities_id = $entityid;
         $entity->entity_values = $data;
+        $entity->product_id = $product_id;
         $entity->save();
         return $entity->last_altered_row;
     }
@@ -527,11 +528,12 @@ class EntitiesController extends Controller
         ]);
     }
 
-    public function getEntityDataByCustomerAndEntityId($customer_id, $entity_id)
+    public function getEntityDataByCustomerAndEntityId($customer_id, $entity_id, $product_id)
     {
         return $this->model->customerEntityData()
             ->where('customers_id', $customer_id)
             ->where('entities_id', $entity_id)
+            ->where('product_id', $product_id)
             ->show();
     }
 

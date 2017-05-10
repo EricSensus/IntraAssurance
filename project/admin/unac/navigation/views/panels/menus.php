@@ -6,26 +6,27 @@ HTML::css(RELATIVE_PROJECT_PATH.'/tools/smartmenus/css/sm-clean/sm-clean.css',TR
 
 HTML::script(RELATIVE_PROJECT_PATH.'/tools/smartmenus/jquery.smartmenus.min.js', 'file');
 
-HTML::script("$(function() {
-                    $('#admin_menu').smartmenus({
+echo '<div class="esurancemenu pull-left">';
+
+    foreach($names as $name){
+        
+        HTML::script("$(function() {
+                    $('#".$name."').smartmenus({
                             subMenusSubOffsetX: 1,
                             subMenusSubOffsetY: -8,
                             subIndicatorsText: ''
                     });
             });");
-
-echo '<div class="admin_menu">';
-    echo $admin_menu;
+        
+        if($name != 'super_admin'){
+            echo ${$name};
+        }
+    }
 echo '</div>';
 
-HTML::script("$(function() {
-                    $('#super_admin').smartmenus({
-                            subMenusSubOffsetX: 1,
-                            subMenusSubOffsetY: -8,
-                            subIndicatorsText: ''
-                    });
-            });");
-
-echo '<div class="super_admin">';
-    echo $super_admin;
+echo '<div class="main_menu pull-right">';
+    if(in_array('super_admin', $names)){
+        echo $super_admin;
+    }
 echo '</div>';
+

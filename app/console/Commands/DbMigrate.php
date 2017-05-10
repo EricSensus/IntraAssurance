@@ -217,7 +217,7 @@ class DbMigrate extends Command{
                             $drop = $input->getOption ('drop');
                         
                         if($migrator_instance->import($path['full'], $drop)){
-                            $io->success('The database import has been successfull.');
+                            $io->success('The import has been successfull.');
                         }
                         else{
                             $io->error('The import has failed.');

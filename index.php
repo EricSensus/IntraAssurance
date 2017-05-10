@@ -12,7 +12,7 @@ $app = new Jenga\App\Core\App (
             PROJECT_PATH .DS. 'routes.php',
             PROJECT_PATH .DS. 'events.php'
         );
-            
+         
 if($app->mode != 'startup'){
     
     $response = $app->handle($app->request);

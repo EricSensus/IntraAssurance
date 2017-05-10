@@ -77,6 +77,18 @@ class SchemaTasks {
     }
     
     /**
+     * Adds a drop if exists clause to the table creation process
+     * 
+     * @param type $name
+     * @return type
+     */
+    public static function dropAndCreate($name) {
+        
+        $create = self::create($name);
+        return $create->dropIfExists();
+    }
+    
+    /**
      * Inserts new rows into new table 
      * 
      * @param type $name

@@ -225,4 +225,15 @@ class AgentsView extends View {
             return $iform;
         }
     }
+
+    public function linkedAgent($agent){
+        if(count($agent)) {
+            $this->set('agent', $agent);
+            $this->set('agent_attached', true);
+        } else {
+            $this->set('agent_attached', false);
+        }
+
+        $this->setViewPanel('linked_agent');
+    }
 }

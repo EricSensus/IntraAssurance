@@ -3,6 +3,7 @@ namespace Jenga\MyProject\Customers\Models;
 
 use Jenga\App\Models\ORM;
 use Jenga\App\Request\Input;
+use Jenga\App\Request\Session;
 use Jenga\App\Views\Notifications;
 
 use Jenga\MyProject\Elements;
@@ -129,7 +130,9 @@ class CustomersModel extends ORM {
     }
     
     public function getCustomers(){
-        
+        if(Session::has('agentsid'))
+            $this->where('insurer_agents_id', Session::get('agentsid'));
+
         if(!is_null(Input::post('search'))){  
 
             //add the name section
@@ -145,18 +148,16 @@ class CustomersModel extends ORM {
                 $params .= 'Email: '.Input::post('email');
                 $this->where('email','LIKE','%'.Input::post('email').'%');
             }
-            
+
             $users = $this->show();
             
             //store the search variables for use with the other tools
             $this->store();
             
             $customers['terms'] = $params;
-        }
-        elseif(!is_null(Input::post('export')) || !is_null(Input::post('printer'))){
+        } else if (!is_null(Input::post('export')) || !is_null(Input::post('printer'))){
             
             if(Input::post('pages') == 'all_pages'){
-                
                 $users = $this->show();
             }
             else{
@@ -173,15 +174,15 @@ class CustomersModel extends ORM {
                 $columns = $this->returnColumns('keys');
                 $tablecol = $columns[$column];
                 
-                $users = $this->orderBy($tablecol, $order)
-                                ->show([$start, $length]);
+                $users = $this->orderBy($tablecol, $order);
+
+                $this->show([$start, $length]);
             }
         }
         else{
-            
             $users = $this->show();
         }
-        
+
         foreach($users as $user){
             
             $data = $this->createEmpty();
@@ -294,5 +295,9 @@ class CustomersModel extends ORM {
         if($this->hasNoErrors())
             return true;
         return false;
+    }
+
+    public function getCustomerById($customer_id){
+        return $this->where('id', $customer_id)->first();
     }
 }

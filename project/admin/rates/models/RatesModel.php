@@ -1,4 +1,5 @@
 <?php
+
 namespace Jenga\MyProject\Rates\Models;
 
 use Jenga\App\Models\ORM;
@@ -10,12 +11,21 @@ use Jenga\App\Request\Input;
  * Date: 27/02/2017
  * Time: 13:04
  */
-class RatesModel extends ORM{
+class RatesModel extends ORM
+{
     public $table = 'rates';
 
-    public function saveRate($insurer_id){
+    /**
+     * Save rate
+     * @param null $insurer_id
+     * @return bool
+     */
+    public function saveRate($insurer_id = null)
+    {
+        if (empty($insurer_id)) {
+            $insurer_id = Input::post('insurer_id');
+        }
         $this->rate_name = Input::post('rate_name');
-        $this->alias = Input::post('alias');
         $this->rate_value = Input::post('rate_value');
         $this->rate_type = Input::post('rate_type');
         $this->rate_category = Input::post('rate_category');
@@ -27,25 +37,24 @@ class RatesModel extends ORM{
         return false;
     }
 
-    public function rateExists($finder){
+    public function rateExists($finder)
+    {
         return $this->find($finder)->count();
     }
 
-    public function getRateData($id){
+    public function getRateData($id)
+    {
         return $this->find($id);
     }
 
-    public function updateRate($insurer){
-        
+    public function updateRate($insurer)
+    {
         $rate = $this->find(Input::post('edit'));
-        
         $rate->rate_name = Input::post('rate_name');
-        $rate->alias = Input::post('alias');
         $rate->rate_value = Input::post('rate_value');
         $rate->rate_type = Input::post('rate_type');
         $rate->rate_category = Input::post('rate_category');
         $rate->insurer_id = $insurer->id;
-        
         $rate->save();
 
         if ($this->hasNoErrors())

@@ -2,3 +2,4 @@
 //display breabcrumbs
 
 echo $breadcrumbs;
+?>

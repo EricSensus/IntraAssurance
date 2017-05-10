@@ -1,4 +1,5 @@
 <?php
+
 namespace Jenga\MyProject\Products\Controllers;
 
 use Jenga\App\Controllers\Controller;
@@ -59,6 +60,7 @@ class ProductsController extends Controller
 
         $id = Input::get('id');
         $product = $this->model->find($id);
+
         $fields = $this->productFields($product->forms_id);
         $this->view->addProductForm($product, $fields);
     }
@@ -159,7 +161,7 @@ class ProductsController extends Controller
                 '{form}' => ['hidden', 'formid', $form->id],
                 '{key}' => ['hidden', 'key', $field],
                 'Field Name' => ['text', 'product_field_name', $control['human_name']],
-                'Field Type' => ['select', 'product_field_type', $control['field_type'],$formelement->controls],
+                'Field Type' => ['select', 'product_field_type', $control['field_type'], $formelement->controls],
                 'Required' => ['checkbox', 'required', 'yes', $required == 'yes' ? ['checked' => 'checked'] : '']
             ],
             'validation' => [
@@ -377,6 +379,16 @@ class ProductsController extends Controller
 
     public function getProductByAlias($alias)
     {
-        return $this->model->find(['alias' => $alias]);
+        return $this->model->where('alias', $alias)->first();
+    }
+
+    /**
+     * Get product id
+     * @param $product_id
+     * @return mixed
+     */
+    public function getProductById($product_id)
+    {
+        return $this->model->where('id', $product_id)->first();
     }
 }

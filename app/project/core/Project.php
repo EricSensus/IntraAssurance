@@ -3,12 +3,13 @@ namespace Jenga\App\Project\Core;
 
 use Jenga\App\Core\App;
 use Jenga\App\Core\File;
+use Jenga\App\Helpers\Help;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
-use Jenga\App\Helpers\Help;
 use Jenga\App\Project\Security\User;
 use Jenga\App\Project\Core\ElementsLoader;
 use Jenga\App\Project\EventsHandler\Events;
+use Jenga\App\Project\Elements\XmlElements;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,7 +54,7 @@ class Project implements ArgumentResolverInterface {
                 
             self::$elements = unserialize(File::get(APP_PROJECT .DS. 'elements.php'));  
             
-            if(count(self::$elements) >= 2){
+            if(count(self::$elements) >= 1){
                 
                 //set development phase
                 if(App::get('_config')->development_environment)
@@ -68,12 +69,12 @@ class Project implements ArgumentResolverInterface {
                 $this->_defaultElement();
 
                 //assign the template base url
-                $elements = self::elements();
-                define('TEMPLATE_URL', RELATIVE_PROJECT_PATH .'/'. $elements['templates']['path'] .'/');
+                $templates = self::getTemplates();
+                
+                if(!is_null($templates)){
+                    define('TEMPLATE_URL', RELATIVE_PROJECT_PATH .'/'. $templates['path'] .'/');
+                }
             }
-        }
-        elseif(!File::exists(PROJECT_PATH .DS. 'map.xml')){
-            App::critical_error('The Jenga Project map.xml file not found and the project hasnt been built');
         }
     }
     
@@ -216,15 +217,15 @@ class Project implements ArgumentResolverInterface {
      */
     public function init(Request $request, \JRequestEvent &$event){
         
-        //initialize  user defined uthentication
-        if(App::$shell->has('auth') && !Session::has('user_'.Session::get('token'))){            
+        //initialize user defined uthentication  
+        if(App::$shell->has('auth') && !Session::getSecurityToken()){            
             $this->_createGateway($request);
         }
         else{            
             $this->gateway = App::get('auth');
         }
         
-        //set the entire Authorization mechanism into the shell        
+       //set the entire Authorization mechanism into the shell        
         App::set('gateway',  $this->gateway);
         
         //assign auth element
@@ -252,7 +253,8 @@ class Project implements ArgumentResolverInterface {
             
             if(strpos($controller, 'Jenga\App') !== 0){
                 
-                $ctrl = end(explode('\\', $request[0]));
+                $rq = explode('\\', $request[0]);
+                $ctrl = end($rq);
                 
                 $element = self::_getFullElementByController($ctrl); 
                 $mvc = $this->makeMvcEngine($element, $ctrl);
@@ -566,15 +568,17 @@ class Project implements ArgumentResolverInterface {
      */
     public function user(){
         
-        if(Session::has('user_'.Session::get('token'))){
+        $token = Session::getSecurityToken();
+        
+        if($token !== FALSE){
             
-            $user = unserialize(Session::get('user_'.Session::get('token')));
+            $user = unserialize(Session::get('user_'.$token));
             
             if($user instanceof User){
                 return $user;
             }
             else{
-                throw new \Exception('The user has been overwritten');
+                throw new \Exception('The user data in the Session has been overwritten');
             }
         }
         else{
@@ -590,9 +594,9 @@ class Project implements ArgumentResolverInterface {
         //clear the XML file cached in memory 
         clearstatcache();
             
-        if(App::get('_config')->development_environment){  
+        if(!is_null(App::get('_config')) && App::get('_config')->development_environment){  
             
-            $xml = App::$shell->get('Jenga\App\Project\Elements\XmlElements');   
+            $xml = App::$shell->get(XmlElements::class);   
             
             if($xml->loadXml('map.xml', PROJECT_PATH)){
                 
@@ -608,8 +612,6 @@ class Project implements ArgumentResolverInterface {
      * Returns the project elements if retrieved from the console
      */
     public function consoleBuild() {
-        
-        $shell = 
         
         self::$elements = unserialize(File::get(APP_PROJECT .DS. 'elements.php'));
         return self::$elements;
@@ -679,7 +681,8 @@ class Project implements ArgumentResolverInterface {
             
             //if fully namespaced
             if(strpos($mvc, '\\') !== false){
-                $mvc = end(explode('\\', $mvc));
+                $m = explode('\\', $mvc);
+                $mvc = end($m);
             }
 
             foreach($elementkeys as $key){
@@ -716,8 +719,17 @@ class Project implements ArgumentResolverInterface {
      * @return array 
      */
     public static function getTemplates(){
-        //var_dump(self::$elements);
-        return self::$elements['templates'];
+        
+        $keys = array_keys(self::$elements);
+        
+        foreach($keys as $name){
+            
+            if(array_key_exists('function', self::$elements[$name])){
+                
+                if(self::$elements[$name]['function'] == 'templates')
+                    return self::$elements[$name];
+            }
+        }
     }
     
     /**
@@ -867,7 +879,6 @@ class Project implements ArgumentResolverInterface {
             $this->run($controller, $args, 'secondary');
         }
         else{
-
             App::critical_error('Invalid Method: '.$controller.': '.$method);            
         }
     }
@@ -883,7 +894,7 @@ class Project implements ArgumentResolverInterface {
         try {
             
             //fire the at:controller route events
-            Events::fireOnRoute($this->project->current_route, KernelEvents::VIEW);             
+            Events::fireOnRoute($this->current_route, KernelEvents::VIEW);             
             
             if($runtype == 'primary'){
                 
@@ -895,13 +906,12 @@ class Project implements ArgumentResolverInterface {
                 $this->execute($this->controller, $this->main_method, $arguments);
             }
             elseif($runtype == 'secondary'){
-
+                
                 $reflect = new \ReflectionClass($controller);
                 $reflect->newInstanceArgs($arguments);
             }
         }
-        catch(\Exception $e){
-            
+        catch(\Exception $e){            
             throw App::exception($e->getMessage(), $e->getCode());
         }
     }
@@ -936,24 +946,20 @@ class Project implements ArgumentResolverInterface {
                  }
               }//check the App shell to see if a binding has been defined
               elseif (App::has($param->getName())) {
-                  
                   $pass[] = App::get($param->getName());
               }
               elseif(isset($args[$param->getName()])){  
-                  
                   $pass[] = $args[$param->getName()];
               }
               else{                  
-                  
-                 $pass[] = $param->getDefaultValue();
+                  $pass[] = $param->getDefaultValue();
               }
             } 
             
             //execute the resolved parameters
             return $reflection->invokeArgs(new $controller, $pass);
         }
-        else{
-            
+        else{            
             return new $controller($args);
         }
     }

@@ -1,4 +1,0 @@
-- where to put css * js files
-- how to reference them using the assignResources($resources) function on the routes.php
-  at least with an example
-- 

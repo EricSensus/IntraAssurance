@@ -244,5 +244,34 @@ class UsersView extends View {
         $iform = Overlays::ModalDialog($modal_settings, $loginform);        
         return $iform;
     }
+
+    public function showResetPasswordForm($user_id){
+        $schematic = [
+            'preventjQuery' => true,
+            'engine' => 'bootstrap',
+            'validator' => 'parsley',
+            'css' => 'none',
+            'method' => 'post',
+            'map' => [1,1,1,1],
+            'action' => '/profile/save-password',
+            'attributes' => ['data-parsley-validate' => ''],
+            'controls' => [
+                '{note}' => ['note', 'note1', '', 'Reset your Password:'],
+                'New Password' => ['password', 'new_pass', '', ['class' => 'form-control']],
+                'Repeat Password' => ['password', 'rep_pass', '', ['class' => 'form-control']],
+                '{user_id}' => ['hidden', 'user_id', $user_id, ['class' => 'form-control']],
+                '{submit}' => ['submit', 'btnsubmit', 'Reset Password', ['class' => 'btn btn-success']]
+            ]
+        ];
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
+        $form = Generate::Form('reset_password_form', $schematic)
+            ->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+
+        $this->set('reset_form', $form);
+        $this->setViewPanel('reset_password');
+    }
 }
 

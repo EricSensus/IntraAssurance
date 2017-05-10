@@ -5,7 +5,7 @@ namespace DI\Definition\Resolver;
 use DI\Definition\Definition;
 use DI\Definition\Exception\DefinitionException;
 use DI\Proxy\ProxyFactory;
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Dispatches to more specific resolvers.
@@ -104,7 +104,7 @@ class ResolverDispatcher implements DefinitionResolver
                 return $this->decoratorResolver;
             case $definition instanceof \DI\Definition\FactoryDefinition:
                 if (! $this->factoryResolver) {
-                    $this->factoryResolver = new FactoryResolver($this->container);
+                    $this->factoryResolver = new FactoryResolver($this->container, $this);
                 }
 
                 return $this->factoryResolver;

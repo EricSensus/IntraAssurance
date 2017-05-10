@@ -176,6 +176,7 @@ class View extends Project {
         if(strpos($this->_templatefolder, '/') != FALSE){
             
             $pathspl = explode('/', $this->_templatefolder);
+            
             $primaryfolder = $pathspl[0];
             unset($pathspl[0]);
         }
@@ -342,18 +343,14 @@ class View extends Project {
         
         if(!array_key_exists('disablePanels', $this->_settings)){
             
-            if(!is_null($this->_settings['secondary']) 
-                    && array_key_exists($position, $this->_settings['secondary'])){
-                
+            if(array_key_exists($position, $this->_settings['secondary'])){                
                 return TRUE;
             }
-            else{
-                
+            else{                
                 return FALSE;
             }
         }
-        else{
-            
+        else{            
             return FALSE;
         }
     }
@@ -361,8 +358,7 @@ class View extends Project {
     /**
      * Allows for complete disabling of the view section
      */
-    public function disable(){    
-        
+    public function disable(){  
         $this->_disableView = TRUE;
     }
     

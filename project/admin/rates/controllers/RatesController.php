@@ -1,47 +1,60 @@
 <?php
+
 namespace Jenga\MyProject\Rates\Controllers;
 
 use Jenga\App\Controllers\Controller;
+use Jenga\App\Helpers\Help;
 use Jenga\App\Html\Excel;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
 use Jenga\App\Views\HTML;
 use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Elements;
+use Jenga\MyProject\Rates\Models\RatesModel;
+use Jenga\MyProject\Rates\Views\RatesView;
 
 /**
- * Created by PhpStorm.
- * User: developer
- * Date: 27/02/2017
- * Time: 13:04
+ * Class RatesController
+ * @property-read RatesView $view
+ * @property-read RatesModel $model
+ * @package Jenga\MyProject\Rates\Controllers
  */
 class RatesController extends Controller
 {
     private $rate_cats, $rate_types, $rates, $insurer;
 
-    public function __construct()
+    private function _init()
     {
-        parent::__construct();
-        $this->rates = $this->model->all();
 
+        parent::__construct();
+        $company = Input::get('__company');
+        if (!empty($company)) {
+            $this->model->where('insurer_id', Help::decrypt($company));
+        }
+        $this->rates = $this->model->show();
         $rate_types = $this->model->select('distinct(rate_type)')->show();
         $rate_cats = $this->model->select('distinct(rate_category)')->show();
 
         $this->rate_types = $this->getRateTypes($rate_types);
         $this->rate_cats = $this->getRateCategories($rate_cats);
-
-
     }
 
     private function setInsurer()
     {
         $this->insurer = Elements::call('Insurers/InsurersController')->getInsurerByFinder([
-            'email_address' => 'info@intraafrica.co.ke'
+            'email_address' => 'info@jubilee.co.ke'
         ]);
+        $this->companies = Elements::call('Insurers/InsurersController')->model->show();
+        $haystack = [];
+        foreach ($this->companies as $item) {
+            $haystack[$item->id] = $item->name;
+        }
+        $this->companies = $haystack;
     }
 
     public function index()
     {
+
         $action = 'show';
 
         if (!empty(Input::get('action')) && !is_null(Input::get('action'))) {
@@ -53,8 +66,30 @@ class RatesController extends Controller
 
     public function show()
     {
+        $this->_init();
         $this->setViewData();
+        $this->view->set('source', $this->_transformTable($this->rates));
         $this->view->generateTable();
+    }
+
+    public function showSetup()
+    {
+        $this->_init();
+        $this->setViewData();
+        $this->view->set('source', $this->_transformTable($this->rates));
+        $this->view->generateTable(true);
+    }
+
+    public function _transformTable($source)
+    {
+        $haystack = [];
+        $instance = Elements::call('Insurers/InsurersController');
+        foreach ($source as $item) {
+            $insurers = (object)$instance->getInsurer($item->insurer_id);
+            $item->company = $insurers->name;
+            $haystack[] = $item;
+        }
+        return $haystack;
     }
 
     public function search()
@@ -73,21 +108,51 @@ class RatesController extends Controller
         $this->view->set('rate_cats', $this->rate_cats);
     }
 
-    public function add(){
-        
+    public function add()
+    {
+        $this->_init();
         $this->setInsurer();
-        $this->view->showAddRateForm($this->rate_types, $this->rate_cats, $this->insurer);
+        $this->view->showAddRateForm($this->rate_types, $this->rate_cats, $this->insurer, $this->companies);
+    }
+
+    public function getCompanies()
+    {
+        $dbinsurers = $this->model->table('insurers')->show();
+
+        foreach ($dbinsurers as $insurer) {
+            $insurer->official_name = ($insurer->official_name == '' ? 'Not Specified' : $insurer->official_name);
+            $insurer->email_address = ($insurer->email_address == '' ? 'Not Specified' : $insurer->email_address);
+            $insurer->rates = $this->countRates($insurer->id);
+            $insurer->link = Help::encrypt($insurer->id);
+            $insurers[] = $insurer;
+        }
+        $this->view->insurersTable($insurers);
+    }
+
+    /**
+     * Get the number of quotes for a company
+     * @param null $company
+     * @return int
+     */
+    private function countRates($company = null)
+    {
+        if (!empty($company)) {
+            $this->model->where('insurer_id', $company);
+        }
+        $models = $this->model->show();
+        return count($models);
     }
 
     /**
      * Save a Rate
      */
-    public function store(){
-        
+    public function store()
+    {
         $this->setInsurer();
         $state = 'error';
-        if (!$this->model->rateExists(['rate_name' => Input::post('rate_name')])) {
-            if ($this->model->saveRate($this->insurer->id)) {
+        $finder = ['rate_name' => Input::post('rate_name'), 'insurer_id' => Input::post('insurer_id')];
+        if (!$this->model->rateExists($finder)) {
+            if ($this->model->saveRate()) {
                 $notice = 'Success! The Rate has been saved.';
                 $state = 'success';
             } else {
@@ -173,15 +238,12 @@ class RatesController extends Controller
     public function update()
     {
         $this->setInsurer();
-        
         if ($this->model->updateRate($this->insurer)) {
-            
             Session::flash('status', 'success');
             Session::flash('message', 'Success! The Rate has been updated');
 
             Redirect::withNotice('Success! The Rate has been updated', 'success')->to(Input::post('destination'));
         } else {
-            
             Session::flash('status', 'error');
             Session::flash('message', 'Encountered an error');
 
@@ -259,6 +321,16 @@ class RatesController extends Controller
         }
 
         return $r_cats;
+    }
+
+    /**
+     * Load the rates profile for the company
+     * @param $company
+     * @return object
+     */
+    public function getAllRatesFor($company)
+    {
+        return $this->model->where('insurer_id', $company)->show();
     }
 
     /**

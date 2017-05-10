@@ -356,7 +356,7 @@ class Zebra_Form{
                     $sanitize_name = preg_replace('/\[\]$/', '', $name);
 
                     // santize the value
-                    $value = preg_replace('/\_{1,}/', '_', preg_replace('/[^a-z0-9\_]/', '_', $value));
+                    $value = preg_replace('/\_{1,}/', '_', preg_replace('/[^a-zA-Z0-9\_]/', '_', $value));
 
                     // create control
                     $obj = & $this->add(
@@ -1988,9 +1988,7 @@ class Zebra_Form{
                     }
                     elseif($this->engine == 'bootstrap'){
                         
-                        $contents .= '<div class="form-group '
-                                .($tmp['orientation'] == 'horizontal' ? 'row' : '')
-                                . '">';
+                        $contents .= '<div class="form-group '.($tmp['orientation'] == 'horizontal' ? 'row' : ''). '">';
                         
                         // the first cell will hold the label (if any)
                         if($tmp['orientation'] == 'horizontal'){
@@ -2083,7 +2081,8 @@ class Zebra_Form{
                                 $contents .= $this->controls[$control]->toHTML() . '<span class="required">*</span>';
 
                             // else, render the control
-                            } else $contents .= $this->controls[$control]->toHTML();
+                            } 
+                            else $contents .= $this->controls[$control]->toHTML();
 
                     }
 
@@ -2095,8 +2094,8 @@ class Zebra_Form{
                         $contents .= '</tr>';
                     }
                     elseif($this->engine == 'bootstrap'){
-                            $contents .= '</div>'
-                                    . '</div>';
+                        //$contents .= '</div></div>';
+                        $contents .= '</div>';
                     }
                 }
 

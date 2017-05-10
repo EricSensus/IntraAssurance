@@ -3,7 +3,6 @@ use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
 use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
-
 HTML::script("$(function() { 
     
     // for bootstrap 3 use 'shown.bs.tab', for bootstrap 2 use 'shown' in the next line
@@ -36,6 +35,7 @@ echo '<div class="tabs row-padding">
     <ul role="tablist" class="nav nav-pills" id="myTabs">
       <li class="active" role="presentation" ><a aria-expanded="false" aria-controls="home" data-toggle="tab" role="tab" href="#personal-details">Personal Details</a></li>
       <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#policies" aria-expanded="true">Policies ('.$policycount.')</a></li>
+      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#claims" aria-expanded="true">Claims ('.$claims_count.')</a></li>
       <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#generated-quotes" aria-expanded="true">Generated Quotations ('.$quote_count.')</a></li>'
     .'<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#entities" aria-expanded="true">Entities ('.$entitycount.')</a></li>';
 echo '<li class=""><a aria-controls="profile" data-toggle="tab" role="tab" href="#tasks" aria-expanded="false">Related Tasks and Remainders ('.$taskcount.')</a></li>
@@ -126,6 +126,30 @@ echo  '</div>'
 . '<div id="mypolicies">'
 . '</div>'
 . '</div>';
+
+echo '</div>
+    </div>
+    </div>';
+//claims
+HTML::script('$(document).ready( function () {
+                $("#myclaims").ready(function(){
+                    $("#claimstable_paginate").appendTo($("#myclaims"));
+                });
+            } );');
+echo '<div role="tabpanel" class="tab-pane" id="claims">';
+
+echo '<div class="col-md-12">'
+    .'<div class="shadow">'
+    . '<div class="mini-panel">';
+
+echo HTML::heading('h4', 'Customer Claims', ['class' => 'mb5 text-light']);
+echo $claimstable;
+
+echo  '</div>'
+    . '<div class="dataTables_wrapper panel-footer">'
+    . '<div id="myclaims">'
+    . '</div>'
+    . '</div>';
 
 echo '</div>
     </div>
@@ -281,3 +305,4 @@ echo  '</div>
 echo '</div>';
 
 echo $deletemodal;
+echo $quoteModal;

@@ -2,8 +2,11 @@
 namespace Jenga\App\Project\Security\Traits;
 
 use Jenga\App\Core\App;
+use Jenga\App\Core\File;
 use Jenga\App\Request\Session;
+use Jenga\App\Project\Core\Project;
 use Jenga\App\Project\Security\User;
+use Jenga\App\Project\Security\Acl\Guest;
 use Jenga\App\Project\Security\Traits\UserSessionHandler;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -32,28 +35,23 @@ trait Authentication{
      */
     public $auth_table;
     
-    /**
-     * @Inject("auth_file")
-     */
-    public $auth_file;
-    
     public function init(Request $request) {
         
         $this->request = $request;
         
         $this->getConfigs();
         
-        //configure user object into database if configured
-        $this->configureSession();
+        //create the user instance to be used throughout
+        $this->createUserState();
         
         //set the sessions security token
         $this->setSecurityToken();
         
+        //configure user object into database if configured
+        $this->configureSession();
+        
         //set the assigned user attributes from User Defined Auth class
         $this->setUserAttributes();
-        
-        //get the listed roles eiter from the database or from a flat file
-        $this->getRoles();
         
         return $this;
     }
@@ -81,7 +79,52 @@ trait Authentication{
                 return $this->orderBy('level', 'DESC')->show();
             }
             else{                
-                return $this->find($identifier)->data;
+                return $this->find(['alias'=>$identifier])->data;
+            }
+        }
+        elseif(strtolower($this->auth_source) == 'file'){
+            
+            $gateway = App::get('auth');
+            $gateway->setAuthorizationElement();
+            
+            $auth = $gateway->getAuthorizationElement();
+            $element = Project::elements()[$auth];
+            
+            $rolefiles = File::scandir(ABSOLUTE_PROJECT_PATH .DS. str_replace('/',DS,$element['path']) .DS. 'acl' .DS. 'roles');
+            
+            if(count($rolefiles) > 0){
+                
+                foreach($rolefiles as $rolefile){
+
+                    $role_php = end(explode(DS, $rolefile));
+                    $role = str_replace('.php', '', $role_php);
+                    $class = 'Jenga\MyProject\\'.ucfirst($auth).'\Acl\Roles\\'.$role;
+
+                    $roleclass = App::get($class);
+                    $roles[] = $roleclass;
+                }
+            }
+            else{
+                
+                //if role classes havent been set
+                $roles[] = App::get(Guest::class);
+            }
+            return $roles;
+        }
+    }
+    
+    /**
+     * Selects role by alias
+     * @param type $alias
+     */
+    public function getRoleByAlias($alias){
+        
+        $roles = $this->getRoles();
+        
+        foreach($roles as $role){
+            
+            if($alias == $role->alias){
+                return $role;
             }
         }
     }
@@ -93,7 +136,15 @@ trait Authentication{
     protected function getLowestRole(){
         
         $roles = $this->getRoles();
-        return end($roles);
+        
+        foreach($roles as $role){
+            
+            $lowest[] = $role->level;
+            $list[$role->level] = $role;
+        }
+        arsort($lowest);
+        
+        return $list[end($lowest)];
     }
     
     /**
@@ -112,8 +163,7 @@ trait Authentication{
      * Returns current user if called statically
      * @return type
      */
-    public static function user(){
-        
+    public static function user(){        
         return unserialize(Session::get('user_'.Session::get('token')));
     }
     
@@ -136,5 +186,13 @@ trait Authentication{
         }
         
         return md5($hash);
+    }
+    
+    /**
+     * Returns the authorizing element
+     * @return type
+     */
+    public function getAuthorizationElement(){
+        return $this->auth_element;
     }
 }

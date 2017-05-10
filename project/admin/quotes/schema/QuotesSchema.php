@@ -1,8 +1,10 @@
 <?php
+
 namespace Jenga\MyProject\Quotes\Schema;
 
 use Jenga\App\Models\SchemaInterface;
 use Jenga\App\Models\SchemaTasks;
+
 /**
  * Created by PhpStorm.
  * User: developer
@@ -18,22 +20,18 @@ class QuotesSchema implements SchemaInterface
     public function build()
     {
         SchemaTasks::create('customer_quotes')
-            ->column('id', [
-                'int',
-                'not null',
-                'auto_increment'
-            ])->primary('id')
+            ->column('id', ['int', 'not null', 'auto_increment'])->primary('id')
             ->column('customers_id', ['int', 'not null'])
             ->column('products_id', ['varchar(100)', 'not null'])
             ->column('datetime', ['int', 'not null'])
-            ->column('introtext', ['text', 'not null'])
+            ->column('introtext', ['text', 'null'])
             ->column('customer_info', ['text'])
-            ->column('product_info', ['text', 'not null'])
-            ->column('customer_entity_data_id', ['text', 'not null'])
+            ->column('product_info', ['text', 'null'])
+            ->column('customer_entity_data_id', ['text', 'null'])
             ->column('amount', ['text', 'not null'])
-            ->column('recommendation', ['int', 'not null'])
+            ->column('recommendation', ['int', ' null'])
             ->column('status', ['varchar(100)', 'not null'])
-            ->column('acceptedoffer', ['varchar(100)', 'not null'])
+            ->column('acceptedoffer', ['varchar(100)', 'not null', 'default \'Pending Response\''])
             ->column('source', ['varchar(50)', 'not null', 'default \'Internal\''])
             ->build();
     }
@@ -53,4 +51,5 @@ class QuotesSchema implements SchemaInterface
     {
         // TODO: Implement run() method.
     }
+
 }

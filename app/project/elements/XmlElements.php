@@ -39,9 +39,15 @@ class XmlElements{
         $this->xmlChildNodes = array('folder','file');
     }
 
-    private function _initDocument($filename){
+    private function _initDocument($filename, $formatting = false){
         
         $xmlDoc = new \DOMDocument($filename);
+        
+        if($formatting){
+            
+            $xmlDoc->preserveWhiteSpace = false;
+            $xmlDoc->formatOutput = true;
+        }
         
         if(!@$xmlDoc->load($filename)){
             
@@ -123,8 +129,9 @@ class XmlElements{
             }
         }
         
-        //isaolate the template key
-        $this->elements['templates'] = $this->elements[$this->_templatekey];
+        //isolate the template key
+        if(!is_null($this->_templatekey) && !is_null($this->elements[$this->_templatekey]))
+            $this->elements['templates'] = $this->elements[$this->_templatekey];
         
         //clean the element values
         //array_walk_recursive($this->element, array($this, '_clean'));
@@ -139,10 +146,10 @@ class XmlElements{
      * @param type $map_path
      * @return boolean
      */
-    public function loadXMLFile($filename,$map_path){
+    public function loadXMLFile($filename,$map_path, $formatting = FALSE){
         
         $path = $this->_preparePath($map_path);
-        $this->xmlfile = $this->_initDocument($path .DS. $filename);
+        $this->xmlfile = $this->_initDocument($path .DS. $filename, $formatting);
         
         $this->absolutepath = rtrim($path,'/') .DS. $filename;
         
@@ -163,6 +170,8 @@ class XmlElements{
             foreach ($this->xmlselect as $node) {              
                 $node->setAttribute($attribute, $value);
             }
+            
+            return TRUE;
         }
         else{
             return false;
@@ -170,12 +179,74 @@ class XmlElements{
     }
     
     /**
+     * Deletes the selected XML element
+     * 
+     * @return boolean
+     */
+    public function deleteXMLElement(){
+        
+        if(isset($this->xmlselect)){
+            
+            foreach ($this->xmlselect as $node) {    
+                $node->parentNode->removeChild($node);
+            }
+            
+            $this->save();
+        }
+        else{
+            return false;
+        }
+    }
+    
+    /**
+     * Add the first element in the maps.xml
+     * 
+     * @param type $name
+     * @param array $folders
+     * @param array $attributes
+     */
+    public function addElement($name, array $folders, array $attributes){
+        
+        $elements = $this->xmlfile->getElementsByTagName('elements')->item(0);
+        
+        //if there are no other elements, the first one is set as a default
+        if(!$elements->hasChildNodes()){
+            $attributes['default'] = 'true';
+        }
+        
+        $element = $this->xmlfile->createElement('element');   
+        
+        //attributes
+        if(count($attributes) > 0 ){
+            
+            foreach ($attributes as $key => $attr) {
+                $element->setAttribute($key, $attr);
+            }
+        }
+        
+        $elements->appendChild($element);
+        
+        //create folders
+        if(count($folders) > 0){
+            
+            foreach($folders as $function => $name){
+                
+                $folder = $this->xmlfile->createElement('folder',$name);
+                $folder->setAttribute('function', $function);
+                
+                $element->appendChild($folder);
+            }
+        }
+        
+        $this->save();
+    }
+    
+    /**
      * Saves the XML file edits
      * 
      * @return type
      */
-    public function save(){
-        
+    public function save(){        
         return $this->xmlfile->save($this->absolutepath);
     }
     
@@ -205,10 +276,16 @@ class XmlElements{
             $xpath = new \DOMXPath($this->xmlfile);
             $xquery = "//elements/element[@name='".$elementname."']";
             
-            $this->xmlselect = $xpath->query($xquery);
+            //
+            $results = $xpath->query($xquery);
             
-            return true;
+            if($results->length >= 1){                
+                $this->xmlselect = $xpath->query($xquery);
+                return true;
+            }        
         }
+        
+        return false;
     }
     
     /**
@@ -235,6 +312,9 @@ class XmlElements{
                 if($name == 'function' && $value == 'templates'){
                     $this->_templatekey = $e_name;
                 }
+                else{
+                    $this->_templatekey = NULL;
+                }
             }
         }
         
@@ -256,7 +336,7 @@ class XmlElements{
             if($element_folders->length != 0){
 
                 //process the folders within the element
-                foreach($element_folders as $folder){                    
+                foreach($element_folders as $folder){  
                     $element_array = $this->_registerNodes($e_name,$element_array, $folder, 'folder');                  
                 }
             }
@@ -288,12 +368,13 @@ class XmlElements{
         
         if($nodetype == 'folder'){
             
-            //push folder name into element folders array
+            //push folder name into element folders array 
             if(!is_array($element_array[$e_name]['folders']))
                 $element_array[$e_name]['folders'] = array($domobject->nodeValue);
             else
                 array_push ($element_array[$e_name]['folders'], $domobject->nodeValue);
-
+            
+            
             //check against the registered attributes
             $attributes = $this->xmlFolderAttributes;
             
@@ -536,41 +617,5 @@ class XmlElements{
         
         return $element_array;        
     }
-
-    
-    /**
-     * It loads the xml-defined elements and assets into the framework
-     * 
-     * @param file $map_path
-     
-    public function loadProjectXml($map_path){
-        
-        $xml = simplexml_load_file($map_path); 
-        
-        //initialize the elements table model to set the new elements
-        $elements_table = App::model('elements');
-        
-        //get the project elements
-        foreach($xml->elements->children() as $child){
-            $element_attr = $child->attributes();
-            
-            //force xmlobject to a string
-            $aliasvalue = (string) $element_attr->alias;   
-            
-            foreach($element_attr as $attrname => $attrvalue){ 
-                
-                if($attrname == 'alias'){
-                    //check if element record exists
-                    $value = $elements_table->where('alias',$aliasvalue)->exists();     
-                }
-                
-                $elements_table->$attrname = (string) $attrvalue;  
-            }
-            
-            //insert or update
-            $elements_table->save();
-        }
-    }
-    */
 }
-?>
+

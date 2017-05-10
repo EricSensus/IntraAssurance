@@ -24,8 +24,7 @@ class Notifications extends Overlays {
         //add to tracker
         self::$tracker[] = 'tooltip';
         
-        if(isset($attributes['data-toggle'])){
-            
+        if(isset($attributes['data-toggle'])){            
             unset($attributes['data-toggle']);
         }
         
@@ -92,28 +91,6 @@ class Notifications extends Overlays {
                 Session::keep($session_key);
                 $this->attributes = $attributes;
             }  
-        }
-    }
-    
-    /**
-     * Clears all sticky notices
-     * @param type $key
-     */
-    public static function clear($key = null){
-        
-        if(is_null($key)){
-            
-            $notices = Session::all();
-            
-            foreach($notices as $key => $notice){
-                
-                if(strpos($key, 'message_') === 0){
-                    Session::delete($key);
-                }
-            }
-        }
-        else{
-            Session::delete($key);
         }
     }
     

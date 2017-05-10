@@ -15,10 +15,10 @@ HTML::script('$(document).ready( function () {
             } );');
 
 echo '<div class="row">'
-. '<div class="col-md-12">
+    . '<div class="col-md-12">
     <div class="dash-head clearfix mt15 mb20 shadow">
             <div class="left">
-                    <h4 class="mb5 text-light">Quotation Management ('.$count.')</h4>
+                    <h4 class="mb5 text-light">Quotation Management (' . $count . ')</h4>
                     <p class="small"><strong>Manage</strong> Your Customer Quotes</p>
             </div>
             <div class="right toolholder">';
@@ -31,17 +31,19 @@ echo $alerts;
 
 echo '<div class="row show-grid">'
 
-. '<div class="col-md-12 panel">
+    . '<div class="col-md-12 panel">
     <div class="dash-head clearfix mt15 mb20">
-    '.$quotes_table.'
+    ' . $quotes_table . '
     </div>';
 
 echo '<div class="dataTables_wrapper panel-footer">'
-. '<div id="quotes_footer">'
-. '</div>'
-. '</div>';
+    . '<div id="quotes_footer">'
+    . '</div>'
+    . '</div>';
 
 echo '</div>'
-. '</div>';
+    . '</div>';
 
-echo Overlays::Modal(['id'=>'emailmodal']);
+echo Overlays::Modal(['id' => 'emailmodal']); ?>
+<?= Overlays::Modal(['id' => 'confirmquotemodal']); ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.5.6/tinymce.min.js"></script>

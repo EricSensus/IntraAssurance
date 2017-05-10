@@ -18,7 +18,7 @@ class PoliciesModel extends ORM {
         'products_id' => 'Product',
         'status' => 'Status'
     ];
-    
+
     public function getDataFromQuote($id){
         $data = $this->table('customer_quotes')->where('id', $id)->first();
         return $data;
@@ -169,5 +169,10 @@ class PoliciesModel extends ORM {
             'count' => $count,
             'docs' => $policy_docs
         ];
+    }
+
+    public function getPolicy($policy_id){
+        $policy = $this->where('id', $policy_id)->first();
+        return $policy;
     }
 }

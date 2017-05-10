@@ -57,9 +57,8 @@ class Events {
      * @param type $subscriber
      * @return \Jenga\App\Project\Core\Events
      */
-    public static function addQueue( $subscriber ){        
-        self::$dispatch->addSubscriber($subscriber);
-        return $this;
+    public static function addQueue( $subscriber ){         
+        return self::$dispatch->addSubscriber($subscriber);
     }
     
     /**
@@ -68,8 +67,7 @@ class Events {
      * @param type $eventname
      * @return type
      */
-    public static function fire($eventname){ 
-            
+    public static function fire($eventname){             
         return self::$dispatch->dispatch($eventname);
     }
     

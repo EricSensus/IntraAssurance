@@ -13,11 +13,13 @@ HTML::script('$(document).ready( function () {
                 
             } );');
 
+$page_title = ($mypolicies) ? 'My Policies' : 'Manage your policies';
+
 echo '<div class="row">'
 . '<div class="col-md-12">
     <div class="dash-head clearfix mt15 mb20 shadow">
             <div class="left">
-                    <h4 class="mb5 text-light">Policy Management ('.$count.')</h4>
+                    <h4 class="mb5 text-light">'.$page_title.' ('.$count.')</h4>
                     <p class="small"><strong>Manage</strong> Your Policies</p>
             </div>
             <div class="right toolholder">';
@@ -42,3 +44,7 @@ echo '<div class="dataTables_wrapper panel-footer">'
 
 echo '</div>'
 . '</div>';
+
+echo $mailmodal;
+
+?>

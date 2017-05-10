@@ -17,8 +17,8 @@ namespace Jenga\App\Database\Mysqli;
 
 use mysqli;
 use Jenga\App\Core\App;
-use Jenga\App\Helpers\Help;
 use Jenga\App\Request\Session;
+use Jenga\App\Helpers\Help;
 
 class Database //directly builds from Config
 {
@@ -28,7 +28,6 @@ class Database //directly builds from Config
      * @var Database
      */
     protected static $_instance;
-    
     /**
      * Table prefix
      * 
@@ -255,8 +254,7 @@ class Database //directly builds from Config
         $this->_query = $query;
         
         if ($sanitize)
-            $this->_query = filter_var ($query, FILTER_SANITIZE_STRING,
-                                    FILTER_FLAG_NO_ENCODE_QUOTES);
+            $this->_query = filter_var($query, FILTER_SANITIZE_STRING,FILTER_FLAG_NO_ENCODE_QUOTES);
         
         $stmt = $this->_prepareQuery();
         
@@ -691,7 +689,7 @@ class Database //directly builds from Config
             $row[$field->name] = null;
             $parameters[] = & $row[$field->name];
         }
-             
+
         $stmt->store_result();
         call_user_func_array(array($stmt, 'bind_result'), $parameters);
 

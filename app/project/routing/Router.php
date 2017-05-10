@@ -74,11 +74,11 @@ class Router {
             $defaults = $this->_getDefaults($route['defaults']);
             
             //process the panels in the secondary positions
-            if(!is_null($route['panels']))
+            if(array_key_exists('panels', $route))
                $this->resources->setRoutePanel($route['panels'],$alias,'secondary');
             
             //if engine is null its assumed to be a pure resource route
-            if(!is_null($route['resources']))
+            if(array_key_exists('resources', $route))
                $this->resources->setRouteResources($route['resources'], $this->_currentalias);
             
             if(!is_null($engine)){
@@ -125,7 +125,8 @@ class Router {
             }
             
             //schedule the events
-            $this->eventscheduler->scheduleRouteEvents($route['event'], $alias);
+            if(array_key_exists('event', $route))
+                $this->eventscheduler->scheduleRouteEvents($route['event'], $alias);
         }
         
         //save route keys for later use
@@ -277,6 +278,7 @@ class Router {
     private function _getDefaults($entries = null) {
         
         //split the url
+        $defaults = [];
         $urlparts = explode('/', ltrim($this->_url,'/'));
             
         foreach($urlparts as $urlpart){
@@ -305,7 +307,7 @@ class Router {
             }
         }
         
-        if(!is_null($defaults)){
+        if(!empty($defaults)){
             return $defaults;
         }
     }

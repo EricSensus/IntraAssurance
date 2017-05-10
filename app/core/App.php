@@ -25,6 +25,11 @@ use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
+use Monolog\Logger;
+use Monolog\ErrorHandler;
+use Jenga\App\Project\Logs\Log;
+use Jenga\App\Project\Logs\LogHandler;
+
 class App extends HttpKernel\HttpKernel{  
     
     public static $config;
@@ -62,11 +67,18 @@ class App extends HttpKernel\HttpKernel{
         self::$shell = $ioc->register();
         self::$ioc = $ioc;
         
+        //add configurations to App shell
+        self::$shell->set('_config', self::$config);
+        
         //set the development environment
         self::setReporting();
         
-        //add configurations to App shell
-        self::$shell->set('_config', self::$config);
+        //set the project name
+        if(!is_null(self::$config))
+            define('PROJECT_NAME', self::$config->project);
+        
+        //set the timezone settings
+        self::setTimeZone();
         
         //get current request
         $this->request = Input::load(true);
@@ -164,7 +176,8 @@ class App extends HttpKernel\HttpKernel{
                 if(!is_null($construct)){
                     
                     $params = $construct->getParameters();
-
+                    
+                    //the entity construct will be analysed to inject any necessary elements or classes
                     if(count($params) >= 1){
 
                         $args = [];
@@ -172,7 +185,7 @@ class App extends HttpKernel\HttpKernel{
                         foreach ($params as $arg) {
 
                             $name = $arg->getName();
-
+                            
                             if(self::$shell->has($name)){
                                 $args[$name] = self::$shell->get($name);
                             }
@@ -180,18 +193,18 @@ class App extends HttpKernel\HttpKernel{
 
                                 $reflectclass = $arg->getClass();
                                 $ctrl = Elements::resolveControllerInArgument($reflectclass->name);
-
-                                $args[$name] = $ctrl;
+                                
+                                if(!is_null($ctrl)){
+                                    $args[$name] = $ctrl;
+                                }
                             }
                         }
 
                         return self::$shell->make($class, $args);
                     }
-                }
-                else{
-                    
-                    return self::$shell->make($class);
-                }
+                } 
+                
+                return self::$shell->make($class);
             }
         }
         else{
@@ -205,78 +218,78 @@ class App extends HttpKernel\HttpKernel{
      * @param type $name
      * @param type $value
      */
-    public static function bind($name, $value) {
-        
+    public static function bind($name, $value) {        
         return self::$shell->set($name, $value);
     }
-
 
     /**
      * Sets the system development environment
      */
     public static function setReporting() {
         
-        if(self::$config->development_environment == TRUE){
+        if(!is_null(self::$config) && self::$config->development_environment == TRUE){
     
             // Set the error_reporting
             switch (self::$config->error_reporting){
                 
                 case 'default':
                 case '-1':
+                    $level = Logger::ERROR;
                         break;
 
-                case 'none':
-                case '0':
-                    error_reporting(0);
-                    break;
-
                 case 'simple':
-                    error_reporting(E_ERROR | E_WARNING | E_PARSE);
-                    ini_set('display_errors', 1);
+                    $level = Logger::ERROR;
                     break;
 
                 case 'maximum':
-                    error_reporting(E_ALL);
-                    ini_set('display_errors', 1);
+                    $level = Logger::DEBUG;
                     break;
 
                 case 'development':
-                    error_reporting(-1);
-                    ini_set('display_errors', 1);
+                    $level = Logger::ERROR;
                     break;
 
                 default:
-                    error_reporting(self::$config->error_reporting);
-                    ini_set('display_errors', 1);
+                    $level = Logger::ERROR;
                     break;
             }
         }
-        else{
-
-            error_reporting(0);
+        elseif(is_null(self::$config)){            
+            //set error reporting for initial start up
+            $level = Logger::ERROR;
         }
         
-        if (self::$config->development_environment == true) {
-            
-            error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
-            ini_set('display_errors','On');            
-        } 
-        else {
-            
-            error_reporting(E_ALL);
-            ini_set('display_errors','Off');
-            ini_set('log_errors', 'On');
-            ini_set('error_log', ROOT.DS.'tmp'.DS.'logs'.DS.'error.log');            
-        }  
+        //set the loghandler into the container
+        self::bind(LogHandler::class, \DI\object(LogHandler::class)->constructor('errors', $level, []));        
+        $loghandle = self::get(LogHandler::class);
         
-        //system user vaiables
-        define('PROJECT_NAME', self::$config->project);
+        $phphandler = new ErrorHandler($loghandle->logger);        
+        $phphandler->registerErrorHandler([], false);
+        $phphandler->registerExceptionHandler();
+        $phphandler->registerFatalHandler();
+        
+        //$loghandle->logger->pushHandler($phphandler);
+    }
+    
+    /**
+     * Set the default timezone for the application
+     */
+    public static function setTimeZone() {
+        
+        if(!is_null(self::$config))
+            date_default_timezone_set(self::$config->timezone);
     }
     
     protected function loadConfigs($config_file){
         
+        if(file_exists($config_file)){
+            
         require_once $config_file;
         $cfg = new Config();
+        }
+        else{
+            $cfg = NULL;
+        }
         
         return $cfg;
     }
@@ -287,9 +300,11 @@ class App extends HttpKernel\HttpKernel{
         Session::start();
         $request->headers->set('X-Php-Ob-Level', ob_get_level());
         
-        try{            
+        try{     
+            
             return $this->parseHandler($request, $type);            
-        } catch (\Exception $e) {
+        } 
+        catch (\Exception $e) {
             if (false === $catch) {
                 $this->finishRequest($request, $type);
 
@@ -330,16 +345,24 @@ class App extends HttpKernel\HttpKernel{
         
         // controller arguments
         $arguments = $this->project->getArguments($request, $controller);
-        
-        // call controller and output buffer
-        //ob_start();
-        
-        $this->project->run($controller, $arguments);
-        
-        $output = ob_get_contents();
-        ob_end_clean();
-        
-        $this->response->setContent($output);
+         
+        if(!is_null(self::$config) && self::$config->cache_files == TRUE){
+           
+            // call controller and output buffer
+            ob_start();
+            
+            $this->project->run($controller, $arguments);
+            
+            $output = ob_get_contents();
+            ob_end_clean();
+            
+            if(!is_bool($output) && !is_null($output)){
+                $this->response->setContent($output);
+            }
+        }
+        else{
+            $this->project->run($controller, $arguments);
+        }
         
         //fire the on:complete and after route events
         Events::fireOnRoute($this->project->current_route, KernelEvents::TERMINATE);  
@@ -385,7 +408,7 @@ class App extends HttpKernel\HttpKernel{
     /**
      * Return information based on current request
      */
-    protected function buildRequestContext(){   
+    protected function buildRequestContext(){  
         return new RequestContext();
     }
 
@@ -487,6 +510,8 @@ class App extends HttpKernel\HttpKernel{
         try {
             return $this->filterResponse($response, $request, $type);
         } catch (\Exception $e) {
+            
+            Log::critical($e->getMessage());
             return $response;
         }
     }
@@ -497,8 +522,7 @@ class App extends HttpKernel\HttpKernel{
      * @throws \Exception
      */
     public static function critical_error($message){
-        //throw new \Exception($message);
-        trigger_error("<div class='message error'>System Error: " . $message . "</div>", E_USER_ERROR);
+        Log::critical($message);
     }
     
     /**
@@ -508,7 +532,7 @@ class App extends HttpKernel\HttpKernel{
      */
     public static function warning($message){
         //throw new \Exception($message);
-        trigger_error("<div class='message error'>System Error: " . $message . "</div>", E_USER_WARNING);
+        Log::warning($message);
     }
     
     /**
@@ -517,8 +541,7 @@ class App extends HttpKernel\HttpKernel{
      * @throws NotFoundHttpException
      */
     public static function exception($message){
-        
-        throw new \Exception($message);
+        Log::critical($message);
     }
     
     /**

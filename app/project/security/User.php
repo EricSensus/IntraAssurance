@@ -9,13 +9,12 @@ class User {
     
     public $attributes = [];
     public $role;
-    public $permissions;
     
     /**
      * This magic function will allow to set any number of getter and setter functions
      * linked the user
      * @example $this->user->getUsername() returns the entered username by computing from 
-     *          the function nama and the arguments sent
+     *          the function name and the arguments sent
      * @param type $name
      * @param type $arguments
      * @return type
@@ -91,10 +90,8 @@ class User {
         foreach($attr_values as $attribute => $value){
             
             $attr = strtolower($attribute);
-            $this->{$attr} = $value;
+            $this->setAttribute($attr, $value);
         }
-        
-        $this->updateUserSession();
     }
     
     /**
@@ -111,9 +108,7 @@ class User {
      */
     public function attachRole($role){
         
-        $this->role = new Roles($role);
-        $this->permissions = $this->role->permissions->returnCalculatedPermissions();
-        
+        $this->role = $role;
         $this->updateUserSession();
     }
     
@@ -124,8 +119,6 @@ class User {
     public function addPermissions($perms) {
         
         $this->role->permissions->addUserPermissions($perms);
-        $this->permissions = $this->role->permissions->returnCalculatedPermissions();
-        
         $this->updateUserSession();
     }
     
@@ -133,14 +126,15 @@ class User {
      * Get calculated permissions for user
      * @return type
      */
-    public function getPermissions(){
-        
+    public function getPermissions(){       
         return $this->role->permissions->calculatedPermissions();
     }
     
-    public function updateUserSession(){
+    public function updateUserSession(){ 
         
-        return Session::add('user_'.Session::get('token'),serialize($this));
+        if(!is_null(Session::getSecurityToken())){
+            return Session::add('user_'.Session::getSecurityToken(),serialize($this));
+        }
     }
     
     /**
@@ -149,9 +143,18 @@ class User {
      * @param type $element
      * @return type
      */
-    public function can($action, $element){
-        
+    public function can($action, $element){        
         return $this->role->permissions->can($action, $element);
+    }
+    
+    /**
+     * Checks the role alias to verify user role
+     * 
+     * @param type $alias
+     * @return boolean TRUE or FALSE
+     */
+    public function is($alias){
+        return $this->role->permissions->is($alias);
     }
     
     /**
@@ -160,8 +163,7 @@ class User {
      * @param type $element
      * @return type
      */
-    public function canExecute($element, $controller, $method = 'index'){
-        
+    public function canExecute($element, $controller, $method = 'index'){        
         return $this->role->permissions->canExecute($element, $controller, $method);
     }
     
@@ -169,8 +171,7 @@ class User {
      * Update the current user definition
      * @return type
      */
-    public function __destruct(){   
-        
+    public function __destruct(){           
         $this->updateUserSession();
     }
 }

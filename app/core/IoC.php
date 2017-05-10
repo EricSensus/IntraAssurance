@@ -17,7 +17,7 @@ class IoC extends ContainerBuilder {
     
     public static $handlers;
     
-    public function __construct(Config $config){
+    public function __construct(Config $config = null){
         
         parent::__construct();
         
@@ -71,26 +71,11 @@ class IoC extends ContainerBuilder {
                     }
                 }
             }
-            
-            /**
-            //get any additional configs
-            if(file_exists(APP .DS. 'services' .DS. 'config' .DS. $handle.'.php')){
-                
-                $configs = include APP .DS. 'services' .DS. 'config' .DS. $handle.'.php';
-                
-                if(is_array($configs)){
-                    
-                    foreach($configs as $config => $value){  
-                        $this->definitions[$config] = $value;
                     }
-                }
-            }
-             * 
-             */
-        }
         
         //register database entries
-        $this->_registerDatabaseConfigurations();
+        if(!is_null($this->_config))
+            $this->_registerDatabaseConfigurations();
         
         //add definitions to IoC shell
         $this->build->addDefinitions($this->definitions);
@@ -119,7 +104,7 @@ class IoC extends ContainerBuilder {
         $this->definitions['password'] = $this->_config->password;
         
         //port
-        if($this->_config->password == ''){
+        if($this->_config->port == ''){
             $this->definitions['port'] = ini_get('mysqli.default.port');
         }
         else{

@@ -17,7 +17,7 @@ class HTML {
      */
     public static function register($resource){
        
-        $resources = array();
+        $resources = [];
         
         if(App::$shell->has('current_page')){
             
@@ -68,6 +68,8 @@ class HTML {
         
         if(count(self::$tracker)>='1'){
             
+            $tooltipset = false;
+            
             foreach(self::$tracker as $component){
                 
                 if($component == 'tooltip'){
@@ -79,7 +81,11 @@ class HTML {
                     }
                     
                     //initialize all tooltips
-                    $build .= "$('[data-toggle=\"tooltip\"]').tooltip(".$options."); ";
+                    if($tooltipset === FALSE){
+                        
+                        $build .= "$('[data-toggle=\"tooltip\"]').tooltip(".$options."); ";
+                        $tooltipset = TRUE;
+                    }
                     
                     //remove entry to avoid duplicate entries
                     $key = array_search('tooltip', self::$tracker);
@@ -107,13 +113,14 @@ class HTML {
         if(App::$shell->has('current_page')){
 
             $resource = App::$shell->get('current_page');
-
+            
             if(!is_null($resource)){
                 
                 foreach($resource as $htmlresource){
-
-                    if(!in_array($htmlresource, self::$keywords))
+                    
+                    if(is_string($htmlresource) && !in_array($htmlresource, self::$keywords)){                        
                         echo html_entity_decode($htmlresource);
+                    }
                 }
             }
             
@@ -131,29 +138,12 @@ class HTML {
         else{
             $resource = [];
         }
-
+        
         if(in_array('dataTables', $resource)){
 
             //datatables scripts and css
             echo '<link rel="stylesheet" href="'. RELATIVE_APP_PATH .'/html/facade/DataTables/css/jquery.dataTables.min.css">
             <script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/js/jquery.dataTables.js"></script>';
-
-            $script .= '//this is to prevent caching of remote bootstrap modals
-                        $("table.dataTable").on("click","a[data-toggle=modal]",function(ev) {
-                            ev.preventDefault();
-
-                            $(".modal-body").html(\''.self::AddPreloader('center','50','50').'\');
-                            var target = $(this).attr("href");
-
-                            if(target != "#"){ 
-                                var idtarget = $(this).attr("data-target");
-
-                                // load the url and show modal on success
-                                $(idtarget+" .modal-content").load(target, function() { 
-                                    $("#"+idtarget).modal("show"); 
-                                });
-                            }
-                        });';
         }
 
         if(in_array('overlay_modal', $resource)){
@@ -167,22 +157,21 @@ class HTML {
                     if(target != "#"){ 
 
                         var idtarget = $(this).attr("data-target");
-                        $(".modal-body").html(\''.self::AddPreloader('center','50','50').'\');
+                        $(".modal-content").html(\''.self::AddPreloader('center','50','50').'\');
 
                         // load the url and show modal on success
                         $(idtarget+" .modal-content").load(target, function() { 
-                            $("#"+idtarget).modal("show"); 
+                            $(idtarget).modal("show"); 
                         });
                     }
                 });';
         }
 
         if(in_array('rowreorder', $resource)){
-
             echo '<script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/plugins/rowReordering/jquery.dataTables.rowReordering.js"></script>';
         }
 
-        if(count($resource) >= 1){
+        if($script != '' || $build != ''){
             
             self::script('$(function () {'
                     . $script

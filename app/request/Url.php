@@ -2,6 +2,7 @@
 namespace Jenga\App\Request;
 
 use Jenga\App\Core\App;
+use Jenga\App\Views\HTML;
 use Jenga\App\Project\Routing\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -30,8 +31,11 @@ class Url{
             $url = $uri[0];
         }
         else{
-            $url = $request->getUrl();
+            $url = $request->getUri();
         }
+        
+        if($url == 'http://:/')
+            $url = self::base ();
         
         return $url;
     }
@@ -74,8 +78,20 @@ class Url{
         
         if($key != FALSE){
             
-            $type = self::returnUrlGenTypes($urltype);            
-            $url = self::_generate($key, $params, $type);
+            $type = self::returnUrlGenTypes($urltype);    
+            
+            if($type === 1)
+                $url = self::_simplegenerate($uri, $params, $type);
+            else
+                $url = self::_generate($key, $params, $type);
+            
+            //add site root to url
+            if($urltype == 'ABSOLUTE_PATH'){
+                
+                if(strpos(self::base(), $url)===FALSE){
+                    $url = self::base().$url;
+                }
+            }
             
             return $url;
         }
@@ -106,6 +122,32 @@ class Url{
      */
     private static function _generate($key, $params, $type){        
         return App::get('_urlgenerator')->generate($key, (is_null($params) ? [] : $params), $type);
+    }
+    
+    /**
+     * Bypasses the Symfony URL generation for a simpler format
+     * 
+     * @param type $key
+     * @param type $params
+     * @param type $type
+     */
+    private static function _simplegenerate($uri, $params, $type){
+        
+        if($type == 1){
+            
+            $uris = explode('/', $uri);    
+            
+            foreach ($uris as $uri) {
+                
+                if(strpos($uri, '{') === 0){
+                    $key = HTML::findInTags('{', '}', $uri);
+                    $uri = $params[$key];
+                }
+                
+                $blocks[] = $uri;
+            }
+            return join('/',$blocks);
+        }
     }
     
     /**

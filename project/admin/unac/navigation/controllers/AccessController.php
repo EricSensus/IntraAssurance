@@ -49,7 +49,8 @@ class AccessController extends Controller {
         $this->view->set('levels', $levels);
         
         //configure each elements contents
-        $actions = unserialize(File::get(APP_PROJECT .DS. 'element_actions_levels.php'));
+        $file = APP_PROJECT .DS. 'security' .DS. 'acl' .DS. 'element_actions_levels.php';
+        $actions = unserialize(File::get($file));
         
         $actionslist = [];
         foreach($levels as $acllevel){

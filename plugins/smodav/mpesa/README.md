@@ -17,7 +17,22 @@ The customer then confirms the transaction. If the validation of the customer fa
 
 Pull in the package through Composer.
 
-Run `composer require smodav/mpesa`
+### Native Addon
+When using vanilla PHP, modify your `composer.json` file to include:
+
+```json
+  "scripts": {
+        "post-update-cmd": [
+            "SmoDav\\Mpesa\\Support\\Installer::install"
+        ]
+  },
+```
+This script will copy the default configuration file to a config folder in the root directory of your project.
+Now proceed to require the package.
+
+### General Install
+
+Run `composer require smodav/mpesa` to get the latest stable version of the package.
 
 ### Laravel
 
@@ -47,14 +62,9 @@ To implement this package, a configuration repository is needed, thus any other
 framework will need to create its own implementation of the `ConfigurationStore`
 interface.
 
-### Native PHP
-
-When using Native PHP, you will need to modify the configuration file found under
-the package's config directory. 
-
 ## Configuration
 
-The `mpesa.php` file should be modified to meet your needs. The following are the
+The `mpesa.php` file under the `config` directory should be modified to meet your needs. The following are the
 settings:
 
 - demo: boolean
@@ -170,6 +180,44 @@ public function checkout()
 }
 
 ```
+
+For both Laravel and Native PHP, you can override the default paybill number and passkey
+that has been configured by the config file. Simply use the 
+`setPayBill($payBillNumber, $payBillPassKey)` function.
+
+Make sure the `setPayBill($payBillNumber, $payBillPassKey)` function
+is called before the `transact()` function.
+
+#####Laravel
+
+```php
+
+public function checkout()
+{
+    // initialize the amount to be deducted, the number and reference id
+    
+    $repsonse = mpesa(100, 254722000000, 115445)->setPayBill(898998, 'the SAG passkey')->transact();
+}
+
+```
+
+#####Native
+```php
+use SmoDav\Mpesa\Native\Mpesa;
+
+public function checkout()
+{
+    $mpesa = new Mpesa;
+    
+    $repsonse = $mpesa->setPayBill(898998, 'the SAG passkey')
+        ->request(100)
+        ->from(254722000000)
+        ->usingReferenceId(115445)
+        ->transact();
+}
+
+```
+
 
 ## Result
 

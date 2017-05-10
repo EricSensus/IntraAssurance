@@ -22,6 +22,7 @@ class Redirect{
 		@ob_end_clean(); // clear output buffer
 		header( 'HTTP/1.1 301 Moved Permanently' );
 		header( "Location: ".$url );
+                exit();
 	}
     }
     

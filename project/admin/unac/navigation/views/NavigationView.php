@@ -11,11 +11,11 @@ use Jenga\App\Views\Notifications;
 use Jenga\MyProject\Elements;
 
 class NavigationView extends View {
-    
+
     public function processMenu($menu, $menu_name, $template ){
-        
+
         $fullmenu = '<nav class="navbar" role="navigation">';
-        
+
         $fullmenu .= '<button type="button" '
                 . 'class="navbar-toggle"'
                 . ' data-toggle="collapse" data-target="#mainMenu">'
@@ -23,83 +23,92 @@ class NavigationView extends View {
                 . '<span class="icon-bar"></span>'
                 . '<span class="icon-bar"></span>'
                 . '</button>';
-        
+
         $fullmenu .= '<div class="collapse navbar-collapse">';
             $fullmenu .= '<ul class="sm navbar-nav" id="'.$menu_name.'">';
-            
+
             foreach($menu as $link){
-                
+
                 //$name = strtolower($link->linkname);
                 $alias = strtolower($link->linkalias);
                 $params = json_decode($link->params);
                 
                 if($link->parentid == 0){
-                    
+
                     $children = $this->processChildren($menu, $link->linkid, $menu_name, $template);
-                    
+
                     $fullmenu .= '<li '.($children['present'] == true ? 'class="has-child"' : '').'>';
                     $fullmenu .= '<a href="'.$this->processHref($link->href).'" class="navitem">';
-                    
+
                     $imgpath = TEMPLATE_URL.$template.'/images/'.$alias.'_navicon.png';
-                    
+
                     if($params->icopath != ''){
-                        
+
                         $icopath = ltrim($params->icopath, '/');
-                        
+
                         $fullmenu .= '<span class="img">';
                             $fullmenu .= '<img src="'.TEMPLATE_URL.$template.'/'.$icopath.'" />';
                         $fullmenu .= '</span>';
                     }
-                    elseif($params->icopath == '' && $this->_checkImageFile($imgpath)){                       
+                    elseif($params->icoclass != '' && $params->icopath == ''){
                         
+                        //$icopath = ltrim($params->icopath, '/');                        
+                        $fullmenu .= '<span class="icon">'
+                                        . '<i class="'.$params->icoclass.'"></i>'
+                                    . '</span>';
+                    }
+                    elseif($params->icopath == '' && $this->_checkImageFile($imgpath)){
+
                         $fullmenu .= '<span class="img">';
                             $fullmenu .= '<img src="'.TEMPLATE_URL.$template.'/images/'.$alias.'_navicon.png" />';
                         $fullmenu .= '</span>';
                     }
                     
+
                     $fullmenu .= '<span class="text">'. strtoupper($link->linkname).'</span>'
                                 .'</a>';
                     $fullmenu .= $children['menu'];
                     $fullmenu .= '</li>';
                 }
-                
+
                 unset($children);
             }
 
             $fullmenu .= '</ul>';
-            $fullmenu .= '</div>';        
+            $fullmenu .= '</div>';
         $fullmenu .= '</nav>';
-        
-        $this->set('name',$menu_name);
-        $this->set($menu_name, $fullmenu);
+
+        if($fullmenu !== ''){
+            $this->set($menu_name, $fullmenu);
+        }
     }
-    
+
     public function processHref($href) {
-        
+
         if(strpos($href, '{base}') == 0){
             $link = str_replace('{base}', SITE_PATH, $href);
         }
-        
+
         return $link;
     }
-    
+
     public function processChildren($links, $parentid, $menu_name, $template){
-        
+
         $submenu_present = false;
-        
+
         foreach($links as $link){
-           
+
             if($link->parentid == $parentid){
-                
+
                 $submenus[] = $link;
                 $submenu_present = true;
             }
         }
-        
+
         if(!is_null($submenus)){
-            
+
             $submenu = '<ul class="dropdown-menu" id="'.$menu_name.'">';
-            
+
             foreach($submenus as $link){
 
                 $params = json_decode($link->params);
@@ -107,12 +116,12 @@ class NavigationView extends View {
 
                 //recursive to check children of children
                 $children = $this->processChildren($submenus, $link->linkid, $menu_name, $template);
-                
+
                 $submenu .= '<li '.($children['present'] == true ? 'class="has-child"' : '').'>'
-                        . '<a href="'.SITE_PATH.$link->href.'" class="navitem">';
-                
+                        . '<a href="'.$this->processHref($link->href).'" class="navitem">';
+
                 $imgpath = TEMPLATE_URL.$template.'/images/'.$alias.'_navicon.png';
-                
+
                 if($params->icopath != ''){
 
                     $icopath = ltrim($params->icopath, '/');
@@ -121,51 +130,56 @@ class NavigationView extends View {
                         $submenu .= '<img src="'.TEMPLATE_URL.$template.'/'.$icopath.'" />';
                     $submenu .= '</span>';
                 }
-                elseif($params->icopath == '' && $this->_checkImageFile($imgpath)){                       
+                elseif($params->icoclass != '' && $params->icopath == ''){
+
+                    //$icopath = ltrim($params->icopath, '/');                        
+                    $submenu .= '<i class="'.$params->icoclass.'"></i>';
+                }
+                elseif($params->icopath == '' && $this->_checkImageFile($imgpath)){
 
                     $submenu .= '<span class="img">';
                         $submenu .= '<img src="'.TEMPLATE_URL.$template.'/images/'.$alias.'_navicon.png" />';
                     $submenu .= '</span>';
                 }
-                
+
                 $submenu .= '<span class="text">'. strtoupper($link->linkname).'</span>'
                             .'</a>'
                             . $children['menu']
-                        . '</li>';                
+                        . '</li>';
             }
-            
+
             $submenu .= '</ul>';
         }
-        
+
         $subholder['present'] = $submenu_present;
         $subholder['menu'] = $submenu;
-        
+
         return $subholder;
     }
-    
+
     public function displayNavGroup($list){
-        
+
         $count = count($list);
         $columns = ['Title',
                     'Alias',
                     '<a '.Notifications::tooltip('Access Control Level').'>ACL</a>',
                     '<a '.Notifications::tooltip('These are the menu links under each group').'>Items in Group</a>',
-                    'Description',                    
+                    'Description',
                     ''];
-        
+
         $rows = ['{{<a data-toggle="modal" data-backdrop="static" data-target="#editgroup" href="'.Url::base().'/ajax/admin/navigation/editgroup/{id}">{title}</a>}}',
                 '{alias}',
                 '{acl}',
-                '{{<a href="'.Url::route('/admin/navigation/{action}/{id}',['action'=>'showitems']).'/{id}">{itemcount}</a>}}',
-                '{description}',                
+                '{{<a href="'.Url::route('/admin/navigation/{action}/{id}',['action'=>'showitems']).'{id}">{itemcount}</a>}}',
+                '{description}',
                 '{{<a class="smallicon" data-confirm="{name} will be deleted. Are you sure?" href="'.Url::base().'/ajax/admin/navigation/deletegroup/{id}" >'
                     . '<img '.Notifications::tooltip('Delete {name}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
                 . '</a>}}'
-                ];     
-        
+                ];
+
         $dom = '<"top">rt<"bottom"p><"clear">';
         $ordering = ['Title' => 'asc'];
-        
+
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/',
             'tools' => [
@@ -184,20 +198,20 @@ class NavigationView extends View {
                                     ]
                         ]
                 ];
-        
+
         $navgrouptable = $this->_mainTable('navgroups_table', $count, $columns, $rows, $list, $ordering, $dom, $tools);
-        
+
         //add the logins modal
         $groupmodal = Overlays::Modal(['id'=>'editgroup']);
         $this->set('groupmodal', $groupmodal);
-        
+
         $this->set('navgroups', $navgrouptable);
         $this->set('navcount', count($list));
     }
-    
+
     private function _mainTable($name, $count, array $columns, array $rows, $source, $ordering, $dom, $tools){
-        
-        $schematic = [            
+
+        $schematic = [
             'table' => [
                 'width' => '100%',
                 'class' => 'display table table-striped',
@@ -240,26 +254,26 @@ class NavigationView extends View {
 
         $table = Generate::Table($name,$schematic);
 
-        if(Input::post('printer')){            
+        if(Input::post('printer')){
             $table->printOutput();
         }
-        else{            
+        else{
             $table->buildTools($tools); //->assignPanel('search');
             $maintable = $table->render(TRUE);
-        
+
             return $maintable;
         }
     }
-    
+
     private function _checkImageFile($url){
-        
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL,$url);
         // don't download content
         curl_setopt($ch, CURLOPT_NOBODY, 1);
         curl_setopt($ch, CURLOPT_FAILONERROR, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        
+
         if(curl_exec($ch)!==FALSE){
             return true;
         }
@@ -267,11 +281,11 @@ class NavigationView extends View {
             return false;
         }
     }
-    
+
     public function groupAddEditView($group = null) {
-        
+
         $levels = $this->_getAccessLevels();
-        
+
         $schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
@@ -292,9 +306,9 @@ class NavigationView extends View {
                 ]
             ]
         ];
-        
+
         $groupform = Generate::Form('addgroupform', $schematic)->render('horizontal', TRUE);
-        
+
         $modalsettings = [
             'id' => 'addtaskmodal',
             'formid' => 'addgroupform',
@@ -312,33 +326,33 @@ class NavigationView extends View {
                 ]
             ]
         ];
-        
-        $addform = Overlays::ModalDialog($modalsettings, $groupform);         
-        $this->set('addgroupform',$addform);         
-        
+
+        $addform = Overlays::ModalDialog($modalsettings, $groupform);
+        $this->set('addgroupform',$addform);
+
         $this->setViewPanel('navigation'.DS.'groupform');
     }
-    
+
     private function _getAccessLevels(){
-        
+
         $levels = Elements::call('Navigation/AccessController')->model->format('array')->show();
-        
-        foreach($levels as $level){            
+
+        foreach($levels as $level){
             $list[$level['id']] = $level['name'];
         }
-        
+
         return $list;
     }
-    
+
     public function itemsTable($items, $destination, $menuid = null){
-        
+
         $count = count($items);
         $columns = ['No','','Name','Alias','Link','Order','Published','Default',''];
-        
+
         $rows = ['{count}',
                 '{icon}',
                 '{{<a data-toggle="modal" data-backdrop="static" data-target="#editgroup" '
-                    . 'href="'.Url::route('/admin/{element}/{action}', 
+                    . 'href="'.Url::route('/admin/{element}/{action}',
                             ['element'=>'navigation','action'=>'additem'])
                             .'/{menu_groups_id}/{id}">{linkname}</a>}}',
                 '{linkalias}',
@@ -346,14 +360,14 @@ class NavigationView extends View {
                 '{linkorder}',
                 '{published}',
                 '{home}',
-                '{{<a class="smallicon" data-confirm="{linkname} will be deleted. Are you sure?" href="'.Url::base().'/ajax/navigation/deleteitem/{id}/{menu_groups_id}" >'
+                '{{<a class="smallicon" data-confirm="{linkname} will be deleted. Are you sure?" href="'.Url::base().'/ajax/admin/navigation/deleteitem/{id}/{menu_groups_id}" >'
                     . '<img '.Notifications::tooltip('Delete {linkname}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
                 . '</a>}}'
-                ];     
-        
+                ];
+
         $dom = '<"top">rt<"bottom"p><"clear">';
-        $ordering =['Order' => 'asc'];
-        
+        $ordering =['No' => 'asc'];
+
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/',
             'tools' => [
@@ -371,26 +385,26 @@ class NavigationView extends View {
                                     ]
                         ]
                 ];
-        
+
         $navgrouptable = $this->_mainTable('navgroups_table', $count, $columns, $rows, $items, $ordering, $dom, $tools);
-        
+
         //add the logins modal
         $groupmodal = Overlays::Modal(['id'=>'editgroup']);
         $groupmodal .= Overlays::confirm();
-        
+
         $this->set('groupmodal', $groupmodal);
-        
+
         $this->set('navgroups', $navgrouptable);
         $this->set('navcount', count($items));
-        
+
         $this->setViewPanel('navigation'.DS.'menuitems');
     }
-    
+
     public function itemsForm($group, $id, $item = null, array $allitems = [], $order = null) {
-        
+
         //parse href
         if(!is_null($item->href)){
-            
+
             if(strpos($item->href,'/') === 0 || strpos($item->href,'{base}') === 0){
                 $href = '/'.ltrim(str_replace('{base}', '', $item->href),'/');
             }
@@ -398,7 +412,7 @@ class NavigationView extends View {
                 $href = $item->href;
             }
         }
-        
+
         $schematic = [
             'preventjQuery' => TRUE,
             'css' => FALSE,
@@ -414,17 +428,17 @@ class NavigationView extends View {
                 'Menu Item Alias *' => ['text','alias',$item->linkalias,['class'=>'form-control','required'=>'']],
                 'Parent Item' => ['select','parent',$item->parentid, $allitems,['class'=>'form-control']],
                 'Published' => ['select','published',(is_null($item->published) ?: '1'), ['1'=>'Yes','0'=>'No'], ['class'=>'form-control']],
-                'Default' => ['select','home',(!is_null($item->home) ? 'yes' : 'no'), ['yes'=>'Yes','no'=>'No'], ['class'=>'form-control']],
+                'Default' => ['select','home',(!is_null($item->home) ? $item->home : 'no'), ['yes'=>'Yes','no'=>'No'], ['class'=>'form-control']],
                 'Menu Group' => ['text','group',$group->title,['class'=>'form-control','readonly'=>'readonly']],
                 'Menu Order' => ['text','order',$order,['class'=>'form-control']],
                 'Extra Parameters' => ['textarea','params',$item->params,['class'=>'form-control']]
             ],
             'map' => [1,2,1,2,2,1]
         ];
-        
+
         $eform = Generate::Form('customereditform', $schematic)
-                            ->render(['orientation'=>'vertical','columns'=>'col-md-4,col-md-8'],TRUE); 
-        
+                            ->render(['orientation'=>'vertical','columns'=>'col-md-4,col-md-8'],TRUE);
+
         $modal_settings = [
             'id' => 'customermodal',
             'formid' => 'customereditform',
@@ -442,10 +456,10 @@ class NavigationView extends View {
                 ]
             ]
         ];
-        
+
         $editform = Overlays::ModalDialog($modal_settings, $eform);
-        
-        $this->set('editform',$editform);        
+
+        $this->set('editform',$editform);
         $this->setViewPanel('navigation'. DS .'menuitem-edit');
     }
 }

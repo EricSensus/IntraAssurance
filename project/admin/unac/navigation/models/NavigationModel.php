@@ -10,7 +10,6 @@ class NavigationModel extends ORM{
     
     /**
      * Returns the full menu based on the sent menu group alias
-     * 
      * @param type $alias
      */
     public function getMenuFromGroupAlias($alias){
@@ -61,13 +60,15 @@ class NavigationModel extends ORM{
     /**
      * Return menu groups
      */
-    public function menuGroups(){       
+    public function menuGroups($id = null){       
         
-        return $this->table('menu_groups')->show();
+        if(is_null($id))
+            return $this->table('menu_groups')->show();
+        else
+            return $this->table ('menu_groups')->where ('id', $id)->show();
     }
     
-    public function findGroup($id) {
-        
+    public function findGroup($id) {        
         return $this->table('menu_groups')->find($id);
     }
 }

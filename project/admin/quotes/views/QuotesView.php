@@ -1,4 +1,5 @@
 <?php
+
 namespace Jenga\MyProject\Quotes\Views;
 
 use Jenga\App\Views\View;
@@ -8,46 +9,65 @@ use Jenga\App\Request\Input;
 use Jenga\App\Html\Generate;
 use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
+use Jenga\App\Project\Core\Project;
 use Jenga\App\Request\Facade\Sanitize;
 
+use function DI\object;
 use Jenga\MyProject\Elements;
 
 class QuotesView extends View
 {
-
+    private $dash = false;
     public $url;
 
-    public function generateMiniTable()
+    public function generateMiniTable($dashboard = false)
     {
         $count = $this->get('count');
         $source = $this->get('source');
         $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
-
-        $columns = ['No', 'Full Names', 'Insured Entity', 'Status'];
+        $quote_preview_url = Url::link('/admin/myquote/view/');
+        $columns = ['No', 'Full Names', 'Insured Entity', 'Status', 'Preview'];
         $rows = ['{{<div style="width:100%;text-align:center">'
             . '<a href="' . Url::base() . $quoteurl . '/edit/{id}">{id}</a>'
             . '</div>}}',
             '{customer}',
             '{entity}',
             '{status}',
-            ];
+            '{{<a href="' . $quote_preview_url . '{id}" data-toggle="modal" data-target="#quoteModal"><i class="fa fa-eye"></i> Preview</a>}}'
+        ];
 
         $dom = '<"top">rt<"bottom"p><"clear">';
 
         $quotestable = $this->_table('active_quotes_table', $count, $columns, $rows, $source, $dom);
+
         $this->set('activequotes', $quotestable);
+        $modal_settings = [
+            'id' => 'quoteModal',
+            'formid' => 'quote-preview-form',
+            'size' => 'large',
+            'role' => 'dialog',
+            'title' => 'Quote Preview',
+            'buttons' => [
+                'Cancel' => [
+                    'class' => 'btn btn-default',
+                    'data-dismiss' => 'modal'
+                ]
+            ]
+        ];
+        $this->set('quoteModal', Overlays::Modal($modal_settings));
     }
 
-    public function showLeads(){
+    public function showLeads()
+    {
         $count = $this->get('count');
         $source = $this->get('source');
-//        print_r($source);exit;
+
         $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
 
         $columns = ['No', 'Date Created', 'Full Names', 'Product', 'Status', 'Actions'];
         $rows = ['{{
                 <div style="width:100%;text-align:center">
-                    <a href="' . Url::base() . $quoteurl . '/edit/{quote_no}">{quote_no}</a>
+                    <a href="' . $quoteurl . '/edit/{quote_no}">{quote_no}</a>
                 </div>
             }}',
             '{datetime}',
@@ -159,15 +179,16 @@ class QuotesView extends View
     /**
      * Processes the quotes display section
      *
-     * @depends Quotes/QuotesController->showQuotes();
+     * @depends QuotesBlueprint/QuotesController->showQuotes();
      */
-    public function generateTable()
+    public function generateTable($dash = false)
     {
+        $this->dash = $dash;
 
         $count = $this->get('count');
         $source = $this->get('source');
 
-        $quoteurl = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'quotes']);
+        $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
 
         $columns = ['Quote No',
             'Date Generated',
@@ -176,11 +197,12 @@ class QuotesView extends View
             'Product',
             'Linked Agent',
             'Status',
-            'Source',
+            'Premium',
+            //'Source',
             'Actions'
         ];
 
-        $rows = ['{{<a href="' . Url::base() . $quoteurl . '/edit/{id}">'
+        $rows = ['{{<a href="' . $quoteurl . '/edit/{id}">'
             . '<div style="width:100%;text-align:center">'
             . '{id}'
             . '</div></a>}}',
@@ -191,14 +213,30 @@ class QuotesView extends View
             '{product}',
             '{agent}',
             '{status}',
-            '{source}',
+            '{{<div style="text-align:right">{premium}</div>}}',
+            //'{source}',
             '{actions}'
         ];
+
+        if ($dash) {
+            $columns = $this->removeValue('Full Names', $columns);
+            $rows = $this->removeValue('{customer}', $rows);
+        }
 
         $dom = '<"top">rt<"bottom"p><"clear">';
 
         $quotestable = $this->_mainTable('quotes_table', $count, $columns, $rows, $source, $dom);
+
         $this->set('quotes_table', $quotestable);
+    }
+
+    public function removeValue($needle, $array = array())
+    {
+        $key = array_search($needle, $array);
+        if ($key != false)
+            unset($array[$key]);
+
+        return $array;
     }
 
     private function _table($name, $count, array $columns, array $rows, $source, $dom)
@@ -257,7 +295,6 @@ class QuotesView extends View
     {
 
         $schematic = [
-
             'table' => [
                 'width' => '100%',
                 'class' => 'display table table-striped',
@@ -361,7 +398,8 @@ class QuotesView extends View
         if (Input::post('printer')) {
             $table->printOutput();
         } else {
-            $table->buildTools($tools); //->assignPanel('search');
+            if (!$this->dash)
+                $table->buildTools($tools); //->assignPanel('search');
             $maintable = $table->render(TRUE);
 
             return $maintable;
@@ -372,7 +410,6 @@ class QuotesView extends View
     {
 
         $schematic = [
-
             'table' => [
                 'width' => '100%',
                 'class' => 'display',
@@ -446,8 +483,7 @@ class QuotesView extends View
     public function addQuote($agents, $products, $insurers, $customer = null)
     {
 
-        if (!is_null($customer)) {
-
+        if (!empty($customer)) {
             $controls = [
                 '{id}' => ['hidden', 'customerid', $customer->id],
                 '{status}' => ['hidden', 'status', 'new'],
@@ -467,12 +503,12 @@ class QuotesView extends View
                 '{status}' => ['hidden', 'status', 'new'],
                 'Date Generated' => ['date', 'dategen', date('d F Y', time()), ['format' => 'd F Y']],
                 'Linked Agent' => ['select', 'agent', '', $agents],
-                'Customer Name' => ['text', 'customer', '', ['class' => 'form-control', 'overwrite' => TRUE]],
+                'Customer Name' => ['select', 'customer', '', [], ['class' => 'form-control', 'id' => 'customer']],
                 'Email Address' => ['text', 'email', ''],
                 'Telephone' => ['text', 'phone', ''],
                 'Select Product' => ['select', 'product', '', $products],
                 '{insurers}' => ['select', 'insurers', '', $insurers],
-                '{submit}' => ['submit', 'btnsubmit', 'Save Quote']
+                '{submit}' => ['submit', 'btnsubmit', 'Start Quote Generation', ['class' => 'form-control pull-right']]
             ];
         }
 
@@ -485,9 +521,9 @@ class QuotesView extends View
                 'agent' => [
                     'required' => 'Please select the agent to be linked with the quote'
                 ],
-                'customer' => [
-                    'required' => 'Please enter the customer names'
-                ],
+//                'customer' => [
+//                    'required' => 'Please enter the customer names'
+//                ],
                 'product' => [
                     'required' => 'Please select insurance product'
                 ]
@@ -501,10 +537,10 @@ class QuotesView extends View
             'default_currency' => 'ksh'
         ];
 
-        $quoteform = $qform->render(ABSOLUTE_PATH . DS . 'project' . DS . 'admin' . DS . 'quotes' . DS . 'views' . DS . 'panels' . DS . 'add' . DS . 'fancyform.php', TRUE, $vars);
+        $quoteform = $qform->render(ABSOLUTE_PATH . DS . 'project' . DS . 'admin' . DS . 'quotes' . DS . 'views' . DS . 'panels' . DS . 'internal' . DS . 'quote-template.php', TRUE, $vars);
 
         $this->set('quoteadd', $quoteform);
-        $this->setViewPanel('add' . DS . 'addquotemine');
+        $this->setViewPanel('internal' . DS . 'full-quote-form');
     }
 
     public function addQuoteForPolicy($agents, $products, $insurers, $customer = null)
@@ -559,10 +595,8 @@ class QuotesView extends View
      */
     public function editQuote($quote, $agents, $products, $insurers, $forms)
     {
-
         //generate quote edit form
         $customer = json_decode($quote->customer_info);
-
         $quote_schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
@@ -662,17 +696,25 @@ class QuotesView extends View
         $this->setViewPanel('edit' . DS . 'editquotepanel');
     }
 
+    public function internalConfirmQuote($quote, $customer, $products, $agent)
+    {
+
+        $names = ucwords(strtolower($customer->name));
+        $this->set('name', $names);
+        $this->set('product', $products);
+        $this->set('quote', $quote);
+        $this->setViewPanel('confirm-quote-form');
+    }
+
     public function mailQuote($quote, $customer, $products, $agent)
     {
 
-        $names = ucwords(strtolower($customer->customer));
-
-        $preview_link_content = '<p>Dear ' . $names . ',</p><p>Hope this finds you well.</p><p>We have prepared offer no. ' . $quote->id . ' for you. To review the offer,please click on the link below:</p><a href=\"' . Url::base() . Url::route('/quotes/previewquote/{id}/{view}', ['id' => Help::encrypt($quote->id), 'view' => Help::encrypt('external')]) . '\">Quote Preview</a><p>If you have any questions regarding the offer, please don\'t hesitate to contact me.</p><p>Best regards,<br/>' . $agent->names . '<br/>Email: ' . $agent->email_address . '<br/>Telephone: ' . $agent->telephone_number;
-        $pdf_content = '<p>Dear ' . $names . ',</p><p>Hope this finds you well.</p><p>We have prepared offer no. ' . $quote->id . ' for you. The offer is in the PDF attached to this email.</p></p>If you have any questions regarding the offer, please don\'t hesitate\nto contact me.</p><p>Best regards,<br/>' . $agent->names . '<br/>Email: ' . $agent->email_address . '<br/>Telephone: ' . $agent->telephone_number . '</p>';
+        $names = ucwords(strtolower($customer->name));
+        $preview_link_content = '<p>Dear ' . $names . ',</p><p>Hope this finds you well.</p><p>We have prepared offer no. ' . $quote->id . ' for you. To review the offer,please click on the link below:</p><a href=\"' . Url::base() . Url::route('/quote/actions/{link}', ['link' => Help::encrypt($quote->id)]) . '\">Quote Preview</a><p>If you have any questions regarding the offer, please don\'t hesitate to contact me.</p><p>Best regards,<br/>' . $agent->names . '<br/>Email: ' . $agent->email_address . '<br/>Telephone: ' . $agent->telephone_number;
+        $pdf_content = '<p>Dear ' . $names . ',</p><p>Hope this finds you well.</p><p>We have prepared offer no. ' . $quote->id . ' for you to review</p><p>Please click on the link below:</p><p><a href=\"' . Url::base() . Url::route('/quote/actions/{link}', ['link' => Help::encrypt($quote->id)]) . '\">Quote Preview</a></p> The offer is in the PDF attached to this email.</p></p>If you have any questions regarding the offer, please don\'t hesitate\nto contact me.</p><p>Best regards,<br/>' . $agent->names . '<br/>Email: ' . $agent->email_address . '<br/>Telephone: ' . $agent->telephone_number . '</p>';
 
         //get own company
         $owncompany = Elements::call('Companies/CompaniesController')->ownCompany(TRUE);
-
         $email_schema = [
             'preventjQuery' => TRUE,
             'preventZebraJs' => TRUE,
@@ -694,12 +736,12 @@ class QuotesView extends View
                 'Message*' => ['textarea', 'content', '', ['class' => 'email_content modal_required']]
             ]
         ];
-
         $emailform = Generate::Form('emailform', $email_schema)->render('vertical', TRUE);
 
         $modal_settings = [
             'formid' => 'emailform',
             'role' => 'dialog',
+            'size' => 'large',
             'title' => 'Send Email Quotation',
             'buttons' => [
                 'Cancel' => [
@@ -708,7 +750,7 @@ class QuotesView extends View
                 ],
                 'Send Quotation' => [
                     'type' => 'submit',
-                    'class' => 'btn btn-primary',
+                    'class' => 'btn btn-primary mail',
                     'id' => 'save_button'
                 ]
             ]
@@ -720,7 +762,6 @@ class QuotesView extends View
         $this->set('addform', $addform);
         $this->set('preview_link_content', $preview_link_content);
         $this->set('pdf_content', $pdf_content);
-
         $this->setViewPanel('email-quote-form');
     }
 
@@ -780,6 +821,7 @@ class QuotesView extends View
     public function createEmailAttachment($file)
     {
 
+
         $filesize = Help::humanFileSize($file);
         $splfile = end(explode(DS, $file));
 
@@ -837,74 +879,42 @@ class QuotesView extends View
         </table>';
     }
 
-    public function createQuotePreview()
+    public function createQuotePreview($data, $confirm = false)
     {
-
-        //create products details list
-        $productslist = $this->get('product_info');
-
-        $plist = '<ul>';
-        foreach ($productslist as $details => $value) {
-            $plist .= '<li><strong>' . str_replace('_', ' ', $details) . ':</strong> ' . $value . '</li>';
-        }
-        $plist .= '</ul>';
-
-        $this->set('product_details_list', $plist);
-
-        //create recommendations table
-        $recoms = $this->get('recommendations');
-
-        $recotable = '<table style="text-align:center" class="table table-striped table-bordered" width="100%" border="0" cellpadding="10">';
-        foreach ($recoms as $id => $recom) {
-
-            //loop names
-            if (array_key_exists('name', $recom)) {
-                $reconames[] = $recom['name'];
-            }
-
-            //loop amounts
-            if (array_key_exists('amount', $recom)) {
-                $recoamounts[] = 'ksh ' . number_format($recom['amount'], 2);
-            }
-
-            //set the recommended company
-            if ($recom['recommended']) {
-                $this->set('recom_company', $recom['name']);
-            }
-        }
-
-        //names
-        $recotable .= '<tr>';
-        foreach ($reconames as $names) {
-            $recotable .= '<td width="' . (100 / count($reconames)) . '%"><strong>' . $names . '</strong></td>';
-        }
-        $recotable .= '</tr>';
-
-        //amounts
-        $recotable .= '<tr>';
-        foreach ($recoamounts as $amount) {
-            $recotable .= '<td>' . $amount . '</td>';
-        }
-        $recotable .= '</tr>';
-
-        $recotable .= '</table>';
-
-        //get location
-        $own = json_decode($this->get('own_company')->physical_details);
-        $location = $own->location . ', ' . $own->citycounty;
-
-        $this->set('location', $location);
-        $this->set('recommendations', $recotable);
-        $this->setViewPanel('preview-quote');
+        $object = (object)$data;
+        $this->set('info', $data);
+        $this->set('confirm', $confirm);
+        $this->set('additional_covers', $this->covers($object->product));
+        $this->setViewPanel('previews/' . $object->product_info->alias);
     }
 
-    public function quotePreview($data, $kind)
+    private function covers($object)
     {
-        $this->set('data', $data);
-        $this->setViewPanel('quotations/' . $kind);
+        $primitives = ['windscreen', 'riotes', 'audio', 'passenger', 'terrorism'];
+        $return = [];
+        foreach ($primitives as $one) {
+            if ($object->{$one} == 'yes') {
+                $return[] = ucfirst($one);
+            }
+        }
+        if (empty($return)) {
+            return 'N/A';
+        }
+        return implode(',', $return);
     }
 
-    public function loadAgentAssignment($insurer_agents, $quote_no){
+    /**
+     * @param array $data
+     */
+    public function quotePreview($data)
+    {
+        $this->set('data_array', $data);
+        $this->setViewPanel('quotations/' . $data[0]->product->alias);
+    }
+
+
+    public function loadAgentAssignment($insurer_agents, $quote_no)
+    {
         $this->disable();
 
         $schematic = [
@@ -945,5 +955,75 @@ class QuotesView extends View
         $aform = $form->render('horizontal', TRUE);
 
         echo $assign = Overlays::ModalDialog($modal_settings, $aform);
+    }
+
+    public function quoteWizard($schematic, $customer)
+    {
+        $schematic = $this->oneSchematic($schematic);
+        $form = Generate::Form('quoteform', $schematic);
+        $this->set('form', $form->render('horizontal', TRUE));
+        $this->set('customer_data', $customer);
+        $this->setViewPanel('internal/tab-form');
+    }
+
+    public function quoteEditWizard($schematic, $customer)
+    {
+        $schematic = $this->oneSchematic($schematic);
+        $form = Generate::Form('quoteform', $schematic);
+        $this->set('form', $form->render('horizontal', TRUE));
+        $this->set('customer_data', $customer);
+        $this->setViewPanel('edit/tab-form');
+    }
+
+    private function oneSchematic($schematic)
+    {
+        $controls = [];
+        $maps = [];
+        $count = 1;
+        //print_r($schematic['controls']);exit;
+        foreach ($schematic as $schema) {
+            if (empty($controls)) {
+                $controls = [
+                    '{specialnote' . 0 . '}' =>
+                        ['note', 'specialnote0', "<span class='killer0'></span>"]
+                ];
+                $maps[] = 1;
+            }
+            unset($schema['controls']['{submit}']);
+            $schema['controls']['{specialnote' . $count . '}'] = ['note', 'specialnote' . $count, "<span class='killer$count'></span>"];
+            $controls = array_merge($controls, $schema['controls']);
+            $maps = array_merge($maps, $schema['map']);
+            $count++;
+        }
+        $controls['{submit}'] = ['button', 'btnSubmit', "Save Quote", 'button', ['class' => 'btn btn-success']];
+        array_push($maps, 1);
+        return $schemas = [
+            'preventjQuery' => true,
+            'engine' => 'bootstrap',
+            'validator' => 'parsley',
+            'css' => false,
+            'method' => 'post',
+            //  'action' => '/admin/myquote/save/motor',
+            'attributes' => ['data-parsley-validate' => ''],
+            'controls' => $controls,
+            'map' => $maps];
+    }
+
+    public function loadTabs($schematics, $customer = array(), $pdt){
+        foreach ($schematics as $key => $schematic) {
+            $this->set('tab' . $key, $schematic);
+        }
+
+        if($pdt == 'medical') {
+            $entity_data = Elements::call('Medical/MedicalController')
+                ->view->createEntityDataArr($this->get('entity_data'));
+        } else if($pdt == 'travel') {
+            $entity_data = Elements::call('Travel/TravelController')
+                ->view->createEntityDataArr($this->get('entity_data'));
+        }
+
+        $this->set('entity_data_arr', $entity_data);
+        $this->set('customer_data', $customer);
+        $this->setViewPanel('internal/'.$pdt);
     }
 }

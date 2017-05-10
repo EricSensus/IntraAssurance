@@ -27,6 +27,7 @@ class Table extends View {
     private $_addrowcount = 1;
     private $_tools;
     private $_instancekey = 0;
+    private $_attachtools = true;
     
     private $_checkbox = false;
     
@@ -49,18 +50,66 @@ class Table extends View {
             //register dataTables caching mechanism into HTML processing queue
             HTML::register('dataTables');
             
-            $this->table .= "<script>
+            $this->table .= "<script type=\"text/javascript\">
                     $(document).ready( function () {";
             
-            $rowcheck = $this->_getToolsRequiringRowData($this->_tools);
+            if(!isset($this->_schematic['rowreorder'])){
+                $tableinit .= "
+                       var ".$this->name."_table = $('#".$this->name."').DataTable({"
+                    . "stateSave: true,";
+            }
+            else{
+                $tableinit .= "$('#".$this->name."').dataTable({"
+                    . "stateSave: false,";
+                
+                $tableinit .= '"columnDefs": [
+                                { "orderable": true, targets: 1 }
+                              ],';
+            }
             
+            //disable columns
+            if(isset($this->_schematic['ordering']['disable'])){
+                
+                $discol = $this->_schematic['ordering']['disable'];
+                
+                $tableinit .= '"columnDefs": [
+                                { "orderable": false, "targets": '.$discol.' }
+                              ],';
+                
+                unset($this->_schematic['ordering']['disable']);
+            }        
+            
+            //dom
+            if(isset($this->_schematic['dom'])){                
+                $tableinit .= '"dom":'."'".$this->_schematic['dom']."'";
+            }
+            
+            //page length
+            if(isset($this->_schematic['rows_per_page'])){                
+                $tableinit .= ', "lengthChange": true, "pageLength":'.$this->_schematic['rows_per_page'];
+            }
+            
+            //ordering
+            if(isset($this->_schematic['ordering'])){
+                
+                $col = array_keys($this->_schematic['ordering']);
+                $colpos = array_search($col[0], $this->_schematic['columns']);
+                
+                $tableinit .= ', "order": [['.$colpos.', "'.$this->_schematic['ordering'][$col[0]].'"]]';
+            }
+            
+            $tableinit .= "});";
+            
+            //add the table initialisation
+            $this->table .= $tableinit;
+            
+            $rowcheck = $this->_getToolsRequiringRowData($this->_tools);
             if($rowcheck['present'] == TRUE){                
                 
               //the delete section
               $this->table .= "function updateTextArea(fxn) {   
                                  var allvalls = [];
-                                 var dtable = $('#".$this->name."').dataTable();
-                                 var dchecked = dtable.$('.chkitem:checked', {'page': 'all'});
+                                 var dchecked = ".$this->name."_table.$('.chkitem:checked', {'page': 'all'});
                                  
                                  dchecked.each(function() {                                   
                                     if($(this).is(':checked')){                                    
@@ -114,45 +163,6 @@ class Table extends View {
                                 });                                
                               });";
             }
-            
-            if(!isset($this->_schematic['rowreorder'])){
-                $this->table .= "var ".$this->name."_table = $('#".$this->name."').DataTable({"
-                    . "stateSave: true,";
-            }
-            else{
-                $this->table .= "var ".$this->name."_table = $('#".$this->name."').dataTable({"
-                    . "stateSave: false,";
-                
-                $this->table .= '"columnDefs": [
-                                { "orderable": true, targets: 1 }
-                              ],';
-            }
-            
-            if(isset($this->_schematic['ordering']['disable'])){
-                
-                $discol = $this->_schematic['ordering']['disable'];
-                
-                $this->table .= '"columnDefs": [
-                                { "orderable": false, "targets": '.$discol.' }
-                              ],';
-                
-                unset($this->_schematic['ordering']['disable']);
-            }        
-            
-            if(isset($this->_schematic['dom'])){
-                
-                $this->table .= '"dom":'."'".$this->_schematic['dom']."'";
-            }
-            
-            if(isset($this->_schematic['ordering'])){
-                
-                $col = array_keys($this->_schematic['ordering']);
-                $colpos = array_search($col[0], $this->_schematic['columns']);
-                
-                $this->table .= ', "order": [['.$colpos.', "'.$this->_schematic['ordering'][$col[0]].'"]]';
-            }
-            
-            $this->table .= "});";
             
             //the print sections
             if(isset($this->_tools) && array_key_exists('printer', $this->_tools)){
@@ -278,40 +288,34 @@ class Table extends View {
         }
         
         //build the toolbar if set
-        if($this->toolbar != ''){            
+        if($this->toolbar != '' && $this->_attachtools === true){            
             $this->table .= $this->toolbar;
         }
         
         if(isset($this->_schematic['table'])){
             
-            if(array_key_exists('id', $this->_schematic['table'])){
-                
+            if(array_key_exists('id', $this->_schematic['table'])){                
                 unset($this->_schematic['table']['id']);
             }
             
             $attributes = $this->_processAttributes($this->_schematic['table']);
             
-            if($this->toolbar != ''){
-            
-                $this->table .= '<table id="'.$this->name.'" '.$attributes.' data-page-length=\''.$this->_schematic['rows_per_page'].'\'>';
+            if($this->toolbar != ''){            
+                $this->table .= '<table id="'.$this->name.'" '.$attributes.'>';
             }
-            else{
-                
-                $this->table .= '<table id="'.$this->name.'" '.$attributes.' data-page-length=\''.$this->_schematic['rows_per_page'].'\'>';
+            else{                
+                $this->table .= '<table id="'.$this->name.'" '.$attributes.'>';
             }
         }
-        else{
-            
+        else{            
             $this->table .= '<table id="'.$this->name.'">';
         }
         
-        if(isset($this->_schematic['columns'])){
-            
+        if(isset($this->_schematic['columns'])){            
             $this->_columns = $this->buildColumns();
         }        
         
-        if(isset($this->_schematic['row_variables'])){
-            
+        if(isset($this->_schematic['row_variables'])){            
             $this->_rows = $this->buildRows();
         }
         
@@ -347,7 +351,7 @@ class Table extends View {
      * 
      * @param type $tools
      */
-    public function buildTools($tools){
+    public function buildTools($tools, $return = false){
         
         if($this->_getCount() >= '1' && $this->_schematic['format'] != 'print'){
             
@@ -383,6 +387,13 @@ class Table extends View {
                 
                 $this->table .= $this->toolbar;
             }
+        }
+        
+        //return tools
+        if($return){
+            
+            $this->_attachtools = FALSE;
+            return $build['bar'];
         }
         
         return $this;
@@ -1054,17 +1065,13 @@ class Table extends View {
             $this->buildtable($this->_schematic);
         }
         else{
-            
-            $this->table .= '<div class="clearfix"></div>'
-                    . Views\Notifications::Alert('No records found', 'info', TRUE, TRUE);
+            $this->table .= '<div class="clearfix"></div>'.Views\Notifications::Alert('No records found', 'info', TRUE, TRUE);
         }
         
-        if($return == FALSE){
-            
+        if($return == FALSE){            
             echo $this->table;
         }
-        else{
-            
+        else{            
             return $this->table;
         }
     }

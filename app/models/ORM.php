@@ -1394,11 +1394,11 @@ class ORM { //extends Mysqli\Database
 
                     $count = 0;
                     $entity = App::resolve($this->entity);
-
+                    
                     if(is_array($results)){
 
                         foreach($results as $property => $value){
-
+                            
                             $entity->{$property} = $value;
 
                             if($count == (count($results)-1)){

@@ -2,6 +2,7 @@
 namespace Jenga\MyProject\Agents\Controllers;
 
 use Jenga\App\Request\Input;
+use Jenga\App\Request\Session;
 use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Services\Charts;
 use Jenga\App\Controllers\Controller;
@@ -161,5 +162,15 @@ class AgentsController extends Controller{
 
     public function getAgentById($finder){
         return $this->model->where ('id', $finder)->first();
+    }
+
+    public function getLinkedAgent(){
+        $customer = Elements::call('Customers/CustomersController')->model->getCustomerById(Session::get('customer_id'));
+        $agent_id = $customer->insurer_agents_id;
+
+        // get attached agent
+        $agent = $this->model->where('id', $agent_id)->first();
+
+        $this->view->linkedAgent($agent);
     }
 }

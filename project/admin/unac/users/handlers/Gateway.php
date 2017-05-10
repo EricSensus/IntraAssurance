@@ -16,6 +16,10 @@ class Gateway extends ORM implements UserPermissionsInterface {
         'agentid','enabled','lastlogin','permissions']);
     }
     
+    /**
+     * This set the element that will be used to authenticate the system users and 
+     * therefore isn't subject to any autorization events which may restrict its access
+     */
     public function setAuthorizationElement() {
         $this->auth_element = 'users';
     }

@@ -426,12 +426,14 @@ class Form extends \Zebra_Form{
                 }
                 else{
                     
-                    $html .= '<table border="0">'
+                    
+                    $html .= '<table class="checkbox">'
                                 . '<tr>';
                     
                     foreach($radiochk as $key){
-                        $html .= '<td style="padding:5px;">'.$arg1[$key].'</td>';
-                        $html .= '<td>'.$arg1['label_'.$key].'</td>';
+                        
+                        $html .= '<td>'.$arg1[$key].'</td>';
+                        $html .= '<td>'.$arg1['label_'.$key]. '</td>';
                     }
                     
                     $html .= '</tr>'

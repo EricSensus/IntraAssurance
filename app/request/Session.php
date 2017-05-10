@@ -2,9 +2,15 @@
 namespace Jenga\App\Request;
 
 use Jenga\App\Core\App;
+use Jenga\App\Project\Security\User;
+use Jenga\App\Request\Handlers\SessionHandler;
+
 use Symfony\Component\HttpFoundation\Session\Session as SymSession;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
+/**
+ * Handles Session management for the Jenga Framework
+ */
 class Session {
     
     public static $sanitize;
@@ -32,13 +38,12 @@ class Session {
         if(App::get('_config')->session_storage_type == 'database'){
             
             //replace the native Symfony handler with the custom Jenga Handler
-            $sesshandler = App::get('Jenga\App\Request\Handlers\SessionHandler');
+            $sesshandler = App::get(SessionHandler::class);
 
             $storage = new NativeSessionStorage([], $sesshandler);
             self::init(new SymSession($storage));        
         }
-        elseif(App::get('_config')->session_storage_type == 'file'){
-            
+        elseif(App::get('_config')->session_storage_type == 'file'){            
             self::init(new SymSession());
         }
         
@@ -119,8 +124,7 @@ class Session {
      * @param type $key
      * @return mixed session values
      */
-    public static function get($key){
-        
+    public static function get($key){        
         return self::_retrieve($key);
     }
     
@@ -129,9 +133,24 @@ class Session {
      * 
      * @return type
      */
-    public static function all(){
+    public static function all($include_token = false){        
         
-        return self::$_symsession->all();
+        $allvalues = self::$_symsession->all();
+        
+        foreach($allvalues as $key => $value){
+            
+            //remove security token and user class
+            if($include_token === FALSE){
+                if(!(unserialize($value) instanceof User) && $key !== 'token'){
+                    $list[$key] = $value;
+                }
+            }
+            else{
+                $list = $allvalues;
+            }
+        }
+        
+        return $list;
     }
     
     /**
@@ -139,16 +158,14 @@ class Session {
      * 
      * @param type $key
      */
-    public static function delete($key){
-        
+    public static function delete($key){        
         return self::$_symsession->remove($key);
     }
     
     /**
      * Destroys the current session
      */
-    public static function destroy(){
-        
+    public static function destroy(){        
         return self::$_symsession->invalidate();
     }
     
@@ -157,8 +174,7 @@ class Session {
      * @param type $type
      * @param type $value
      */
-    public static function flash($type, $value){
-        
+    public static function flash($type, $value){        
        self::$_flash->add($type, $value);
     }
     
@@ -183,10 +199,13 @@ class Session {
         
         $sessionkeys = self::all();
         
-        if(is_string($key) || is_int($key)){
+        if(!is_null($sessionkeys)){
             
-            if(array_key_exists($key, $sessionkeys)){            
-                return TRUE;
+            if(array_key_exists($key, $sessionkeys)){   
+
+                //check for null session key
+                if(!is_null($sessionkeys[$key]))
+                    return TRUE;            
             }
             else{    
 
@@ -194,10 +213,23 @@ class Session {
                 if(self::$_flash->has($key)){
                     return TRUE;
                 }
-                else{
-                    return FALSE;
-                }
             }
         }
+        
+        return FALSE;
+    }
+    
+    /**
+     * Returns the set user security token
+     * @return boolean
+     */
+    public static function getSecurityToken() {
+        
+        $token = Session::get('token');
+        
+        if(is_null($token))
+            return FALSE;
+        
+        return $token;
     }
 }

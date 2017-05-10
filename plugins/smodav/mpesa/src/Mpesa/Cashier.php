@@ -48,6 +48,22 @@ class Cashier
     }
 
     /**
+     * Override the config pay bill number and pass key.
+     *
+     * @param $payBillNumber
+     * @param $payBillPassKey
+     *
+     * @return $this
+     */
+    public function setPayBill($payBillNumber, $payBillPassKey)
+    {
+        $this->transactor->setPayBill($payBillNumber, $payBillPassKey);
+
+        return $this;
+    }
+
+
+    /**
      * Set the request amount to be deducted.
      *
      * @param int $amount
@@ -93,10 +109,6 @@ class Cashier
      */
     public function usingReferenceId($referenceId)
     {
-        if (!is_numeric($referenceId)) {
-            throw new \InvalidArgumentException('The reference id must be numeric');
-        }
-
         $this->referenceId = $referenceId;
 
         return $this;

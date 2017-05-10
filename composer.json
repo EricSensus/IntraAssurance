@@ -10,9 +10,17 @@
         "ocramius/proxy-manager": "~1.0",
         "jan-swiecki/simple-annotations": "^0.3.1",
         "phpmailer/phpmailer": "^5.2",
-        "smodav/mpesa": "^1.0"
+        "smodav/mpesa": "^1.0",
+        "dompdf/dompdf": "^0.8.0",
+        "mpdf/mpdf": "^6.1",
+        "monolog/monolog": "^1.0",
+        "php-console/php-console": "^3.1",
+        "theorchard/monolog-cascade": "^0.4.1"
     },
     "config": {
         "vendor-dir" : "plugins"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^3.2"
     }
 }

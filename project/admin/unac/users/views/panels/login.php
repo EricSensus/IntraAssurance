@@ -51,7 +51,7 @@ $schematic = [
 $login = Generate::Form('loginform', $schematic);
 
 echo '<div class="logintop">'
-        . '<img src="'.RELATIVE_PROJECT_PATH.'/templates/login/images/intraassurance-logo.png" />'
+        . '<img src="'.RELATIVE_PROJECT_PATH.'/templates/login/images/esurance-logo.png" />'
     . '</div>';
 
 $login->render('vertical');

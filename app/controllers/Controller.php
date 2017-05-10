@@ -2,6 +2,7 @@
 namespace Jenga\App\Controllers;
 
 use Jenga\App\Core\App;
+use Jenga\App\Project\Logs\Log;
 use Jenga\App\Project\Core\Project;
 
 class Controller extends Project {
@@ -37,6 +38,7 @@ class Controller extends Project {
     public function __construct($method = '', $params = '') { 
         
         App::$shell->injectOn($this);
+        //$panelargs = null;
         
         if(is_array($params)){
 
@@ -48,7 +50,6 @@ class Controller extends Project {
             }
         }
         else{
-            
             //set the default panel
             $this->view->setViewPanel($element);
         }
@@ -77,9 +78,24 @@ class Controller extends Project {
                     ){
                 
                 $this->{$this->method}($this->params);
+                
+                //call the onAllowed() function
+                $controller = explode('\\',App::get('controller'));
+                $this->user()->role->onAllowed(App::get('primaryelement'), $controller, $this->method);
+                
+                return TRUE;
             }
             else{
-                return 'USER_NOT_ALLOWED';
+                
+                $controller = explode('\\',App::get('controller'));
+                
+                //disable the view set before the main method is executed
+                $this->view->disable();
+                
+                //call the onDenial() function
+                $this->user()->role->onDenied(App::get('primaryelement'), $controller, $this->method);
+                
+                return FALSE;
             }
         }
         //called by secondary controller
@@ -91,11 +107,24 @@ class Controller extends Project {
                         $method
                     )){
                 
-                $this->$method($panelargs);
+                //call the onAllowed() function
+                $controller = explode('\\',App::get('controller'));
+                $this->user()->role->onAllowed(App::get('secondaryelement')['name'], $controller, $method);
+                
+                call_user_func_array([$this, $method], $panelargs);
+                return TRUE;
             }
             else{
                 
-                return 'ACCESS_DENIED';
+                $controller = explode('\\',App::get('controller'));
+                
+                //disable the view set before the main method is executed
+                $this->view->disable();
+                
+                //call the onDenied() function
+                $this->user()->role->onDenied(App::get('secondaryelement')['name'], $controller, $method);
+                
+                return FALSE;
             }
         }
     }
@@ -106,7 +135,8 @@ class Controller extends Project {
      * @param type $name
      * @param type $value
      */
-    public function set($name,$value) {        
+    public function set($name,$value) {
+        
         $this->view->set($name,$value);
     }
     

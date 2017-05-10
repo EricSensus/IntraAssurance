@@ -81,6 +81,5 @@ $policyview .= '<div class="row">'
                 . '</div>';
 
 $policyview .= '<div class="row last">'. $btnsubmit.'</div>';
-
 if(is_null($display))
     echo $policyview;

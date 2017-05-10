@@ -1,0 +1,10 @@
+<?php
+namespace {{{mdl_namespace}}};
+
+use Jenga\App\Models\ORM;
+
+class {{{mdl_classname}}} extends ORM {
+
+    public $table = '';
+
+}

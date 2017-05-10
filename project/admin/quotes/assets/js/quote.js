@@ -1,7 +1,6 @@
 $(function () {
     $('head').append('<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.structure.min.css">');
     $('head').append('<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">');
-    $.getScript('//unpkg.com/vue');
     $('body').on('focus', ".mydatepicker", function () {
         var my_format = $(this).attr('dervis-date');
         if (typeof my_format == 'undefined') {

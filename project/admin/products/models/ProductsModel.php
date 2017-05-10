@@ -11,11 +11,14 @@ class ProductsModel extends ORM
     public function getProduct($id, $return = 'array')
     {
         if ($return == 'array') {
-            $data = $this->select('name')
-                ->where('id', '=', $id)
+            $data = $this->where('id', '=', $id)
                 ->first();
 
-            return ['id' => $id, 'name' => $data->name];
+            return [
+                'id' => $id,
+                'name' => $data->name,
+                'product_alias' => $data->alias
+            ];
         } else {
             return $this->where('id', '=', $id)->first();
         }

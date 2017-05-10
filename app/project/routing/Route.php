@@ -3,6 +3,7 @@ namespace Jenga\App\Project\Routing;
 
 use Jenga\App\Core\App;
 use Jenga\App\Helpers\Help;
+use Jenga\App\Project\Core\Project;
 use Jenga\App\Project\EventsHandler\Events;
 
 class Route {
@@ -463,6 +464,24 @@ class Route {
         $alias = ltrim($alias, '_');
         
         return $alias;
+    }
+    
+    /**
+     * Collects all the routes embedded in each element
+     * @param type $name
+     */
+    public static function collect($name){
+        
+        $elements = Project::elements();
+        $path = $elements[$name]['path'];
+        
+        //check if the file exists
+        if(file_exists(ABSOLUTE_PROJECT_PATH .DS. $path .DS. 'routes.php')){
+            require ABSOLUTE_PROJECT_PATH .DS. $path .DS. 'routes.php';
+        }
+        else{
+            App::critical_error('Element route file not found in: '.$name);
+        }
     }
     
     /**

@@ -1,0 +1,10 @@
+<?php
+namespace {{{ctrl_namespace}}};
+
+use Jenga\App\Controllers\Controller;
+
+class {{{ctrl_classname}}} extends Controller{
+    
+    public function index(){
+    }
+}

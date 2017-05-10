@@ -51,7 +51,9 @@ class Resources {
         
         //if fully namespaced
         if(strpos($controller, '\\') !== false){
-            $controller = end(explode('\\', $controller));
+            
+            $ctr = explode('\\', $controller);
+            $controller = end($ctr);
         }
         
         /**
@@ -136,7 +138,10 @@ class Resources {
      */
     public function returnRouteResources($alias = null){
         
-        return $this->resources[(!is_string($alias) ? $this->currentroute : $alias)]['resources'];
+        $resource = $this->resources[(!is_string($alias) ? $this->currentroute : $alias)];
+        
+        if(array_key_exists('resources', $resource))
+            return $resource['resources'];
     }
     
     /**

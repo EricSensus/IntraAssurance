@@ -34,9 +34,68 @@ class File{
          * @param type $filename
          * @return type
          */
-        public static function put($filename, $data){
+        public static function put($filename, $data, $recursive = false, $mode = 0755){     
+            
+            if($recursive){
+                mkdir (dirname ($filename), $mode, TRUE);
+            }
             
             return file_put_contents($filename, $data);
+        }
+        
+        /**
+         * Deletes a file
+         * 
+         * @param type $filename
+         * @return type
+         */
+        public static function delete($filename) {
+            return unlink($filename);
+        }
+
+        /**
+         * Deletes a folder
+         * 
+         * @param type $dirname
+         * @param type $forcerecursively This will force a recursive deletion
+         */
+        public static function deleteFolder($dirname, $forcerecursively = FALSE) {
+            
+            if($forcerecursively === FALSE){
+                rmdir($dirname);
+            }
+            else{
+                
+                if (is_dir($dirname)) {
+                    
+                    $objects = self::scandir($dirname);                    
+                    
+                    foreach ($objects as $name => $files) {
+                            
+                        if(is_array($files)){
+                            
+                            foreach($files as $innername => $file){
+
+                                if(is_int($innername))
+                                    self::delete($file);
+                                else
+                                    self::deleteFolder($dirname .DS. $name .DS. $innername, TRUE);
+                            }
+                        }
+                        else{
+                            self::delete($files);
+                        }
+                        
+                        if(is_string($name))
+                            self::deleteFolder($dirname .DS. $name);
+                    }
+                    
+                    reset($objects);
+                    self::deleteFolder($dirname);
+                }
+            }
+            
+            return true;
         }
         
         /**
@@ -48,20 +107,23 @@ class File{
             
             $listDir = [];
             
-            foreach(scandir($dir) as $sub) {
+            if(is_dir($dir)){
+                
+                foreach(scandir($dir) as $sub) {
 
-                if ($sub != "." && $sub != ".." && $sub != "Thumb.db") {
+                    if ($sub != "." && $sub != ".." && $sub != "Thumb.db") {
 
-                    if(is_file($dir.DS.$sub)) {
+                        if(is_file($dir.DS.$sub)) {
 
-                        $listDir[] = $dir.DS.$sub;
+                            $listDir[] = $dir.DS.$sub;
+                        }
+                        elseif(is_dir($dir.DS.$sub)){
+
+                            $listDir[$sub] = self::scandir($dir.DS.$sub);
+                        }
                     }
-                    elseif(is_dir($dir.DS.$sub)){
-
-                        $listDir[$sub] = self::scandir($dir.DS.$sub);
-                    }
-                }
-            }   
+                }   
+            }
             
             return $listDir;  
         }

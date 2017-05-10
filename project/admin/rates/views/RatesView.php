@@ -1,11 +1,14 @@
 <?php
+
 namespace Jenga\MyProject\Rates\Views;
 
 use Jenga\App\Html\Generate;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Url;
+use Jenga\App\Views\Notifications;
 use Jenga\App\Views\Overlays;
 use Jenga\App\Views\View;
+
 /**
  * Created by PhpStorm.
  * User: developer
@@ -14,13 +17,15 @@ use Jenga\App\Views\View;
  */
 class RatesView extends View
 {
-    public function generateTable(){
+    public function generateTable($setup = false)
+    {
 
         $count = $this->get('count');
         $source = $this->get('source');
         $rate_types = $this->get('rate_types');
 
         $columns = [
+            'Company',
             'Rate Name',
             'Rate Value',
             'Rate Type',
@@ -28,7 +33,8 @@ class RatesView extends View
         ];
 
         $row_vars = [
-            '{{<a data-toggle="modal" data-target="#edit_rate_modal" href="'.Url::link('/admin/editrates/{id}').'">{rate_name}</a>}}',
+            '{company}',
+            '{{<a data-toggle="modal" data-target="#edit_rate_modal" href="' . Url::link('/admin/editrates/{id}') . '">{rate_name}</a>}}',
             '{rate_value}',
             '{rate_type}',
             '{rate_category}'
@@ -43,10 +49,105 @@ class RatesView extends View
         ];
 
         $editform = Overlays::Modal($modal_settings);
-        $this->set('editmodal',$editform);
+        $this->set('editmodal', $editform);
+        $this->setViewPanel('rates');
+        if ($setup) {
+
+            $this->setViewPanel('rates-s');
+
+        }
     }
 
-    public function showtable($name, $columns, $count, $source, $row_vars, $rate_types, $rate_cats){
+    public function insurersTable($insurers)
+    {
+        $columns = ['Name', 'Rates Added', 'View Rates'];
+        $rows = [
+            '{official_name}',
+            '{rates}',
+            '{{<a class="smallicon raters" href="' . Url::current() . '?__company={link}" ><i class="fa fa-eye"></i> </a>}}'];
+
+        $schematic = [
+
+            'table' => [
+                'width' => '100%',
+                'class' => 'display',
+                'border' => 0,
+                'cellpadding' => 2
+            ],
+            'dom' => '<"top">rt<"bottom"><"clear">',
+            'columns' => $columns,
+            'ordering' => [
+                'Name' => 'asc',
+                'disable' => 0
+            ],
+            'column_attributes' => [
+                'default' => [
+                    'align' => 'center'
+                ],
+                'header_row' => [
+                    'class' => 'header'
+                ],
+                '4' => [
+                    'align' => 'left'
+                ]
+            ],
+            'row_count' => count($insurers),
+            'rows_per_page' => 25,
+            'row_source' => [
+                'object' => $insurers
+            ],
+            'row_variables' => $rows,
+            'row_attributes' => [
+                'default' => [
+                    'align' => 'center'
+                ],
+                'odd_row' => [
+                    'class' => 'odd'
+                ],
+                'even_row' => [
+                    'class' => 'even'
+                ]
+            ],
+            'cell_attributes' => [
+                'default' => [
+                ]
+            ]
+        ];
+
+        $table = Generate::Table('companies', $schematic);
+
+        $tools = [
+            'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small',
+            'settings' => [
+                'add_tool_names' => false,
+                'wrap_with' => 'div' //the default option is wrap_with => 'table'
+            ],
+            'tools' => [
+                'add' => [
+                    'path' => '/admin/companies/getinsurer',
+                    'type' => 'modal',
+                    'settings' => [
+                        'id' => 'addeditmodal',
+                        'data-target' => '#addeditmodal',
+                        'data-backdrop' => 'static'
+                    ]
+                ],
+                'delete' => [
+                    'path' => '/admin/companies/deleteinsurer',
+                    'using' => ['{id}'=>'{name}']
+                ]
+            ]
+        ];
+
+        $table->buildTools($tools);
+        $insurertable = $table->render(TRUE);
+
+        $this->set('insurertable', $insurertable);
+    }
+
+    public function showtable($name, $columns, $count, $source, $row_vars, $rate_types, $rate_cats)
+    {
+
         $schematic = [
             'table' => [
                 'width' => '100%',
@@ -68,26 +169,11 @@ class RatesView extends View
             'row_variables' => $row_vars,
         ];
 
-        $table = Generate::Table($name,$schematic);
+        $table = Generate::Table($name, $schematic);
 
         $tools = [
-            'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/',
+            'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
             'tools' => [
-                'search' => [
-                    'title' => 'Rates Filter Form',
-                    'form' => [
-                        'preventjQuery' => TRUE,
-                        'action' => '/admin/rates/search',
-                        'controls' => [
-                            'destination' => ['hidden', 'destination', Url::current()],
-                            'Rate Name' => ['text','rate_name',''],
-                            'Rate Value' => ['text','rate_value',''],
-                            'Rate Type' => ['select','rate_type', '', $rate_types],
-                            'Rate Category' => ['select','rate_category','', $rate_cats]
-                        ],
-                        'map' => [2,2]
-                    ]
-                ],
                 'add' => [
                     'path' => '/admin/rates/add',
                     'type' => 'modal',
@@ -97,40 +183,22 @@ class RatesView extends View
                         'data-backdrop' => 'static'
                     ]
                 ],
-                'import' => [
-                    'path' => Url::base().'/admin/rates/import',
-                    'upload_folder' => ABSOLUTE_PATH .DS. 'tmp',
-                    'allowed_file_extensions' => ['csv','xls','xlsx','xlsm','xlsb'],
-                    'file_preview' => FALSE
-                ],
-                'export' => [
-                    'path' => '/admin/rates/export'
-                ],
-                'printer' => [
-                    'path' => '/admin/rates/printer',
-                    'settings' => [
-                        'title' => 'Rates Management'
-                    ]
-                ],
                 'delete' => [
                     'path' => '/admin/rates/delete',
-                    'using' => ['{id}'=>'{rate_name},{rate_value}']
+                    'using' => ['{id}' => '{rate_name},{rate_value}']
                 ]
             ]
         ];
 
-        if(!is_null(Input::post('printer'))){
-            $table->printOutput();
-        }else {
-            $table->buildTools($tools);
+        $tools = $table->buildTools($tools, TRUE);
+        $rates_table = $table->render(TRUE);
 
-            $rates_table = $table->render(TRUE);
-            $this->set('rates_table', $rates_table);
-        }
+        $this->set('rates_table', $rates_table);
+        $this->setViewPanel('rates-setup');
     }
 
-    public function showAddRateForm($rate_types, $rate_cats, $insurer){
-        
+    public function showAddRateForm($rate_types = [], $rate_cats, $insurer, $companies)
+    {
         $schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
@@ -138,15 +206,10 @@ class RatesView extends View
             'controls' => [
                 'destination' => ['hidden', 'destination', '/admin/rates'],
                 'Rate Name' => ['text', 'rate_name', ''],
-                'Rate Alias' => ['text', 'alias', ''],
                 'Rate Value' => ['text', 'rate_value', ''],
                 'Rate Type' => ['select', 'rate_type', '', $rate_types],
                 'Rate Category' => ['select', 'rate_category', '', $rate_cats],
-                'Insurance Company' => ['select', 'insurer_id', $insurer->id, [
-                    $insurer->id => $insurer->name
-                ], [
-                    'disabled' => 'disabled'
-                ]]
+                'Insurance Company' => ['select', 'insurer_id', $insurer->id, $companies,]
             ],
             'validation' => [
                 'rate_name' => [
@@ -190,7 +253,8 @@ class RatesView extends View
         $this->setViewPanel('add-rates');
     }
 
-    public function showEditRateForm($rate, $rate_types, $rate_cats, $insurer){
+    public function showEditRateForm($rate, $rate_types, $rate_cats, $insurer)
+    {
         $this->disable();
 
         $schematic = [
@@ -201,7 +265,6 @@ class RatesView extends View
                 'destination' => ['hidden', 'destination', '/admin/rates'],
                 'edit' => ['hidden', 'edit', $rate->id],
                 'Rate Name' => ['text', 'rate_name', $rate->rate_name],
-                'Alias' => ['text', 'alias', $rate->alias],
                 'Rate Value' => ['text', 'rate_value', $rate->rate_value],
                 'Rate Type' => ['select', 'rate_type', $rate->rate_type, $rate_types],
                 'Rate Category' => ['select', 'rate_category', $rate->rate_category, $rate_cats],
