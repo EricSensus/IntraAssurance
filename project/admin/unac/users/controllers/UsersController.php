@@ -387,6 +387,7 @@ class UsersController extends Controller
         // get customer name by email
         $customer_name = Elements::call('Customers/CustomersController')
             ->model->where('email', $user->username)->first()->name;
+//        dump($customer_name);exit;
 
         if ($user === FALSE) {
             Redirect::withNotice('Invalid Username or Password', 'error')
