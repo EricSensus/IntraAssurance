@@ -433,6 +433,7 @@ class EntitiesController extends Controller
         $entity->entity_values = $data;
         $entity->product_id = $product_id;
         $entity->save();
+
         return $entity->last_altered_row;
     }
 

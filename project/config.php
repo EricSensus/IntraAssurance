@@ -11,8 +11,8 @@ class Config
     public $mailadmin = 'info@esurance365.com';
 
     /*     * **** Database Settings ************** */
-    public $db = 'esurance_db';
-    public $dbprefix = 'esu_';
+    public $db = 'intraasurance_db';
+    public $dbprefix = 'itr_';
     public $host = '127.0.0.1';
     public $username = 'root';
     public $password = 'root';

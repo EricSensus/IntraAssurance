@@ -17,11 +17,17 @@ use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Entities\Controllers\EntitiesController;
+use Jenga\MyProject\Motor\Models\MotorModel;
 use Jenga\MyProject\Motor\Repositories\MotorQuotation;
 use Jenga\MyProject\Motor\Repositories\Payments;
+use Jenga\MyProject\Motor\Views\MotorView;
 use Jenga\MyProject\Quotes\Controllers\QuotesController;
+use Jenga\MyProject\Quotes\Library\Companies\AIGQuotes;
+use Jenga\MyProject\Quotes\Library\Companies\JubileeQuotes;
 
 /**
+ * @property-read MotorView $view
+ * @property-read MotorModel $model
  * Class MotorController
  */
 class MotorController extends Controller
@@ -43,10 +49,8 @@ class MotorController extends Controller
      */
     private $_quotes;
 
-    public function __construct(){
-        
-        parent::__construct();
-        
+    public function setEntities()
+    {
         $this->_customer = Elements::call('Customers/CustomersController');
         $this->_entity = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
@@ -55,33 +59,17 @@ class MotorController extends Controller
     /**
      * @param string $step
      */
-    public function index($step = "1", $commercial = false){
-        
-        //check for commercial session key and remove it
-        if($commercial === false && Session::has('motor_commercial') && $step == "1"){
-            Session::delete('motor_commercial');
-        }
-        else{
-            
-        }
-        
-        if ($step != "1") {
-            if (empty(Session::get('customer_id')) || (Session::get('type') != 'motor')) {
-                Redirect::to('/motor/step/1');
-            }
-        }
-        
+    public function index($step = "1")
+    {
+//        if ($step != "1") {
+//            if (!Session::has('user_id')) {
+//                Redirect::to('/motor/step/1');
+//                exit;
+//            }
+//        }
+        $this->setEntities();
         $this->loadData($step);
         $this->view->wizard($this->data);
-    }
-    
-    /**
-     * Sets the session to reconfigure the forms to show comercial fields
-     */
-    public function commercialCfg(){
-        
-        Session::set('motor_commercial', true);
-        $this->index('1', TRUE);
     }
 
     /**
@@ -89,6 +77,7 @@ class MotorController extends Controller
      */
     public function save($step)
     {
+        $this->setEntities();
         switch ($step) {
             case 1:
                 $this->savePersonalDetails();
@@ -113,10 +102,9 @@ class MotorController extends Controller
      * Load data for the view
      * @param $step
      */
-    private function loadData($step){
-        
+    private function loadData($step)
+    {
         $this->data = new \stdClass();
-        
         $this->data->step = $step;
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
         $this->data->numbers = $this->__select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
@@ -129,13 +117,7 @@ class MotorController extends Controller
             'Mombasa', 'Moyale', 'Mumias', 'Muranga', 'Nairobi', 'Naivasha', 'Nakuru', 'Namanga', 'Nanyuki',
             'Naro Moru', 'Narok', 'Nyahururu', 'Nyeri', 'Ruiru', 'Shimoni', 'Takaungu', 'Thika', 'Vihiga', 'Voi'
             , 'Wajir', 'Watamu', 'Webuye', 'Wundanyi']);
-        $this->data->car_usage = $this->__select([
-            'For social, domestic and pleasure purposes',
-            'For professional  purposes',
-            'By personally in connection with connection or your employer\'s business',
-            'By employees or other parties  in connection with connection or your employer\'s business',
-            'For the carriage of samples or trade goods farm requisites, produce of live stock'
-        ]);
+        $this->data->car_usage = ['For social, domestic and pleasure purposes', 'For professional and business purposes'];
         $this->data->parking_lots = [
             'Car Park' => 'Car Park',
             'Driveway' => 'Driveway',
@@ -147,15 +129,13 @@ class MotorController extends Controller
             $make[$one->code] = $one->title;
         }
         $this->data->makes = $make;
-        $this->data->cover_type = $this->__select([
-            'Comprehensive',
-            'Third Party Only'
-        ]);
-        
+        $this->data->cover_type = $this->__select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
         if ($step == 4) {
-            $this->data->payments = new MotorQuotation();
+            $the_quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
+            $jubilee = (new JubileeQuotes($the_quote))->calculate();
+            $aig = (new AIGQuotes($the_quote))->calculate();
+            $this->data->payments = [$jubilee, $aig];
         }
-        
         $this->data->pick_cert = $this->__select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',
             'Nairobi, Mombasa Road, Tulip House, Ground Floor',
@@ -170,31 +150,37 @@ class MotorController extends Controller
             'Nyeri, Sohan Plaza, Moi Nyayo Way',
             'Thika, Thika Arcade, Thika Town, 4th Floor',
             'Post to my address in your records (a small extra charge will apply)']);
+        $this->data->customer = $this->_customer->getCustomerByUserId($this->user()->user_id);
     }
 
-    private function saveOtherCarDetails(){
-        
+    private function saveOtherCarDetails()
+    {
         $count = Session::get('other_covers');
         $saved = [];
-        
         for ($i = 1; $i <= $count; $i++) {
             $got = $this->__buildStack($i);
             $entity_id = $this->_entity->getEntityIdByAlias('vehicle')->id;
-            $saved[] = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'),
-                $entity_id,
-                json_encode($got));
+            $saved[] = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id,
+                json_encode($got), null, 1);
 
         }
-        
         Session::set('other_id', serialize($saved));
         Redirect::to('/motor/step/3');
     }
 
     private function savePersonalDetails()
     {
-        if ($this->_customer->saveMyCustomer($this->filteredData())) {
+        $saved = $this->_customer->saveCustomer('motor', $this->getInputForStep(1), false);
+
+        if ($saved) {
             Session::set('type', 'motor');
-            Redirect::to('/motor/step/2');
+
+            $notification = 'Saved Please proceed to step two';
+            // get the verification notification if new customer registration
+            if (Session::has('sent_confirmation'))
+                $notification = Session::get('sent_confirmation');
+
+            Redirect::withNotice($notification, 'success')->to('/motor/step/2');
         } else {
             Redirect::to('/motor/step/1')->withNotice('Could not save your info, try again', 'error');
         }
@@ -203,7 +189,7 @@ class MotorController extends Controller
     private function __buildStack($index)
     {
         $build = [];
-        foreach ($this->filteredData() as $key => $value) {
+        foreach (Input::post() as $key => $value) {
             if (ends_with($key, $index)) {
                 $build[rtrim($key, $index)] = $value;
             }
@@ -211,34 +197,30 @@ class MotorController extends Controller
         return $build;
     }
 
-    private function saveCarDetails(){
-        
+    private function saveCarDetails()
+    {
         $entity_id = $this->_entity->getEntityIdByAlias('vehicle')->id;
-        $car_details = json_encode($this->filteredData());//some zebra stuff
-        $saved = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id, $car_details);
-        
+        $car_details = json_encode($this->getInputForStep(2));
+        $saved = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id, $car_details, null, 1);
         Session::set('main_id', $saved);
         Session::set('other_id', serialize([]));
-        
         if (!empty(Input::post('othercovers'))) {
             Session::set('other_covers', Input::post('othercovers'));
             Redirect::to('/motor/step/22');
         } else {
             Redirect::to('/motor/step/3');
         }
+
     }
 
-    private function saveCoverDetails(){
-        
+    private function saveCoverDetails()
+    {
         $ids['customer_id'] = Session::get('customer_id');
         $ids['product_id'] = 1;
-        
         $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById(Session::get('customer_id'), null)));
         $entities = unserialize(Session::get('other_id'));
-        
         array_push($entities, Session::get('main_id'));
-        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->filteredData(), null, $entities);
-        
+        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->getInputForStep(3), null, $entities);
         Session::set('quote_id', $id);
         Redirect::to('/motor/step/4');
     }
@@ -264,15 +246,45 @@ class MotorController extends Controller
         return $yearlist;
     }
 
-    private function filteredData()
+    public function getExtraCovers($count = 1)
     {
-        $block = [
-            'name_motor_personal_details', 'zebra_honeypot_motor_personal_details', 'zebra_csrf_token_motor_personal_details',
-            'name_motor_car_details', 'zebra_honeypot_motor_car_details', 'zebra_honeypot_motor_cover_details',
-            'zebra_csrf_token_motor_car_details', 'btnSubmitSpecial', 'name_motor_cover_details',
-            'zebra_csrf_token_motor_cover_details', 'btnsubmit',
-        ];
-        
-        return array_except(Input::post(), $block);
+        $this->loadData(22);
+        echo $this->view->getSchematic($this->data, $count);
+    }
+
+    /**
+     * Get the form schematic
+     * @return array
+     */
+    public function getSchematic()
+    {
+        $forms = [1, 2, 3];
+        $schematic = [];
+        $this->setEntities();
+        $count = 0;
+
+        foreach ($forms as $form) {
+            $this->loadData(++$count);
+            $schematic[$form] = $this->view->getSchematic($this->data, false);
+        }
+
+        return $schematic;
+    }
+
+    /**
+     * Return only specified input for a step
+     * @param $step
+     * @return array
+     */
+    public function getInputForStep($step)
+    {
+        $this->setEntities();
+        $this->loadData($step);
+        $schematic = $this->view->getSchematic($this->data, false);
+        $my_array = [];
+        foreach ($schematic['controls'] as $schema) {
+            $my_array[] = $schema[1];
+        }
+        return array_only(Input::post(), $my_array);
     }
 }

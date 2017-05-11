@@ -1573,7 +1573,6 @@ class CustomersController extends Controller
      * @param bool $internal
      * @return bool
      */
-
     public function saveCustomer($product = null, $data = null, $internal = true)
     {
         $user_ctrl = Elements::call('Users/UsersController');
@@ -1596,7 +1595,7 @@ class CustomersController extends Controller
 
         $customer = $this->model->find(['email' => $data['email']]);
 
-        $customer->name = ucwords($data['surname'] . ' ' . $data['names']);
+        $customer->name = ucwords($data['FullName']);
 
         $customer->mobile_no = $data['mobile'];
 
@@ -1620,13 +1619,13 @@ class CustomersController extends Controller
 
             $customer->additional_info = json_encode(
 
-                [$product => array_except($data, ['surname', 'names', 'mobile', 'address', 'dob', 'code'])]);
+                [$product => array_except($data, ['FullName', 'mobile', 'address', 'dob', 'code'])]);
 
         } else {
 
             $already = get_object_vars(json_decode($customer->additional_info));
 
-            $already[$product] = array_except($data, ['surname', 'names', 'mobile', 'address', 'dob', 'code']);
+            $already[$product] = array_except($data, ['FullName', 'mobile', 'address', 'dob', 'code']);
 
             $customer->additional_info = json_encode($already);
 
@@ -1636,7 +1635,6 @@ class CustomersController extends Controller
         if ($customer->hasNoErrors()) {
 
             $customer_id = $customer->last_altered_row;
-
             Session::set('customer_id', $customer_id);
 
             if (!$internal) {
@@ -1645,31 +1643,32 @@ class CustomersController extends Controller
 //                $user_ctrl->logInfo('Check if customer Exists...');
                 if ($exist) {
 //                    $user_ctrl->logInfo('Customer Exists...');
+                    $customer_id = $customer->id;
+                    Session::set('customer_id', $customer_id);
 
                     if ($user_ctrl->isCustomerloggedIn()) {
-                        $user_ctrl->logInfo('Customer is logged in!');
+//                        $user_ctrl->logInfo('Customer is logged in!');
 
                         return $customer_id;
                     }
-
 
                     if ($user_ctrl->checkIfVerified($data['email'])) {
 //                        $user_ctrl->logInfo('User is already verified...');
 
                         Session::set('customer_email', $data['email']);
                         Session::set('verified', true);
-                        Session::flash('step_feed', 'Your record was found! Please login to proceed.');
+                        Session::set('step_feed', 'Your record was found! Please login!');
 
                         return $customer_id;
 
                     } else {
 //                        $user_ctrl->logInfo('User is not verified...');
-                        Session::flash('sent_confirmation', 'Verify your email first to proceed to step two');
+                        Session::set('sent_confirmation', 'Verify your Email Address! Check your email for a verification link!');
+                        return $customer_id;
                     }
 
 
                     return $customer_id;
-
                 }
 
 
@@ -1685,10 +1684,11 @@ class CustomersController extends Controller
 
                     'exist' => $exist,
 
-                    'customer_id' => $customer_id
+                    'customer_id' => $customer_id,
+
+                    'acl' => 'customer'
 
                 ]);
-
 
                 if ($user_id) {
 //                    $user_ctrl->logInfo('User has been created user#: ' . $user_id);

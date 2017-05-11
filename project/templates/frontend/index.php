@@ -1,6 +1,7 @@
 <?php
 use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
+use Jenga\App\Request\Session;
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -15,7 +16,7 @@ use Jenga\App\Request\Url;
         //menu navigation
         HTML::js('frontend/js/flexy-menu.js');
         HTML::script('$(document).ready(function(){$(".flexy-menu").flexymenu({speed: 400,type: "horizontal",align: "left"});});');
-        
+
         //slider navigation
         HTML::css('frontend/css/fwslider.css');
         HTML::js('frontend/js/jquery-ui.min.js');
@@ -63,15 +64,24 @@ HTML::notifications();
         </div>
         <!--- //End-logo---->
         <!--- start-top-nav---->
-        <div class="top-nav">
-            <ul id="" class="flexy-menu thick orange"><li class="showhide" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
-                    <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style="">
-                        <li class=""><a href="<?= Url::base().'/domestic/step/1' ?>" title="Domestic Package">Domestic Package</a></li>
-                        <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor cycles">Motor cycles</a></li>
-                        <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor Private Insurance">Motor Private Insurance</a></li>
-                        <li class=""><a href="<?= Url::base().'/motor/commercial' ?>" title="Motor Private Insurance">Motor Commercial Insurance</a></li>
-                        <li class=""><a href="<?= Url::base().'/accident/step/1' ?>" title="Personal Accident">Personal Accident</a></li>
-                    </ul></li>
+        <div class="top-nav pull-right">
+            <ul class="flexy-menu thick orange">
+                <?php
+                    if($this->isPanelActive('sign_in'))
+                        $this->loadPanelPosition('sign_in');
+                ?>
+            </ul>
+            <div class="clearfix"></div>
+            <ul id="" class="flexy-menu thick orange">
+                <li class="showhide" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
+                <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style="">
+                <li class=""><a href="<?= Url::base().'/domestic/step/1' ?>" title="Domestic Package">Domestic Package</a></li>
+                <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor cycles">Motor cycles</a></li>
+                <li class=""><a href="<?= Url::base().'/motor/step/1' ?>" title="Motor Private Insurance">Motor Private Insurance</a></li>
+                <li class=""><a href="<?= Url::base().'/motor/commercial' ?>" title="Motor Private Insurance">Motor Commercial Insurance</a></li>
+                <li class=""><a href="<?= Url::base().'/accident/step/1' ?>" title="Personal Accident">Personal Accident</a></li>
+            </ul>
+            </li>
                     <li class="" style=""><a href="http://www.intraafrica.co.ke/index.php?id=4" title="About IAA">About IAA</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=39" title="The Company">The Company</a></li>
                         <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=45" title="Management Team">Management Team</a></li>
                         <li class=""><a href="http://www.intraafrica.co.ke/index.php?id=44" title="Board of Directors">Board of Directors</a></li>
@@ -113,7 +123,22 @@ else{
 <div class="middlesection">
     <div class="contentbox">
         <?php
-        $this->loadMainPanel();
+            if(Session::has('sent_confirmation')){
+                ?>
+                <div class="alert alert-danger text-center" style="border-radius: 0px;">
+                    <strong><?=Session::get('sent_confirmation'); ?></strong>
+                </div>
+        <?php } ?>
+
+        <?php
+            if(Session::has('step_feed')){
+                ?>
+                <div class="alert alert-warning text-center" style="border-radius: 0px;">
+                    <strong><?=Session::get('step_feed'); ?></strong>
+                </div>
+            <?php } ?>
+        <?php
+            $this->loadMainPanel();
         ?>
     </div>
 </div>

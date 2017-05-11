@@ -21,26 +21,45 @@ use Jenga\App\Helpers\Help;
 class MotorView extends View {
 
     private $data;
+    private $want_schematic = false;
+    protected $special = false;
+
+    public function getSchematic($data = null, $count = null)
+    {
+        if (!empty($count)) {
+            $this->data = $data;
+            $this->special = true;
+            $this->data->cars = $count;
+            return $this->otherCarDetails();
+        }
+        $this->want_schematic = true;
+        return $this->wizard($data);
+    }
 
     public function wizard($data = null)
     {
         $this->data = $data;
+        $this->set('_data', $data);
+        $x = null;
         switch ($this->data->step) {
             case "1":
-                $this->personalDetails();
+                $x = $this->personalDetails();
                 break;
             case "2":
-                $this->carDetails();
+                $x = $this->carDetails();
                 break;
             case "22":
-                $this->otherCarDetails();
+                $x = $this->otherCarDetails();
                 break;
             case "3":
-                $this->coverDetails();
+                $x = $this->coverDetails();
                 break;
             case "4":
-                $this->showQuotations();
+                $x = $this->showQuotations();
                 break;
+        }
+        if ($this->want_schematic) {
+            return $x;
         }
     }
 
@@ -52,23 +71,28 @@ class MotorView extends View {
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [2, 2, 3, 3, 1],
+            'map' => [2, 3, 3, 3, 1],
             'action' => '/motor/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
                 'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
                 'Full Name *' => ['text', 'FullName', '', ['class' => 'form-control', 'required' => '']],
-                'Date of Birth *' => ['text', 'DateOfBirth', '', ['class' => 'form-control datepicker', 'required' => '']],
+                'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control datepicker', 'required' => '']],
                 'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
-                'Mobile Number *' => ['text', 'Mobile', '', ['class' => 'form-control', 'required' => '',]],
-                'Email*' => ['text', 'Email', '', ['class' => 'form-control', 'required' => '']],
+                'ID or Passport No. *' => ['text', 'id_passport_no', '', ['class' => 'form-control', 'required' => '']],
+                'Mobile Number *' => ['text', 'mobile', '', ['class' => 'form-control', 'required' => '',]],
+                'Email*' => ['text', 'email', '', ['class' => 'form-control', 'required' => '']],
                 'PIN Number*' => ['text', 'pin', '', ['class' => 'form-control', 'required' => '']],
-                'Address *' => ['text', 'Address', '', ['class' => 'form-control', 'required' => '']],
-                'Postal Code *' => ['text', 'Code', '', ['class' => 'form-control', 'required' => '']],
+                'Address *' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
                 'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'pull-right btn btn-success']]
             ]
         ];
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
 
         $form = Generate::Form('motor_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
         $this->set('form', $form);
@@ -77,14 +101,14 @@ class MotorView extends View {
     }
 
     private function carDetails(){
-        
+
         if(!Session::has('motor_commercial')){
             $map = [4, 4, 2, 2, 2, 2, 2, 1, 1,];
         }
         else{
             $map = [4, 3, 2, 2, 2, 2, 2, 2, 1, 1,];
         }
-        
+
         $schematic = [
             'preventjQuery' => true,
             'engine' => 'bootstrap',
@@ -121,11 +145,11 @@ class MotorView extends View {
                 '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success pull-right',]]
             ]
         ];
-        
+
         //add tonnage select field
-        if(Session::has('motor_commercial') 
+        if(Session::has('motor_commercial')
                 && Session::get('motor_commercial') === TRUE){
-            
+
             $tonnage_list = [
                 ''=>'Select Tonnage',
                 'tpc03' => '0-3 tons',
@@ -133,15 +157,19 @@ class MotorView extends View {
                 'tpc715' => '7-15 tons',
                 'tpc15p' => 'Above 15 tons'
             ];
-            
+
             $tonfield = [
                 '{type}' => ['hidden','type','commercial'],
                 'Vehicle Tonnage *' => ['select','tonnage','', $tonnage_list, ['class' => 'form-control', 'required' => '']]
             ];
-            
-            Help::array_splice_assoc($schematic['controls'], array_search('Cubic Capacity (cc)', $schematic['controls']), 1, $tonfield);            
+
+            Help::array_splice_assoc($schematic['controls'], array_search('Cubic Capacity (cc)', $schematic['controls']), 1, $tonfield);
         }
-        
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
+
         $form = Generate::Form('motor_car_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-6,col-sm-6'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('car_details');
@@ -160,25 +188,25 @@ class MotorView extends View {
             'map' => [1, 2, 1, 1, 2, 2, 4, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4,  1, 1, 1],
             'controls' => [
                 '{cover details}' => ['note', 'cover_heading', "benefits", "<span style=\"font-weight:bold\">Enter the cover type and life span</span>"],
-                
+
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
-                
+
                 'Type of cover *' => ['select', 'covertype', '', $this->data->cover_type, ['class' => 'form-control', 'required' => '']],
-                
+
                 '{Additional Benefits}' => ['note', 'benefits', "benefits", "<span style=\"font-weight:bold\">Choose Additional Benefits to include in cover</span>"],
-                
+
                 'Windscreen?' => ['radios', 'windscreen', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If yes, state value' => ['text', 'WindscreenValue', '', ['class' => 'form-control', 'rows' => 2]],
-                
+
                 'Entertainment Equipment?' => ['radios', 'entertainment_equipment', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If yes, state value of equipment' => ['text', 'entertainmentvalue', '', ['class' => 'form-control', 'rows' => 2]],
-                
+
                 'Political Violence?' => ['radios', 'political_violence', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'SRCC (Strikes, Riots and Civil Commotion)?' => ['radios', 'srcc', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'Excess Protector' => ['radios', 'excess_protector', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'Loss of Use' => ['radios', 'loss_of_use', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                
+
                 'Do you require the cover Personal Accidents' => ['radios', 'NeedPersonalCover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If yes, give details ' => ['textarea', 'PersonalCoverDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Have you, or anyone else who will drive this vehicle (s), had any motor related accidents or losses, whether there was a claim or not and regardless of blame' =>
@@ -223,15 +251,19 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success pull-right']]
             ]
         ];
-        
+
         $form = Generate::Form('motor_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
-        
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
+
         $this->set('form', $form);
         $this->setViewPanel('cover_details');
     }
 
     private function showQuotations(){
-        
+
         $this->set('data', $this->data);
         $this->setViewPanel('show_quotations');
     }

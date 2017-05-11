@@ -278,6 +278,7 @@ class UsersController extends Controller
         $user->accesslevels_id = $access_level_id;
         $user->enabled = 'yes';
         $user->customers_id = $data['customer_id'];
+        $user->acl = $data['acl'];
         $user->save();
 
         if ($user->hasNoErrors()) {
