@@ -275,7 +275,6 @@ class UsersController extends Controller
         $user = $this->model->find(['username' => $data['email']]);
         $user->username = $data['email'];
         $user->password = md5($plain_pass);
-        $user->accesslevels_id = $access_level_id;
         $user->enabled = 'yes';
         $user->customers_id = $data['customer_id'];
         $user->acl = $data['acl'];
