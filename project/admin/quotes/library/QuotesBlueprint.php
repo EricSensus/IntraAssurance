@@ -104,6 +104,7 @@ abstract class QuotesBlueprint
                 $this->getMedicalQuote();
                 break;
         }
+        $this->updateQuote();
         return $this;
     }
 
@@ -116,7 +117,7 @@ abstract class QuotesBlueprint
         foreach ($this->cars as $en) {
             $others[$en->reg] = array_only(get_object_vars($en), $this->quoteFields());
         }
-        $mine = $this->_quotes->model->find($this->quote->id);
+        $mine = $this->_quotes->model->find($this->saved_quote->id);
         $to_save = array_prepend($to_save, $others, 'other_covers');
         $to_save = array_prepend($to_save, $this->insurer_id, 'insurer_id');
         $total = json_encode($to_save);
