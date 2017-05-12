@@ -55,8 +55,8 @@ class JubileeQuotes extends QuotesBlueprint
         $car->tsi = $_car->valueestimate;
         $car->reg = $_car->regno;
         if ($is_main) {
-            $car->tsi = $tsi = $this->main_entity->valueestimate;
-            $car->reg = $this->main_entity->regno;
+            $car->tsi = $tsi = $this->main_entity->ValueEstimate;
+            $car->reg = $this->main_entity->RegNo;
             $this->cover_type = $this->quote_product_info->covertype;
         }
 

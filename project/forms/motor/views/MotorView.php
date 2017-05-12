@@ -18,7 +18,8 @@ use Jenga\App\Helpers\Help;
 /**
  * Class MotorView
  */
-class MotorView extends View {
+class MotorView extends View
+{
 
     private $data;
     private $want_schematic = false;
@@ -100,12 +101,12 @@ class MotorView extends View {
         $this->setViewPanel('personal_details');
     }
 
-    private function carDetails(){
+    private function carDetails()
+    {
 
-        if(!Session::has('motor_commercial')){
+        if (!Session::has('motor_commercial')) {
             $map = [4, 4, 2, 2, 2, 2, 2, 1, 1,];
-        }
-        else{
+        } else {
             $map = [4, 3, 2, 2, 2, 2, 2, 2, 1, 1,];
         }
 
@@ -119,7 +120,7 @@ class MotorView extends View {
             'attributes' => ['data-parsley-validate' => ''],
             'map' => $map,
             'controls' => [
-                '{type}' => ['hidden','type','private'],
+                '{type}' => ['hidden', 'type', 'private'],
                 'Registration no*' => ['text', 'RegNo', '', ['class' => 'form-control', 'required' => '']],
                 'Vehicle Color*' => ['text', 'vehicle_color', '', ['class' => 'form-control', 'required' => '']],
                 'Chassis No' => ['text', 'ChassisNo', '', ['class' => 'form-control']],
@@ -147,11 +148,12 @@ class MotorView extends View {
         ];
 
         //add tonnage select field
-        if(Session::has('motor_commercial')
-                && Session::get('motor_commercial') === TRUE){
+        if (Session::has('motor_commercial')
+            && Session::get('motor_commercial') === TRUE
+        ) {
 
             $tonnage_list = [
-                ''=>'Select Tonnage',
+                '' => 'Select Tonnage',
                 'tpc03' => '0-3 tons',
                 'tpc37' => '3-7 tons',
                 'tpc715' => '7-15 tons',
@@ -159,8 +161,8 @@ class MotorView extends View {
             ];
 
             $tonfield = [
-                '{type}' => ['hidden','type','commercial'],
-                'Vehicle Tonnage *' => ['select','tonnage','', $tonnage_list, ['class' => 'form-control', 'required' => '']]
+                '{type}' => ['hidden', 'type', 'commercial'],
+                'Vehicle Tonnage *' => ['select', 'tonnage', '', $tonnage_list, ['class' => 'form-control', 'required' => '']]
             ];
 
             Help::array_splice_assoc($schematic['controls'], array_search('Cubic Capacity (cc)', $schematic['controls']), 1, $tonfield);
@@ -185,7 +187,7 @@ class MotorView extends View {
             'method' => 'post',
             'action' => '/motor/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [1, 2, 1, 1, 2, 2, 4, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4,  1, 1, 1],
+            'map' => [1, 2, 1, 1, 2, 2, 4, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 1, 1, 1],
             'controls' => [
                 '{cover details}' => ['note', 'cover_heading', "benefits", "<span style=\"font-weight:bold\">Enter the cover type and life span</span>"],
 
@@ -262,10 +264,13 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
         $this->setViewPanel('cover_details');
     }
 
-    private function showQuotations(){
-
+    private function showQuotations()
+    {
         $this->set('data', $this->data);
         $this->setViewPanel('show_quotations');
+//
+//        $this->set('data_array', $this->data->payments);
+//        $this->setViewPanel('motor_insurance');
     }
 
     private function otherCarDetails()

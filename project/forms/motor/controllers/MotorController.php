@@ -132,9 +132,9 @@ class MotorController extends Controller
         $this->data->cover_type = $this->__select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
         if ($step == 4) {
             $the_quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
-            $jubilee = (new JubileeQuotes($the_quote))->calculate();
-            $aig = (new AIGQuotes($the_quote))->calculate();
-            $this->data->payments = [$jubilee, $aig];
+//            $jubilee = (new JubileeQuotes($the_quote))->calculate();
+//            $aig = (new AIGQuotes($the_quote))->calculate();
+            $this->data->payments = (new JubileeQuotes($the_quote))->calculate();
         }
         $this->data->pick_cert = $this->__select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',

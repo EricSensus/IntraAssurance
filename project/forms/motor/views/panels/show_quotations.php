@@ -2,6 +2,7 @@
 use Jenga\App\Request\Url;
 
 $pesa = $data->payments;
+//dump($pesa->main);exit;
 include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
 
 use Jenga\App\Request\Session;
@@ -35,7 +36,7 @@ if(Session::has('motor_commercial') && Session::get('motor_commercial') === TRUE
             </thead>
             <tr>
                 <td>Total Sum Insured</td>
-                <td>Ksh <?= number_format($pesa->tsi, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->tsi, 2) ?></td>
             </tr>
             <tr>
                 <td>Type of Cover</td>
@@ -54,31 +55,31 @@ if(Session::has('motor_commercial') && Session::get('motor_commercial') === TRUE
             </tr>
             <tr>
                 <td>Windscreen (upto ksh 30000)</td>
-                <td>Ksh <?= number_format($pesa->windscreen, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->windscreen, 2) ?></td>
             </tr>
             <tr>
                 <td>Entertainment System (upto ksh 30000)</td>
-                <td>Ksh <?= number_format($pesa->audio, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->audio, 2) ?></td>
             </tr>
             <tr>
                 <td>Political Violence</td>
-                <td>Ksh <?= number_format($pesa->terrorism, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->terrorism, 2) ?></td>
             </tr>
             <tr>
                 <td>SRCC (Strikes, Riotes and Civil Commotion)</td>
-                <td>Ksh <?= number_format($pesa->riotes, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->riotes, 2) ?></td>
             </tr>
             <tr>
                 <td>Excess Protector</td>
-                <td>Ksh <?= number_format($pesa->excess_protector, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->excess_protector, 2) ?></td>
             </tr>
             <tr>
                 <td>Loss of Use</td>
-                <td>Ksh <?= number_format($pesa->loss_of_use, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->loss_of_use, 2) ?></td>
             </tr>
             <tr>
                 <td><span style="font-size: 18px; font-weight: bold">Net Premium</span></td>
-                <td><span style="font-size: 18px; font-weight: bold">Ksh <?= number_format($pesa->net_premium, 2) ?></span></td>
+                <td><span style="font-size: 18px; font-weight: bold">Ksh <?= number_format($pesa->basic_premium, 2) ?></span></td>
             </tr>
             <?php
             if (!empty($pesa->cars)):
