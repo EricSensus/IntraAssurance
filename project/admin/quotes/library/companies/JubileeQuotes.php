@@ -63,7 +63,7 @@ class JubileeQuotes extends QuotesBlueprint
         switch ($this->cover_type) {
             case 'Comprehensive';
                 //$basic_premium = (($tsi*7.75)/100);
-                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive', 'Motor', 'percentage');
+                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive Private', 'Motor', 'percentage');
                 $car->cover_type = 'Comprehensive';
                 break;
             case 'Third Party Fire and Theft';
@@ -74,9 +74,10 @@ class JubileeQuotes extends QuotesBlueprint
             case 'Third Party Only':
                 //$basic_premium = 12500;
                 $car->basic_premium = $this->getRates($car->tsi, 'Third Party Only', 'Motor', 'fixed');
-                $car->cover_type = 'Third Party Fire and Theft';
+                $car->cover_type = 'Third Party Only';
                 break;
         }
+        $car->bp = $car->basic_premium;
         //calculate riot and strikes value
         switch ($_car->riotes) {
             case 'yes':

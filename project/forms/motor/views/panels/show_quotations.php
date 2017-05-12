@@ -47,7 +47,7 @@ if(Session::has('motor_commercial') && Session::get('motor_commercial') === TRUE
                     <span style="font-size: 18px; font-weight: bold"><?= (isset($pesa->minimum) ? 'Minimum' : 'Basic') ?> premium</span>
                 </td>
                 <td>
-                    <span style="font-size: 18px; font-weight: bold">Ksh <?= number_format((isset($pesa->minimum) ? $pesa->minimum : $pesa->basic_premium), 2) ?></span>
+                    <span style="font-size: 18px; font-weight: bold">Ksh <?= number_format((isset($pesa->minimum) ? $pesa->minimum : $pesa->bp), 2) ?></span>
                     </td>
             </tr>
             <tr>
