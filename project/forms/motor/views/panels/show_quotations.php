@@ -67,7 +67,7 @@ if(Session::has('motor_commercial') && Session::get('motor_commercial') === TRUE
             </tr>
             <tr>
                 <td>SRCC (Strikes, Riotes and Civil Commotion)</td>
-                <td>Ksh <?= number_format($pesa->main->riotes, 2) ?></td>
+                <td>Ksh <?= number_format($pesa->main->srcc, 2) ?></td>
             </tr>
             <tr>
                 <td>Excess Protector</td>

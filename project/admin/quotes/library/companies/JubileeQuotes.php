@@ -91,9 +91,9 @@ class JubileeQuotes extends QuotesBlueprint
             $car->riotes = null;
         }
         //calculate terrorism value
-        switch ($_car->terrorism) {
+        switch ($_car->political_violence) {
             case 'yes':
-                $car->terrorism = $this->getRates($car->tsi, 'Terrorism', 'Motor', 'percentage');
+                $car->terrorism = $this->getRates($car->tsi, 'Political Violence', 'Motor', 'percentage');
                 break;
             default :
                 $car->terrorism = null;
@@ -109,12 +109,36 @@ class JubileeQuotes extends QuotesBlueprint
                 break;
         }
         //$radio_cassette = 0;
-        switch ($_car->audio) {
+        switch ($_car->entertainment_equipment) {
             case 'yes':
-                $car->audio = $this->getRates($car->tsi, 'Audio System', 'Motor', 'percentage');
+                $car->audio = $this->getRates($car->tsi, 'Entertainment Equipment', 'Motor', 'percentage');
                 break;
             default :
                 $car->audio = null;
+                break;
+        }
+        switch ($_car->excess_protector) {
+            case 'yes':
+                $car->excess_protector = $this->getRates($car->tsi, 'Excess Protector', 'Motor', 'percentage');
+                break;
+            default :
+                $car->excess_protector = null;
+                break;
+        }
+        switch ($_car->srcc) {
+            case 'yes':
+                $car->srcc = $this->getRates($car->tsi, 'SRCC (Strikes Riots & Civil Commotion)', 'Motor', 'percentage');
+                break;
+            default :
+                $car->srcc = null;
+                break;
+        }
+        switch ($_car->loss_of_use) {
+            case 'yes':
+                $car->loss_of_use = $this->getRates($car->tsi, 'Loss of Use', 'Motor', 'percentage');
+                break;
+            default :
+                $car->loss_of_use = null;
                 break;
         }
         //$passenger_legal = 0;
@@ -163,7 +187,8 @@ class JubileeQuotes extends QuotesBlueprint
         }
 
         //calculate the net premium
-        $car->net_premium = ($car->basic_premium2 + $car->riotes + $car->windscreen + $car->audio + $car->passenger + $car->terrorism);
+        $car->net_premium = ($car->basic_premium2 + $car->riotes +
+            $car->windscreen + $car->audio + $car->passenger + $car->terrorism + $car->srcc + $car->loss_of_use + $car->excess_protector);
         if ($is_main) {
             $this->basic_premium = $car->net_premium;
         }
