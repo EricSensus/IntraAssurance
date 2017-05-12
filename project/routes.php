@@ -82,9 +82,10 @@ Route::group(['before' => 'auth.check'], function () {
                 'insurer-companies' => 'CompaniesController@getInsurers:insurer-companies',
                 'products-setup' => 'ProductsController@getProducts:products-setup',
                 'entities-setup' => 'EntitiesController@getEntities:entities-setup',
-                'rates-setup' => 'RatesController@show',
+                'rates-setup' => 'RatesController@showSetup',
+                'companies' => 'RatesController@getCompanies:companies',
                 //'commissions-setup' => 'InsurersController@getCommissions:commissions',
-                //'agents-setup' => 'AgentsController@getAgents:agents'
+                'agents-setup' => 'AgentsController@getAgents:agents'
             ]);
 
     Route::get('/admin/{element}/{action}/{id}', '{default}')

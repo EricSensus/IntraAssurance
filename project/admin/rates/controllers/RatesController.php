@@ -34,7 +34,6 @@ class RatesController extends Controller
         $this->rates = $this->model->show();
         $rate_types = $this->model->select('distinct(rate_type)')->show();
         $rate_cats = $this->model->select('distinct(rate_category)')->show();
-
         $this->rate_types = $this->getRateTypes($rate_types);
         $this->rate_cats = $this->getRateCategories($rate_cats);
     }
@@ -229,9 +228,8 @@ class RatesController extends Controller
 
     public function editModal($id)
     {
-        $this->setInsurer();
+        $this->_init();
         $rate = $this->model->getRateData($id);
-
         $this->view->showEditRateForm($rate, $this->rate_types, $this->rate_cats, $this->insurer);
     }
 
