@@ -139,5 +139,11 @@
       <folder function="view">views</folder>
       <folder function="schema">schema</folder>
     </element>
+    <element name="notifications" path="admin/notifications" acl="0" visibility="public">
+      <folder function="model">models</folder>
+      <folder function="controller">controllers</folder>
+      <folder function="view">views</folder>
+      <folder function="schema">schema</folder>
+    </element>
   </elements>
 </project>

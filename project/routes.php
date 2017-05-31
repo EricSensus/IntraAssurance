@@ -37,6 +37,7 @@ Route::collect('customers');
 Route::collect('entities');
 Route::collect('tasks');
 Route::collect('documents');
+Route::collect('notifications');
 Route::collect('claims');
 Route::collect('profile');
 Route::collect('users');
@@ -47,7 +48,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/dashboard', 'admin' . DS . 'static' . DS . 'dashboard.php')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout',
                 'leads' => 'QuotesController@getLeads:leads',
@@ -60,7 +61,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/reports', 'admin' . DS . 'static' . DS . 'reports.php')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout',
                 'products-share' => 'QuotesController@analyseProducts:products-share',
@@ -76,7 +77,8 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/setup', 'admin' . DS . 'static' . DS . 'setup.php')
             ->attachTemplate('admin')
             ->assignPanels([
-                'navigation' => 'NavigationController@display:menus',
+                'top' => 'NotificationsController@load:notices',
+                'navigation' => 'NavigationController@display:menus'    ,
                 'logout' => 'UsersController@logout:logout',
                 'company-details' => 'CompaniesController@ownCompany:own-company-details',
                 'insurer-companies' => 'CompaniesController@getInsurers:insurer-companies',
@@ -91,7 +93,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/{element}/{action}/{id}', '{default}')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
             ]);
@@ -99,7 +101,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::post('/admin/{element}/{action}', '{default}')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
             ]);

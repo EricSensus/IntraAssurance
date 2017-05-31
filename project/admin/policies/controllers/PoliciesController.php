@@ -194,10 +194,13 @@ class PoliciesController extends Controller
             $dbpolicies = $this->model->select(TABLE_PREFIX . 'policies.*, '. TABLE_PREFIX . 'customers.insurer_agents_id')
                 ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "policies.customers_id", 'LEFT')
                 ->where('insurer_agents_id', $this->user()->insurer_agents_id)
-                ->where('status', '')
+                ->where('policy_number', '--not issued--')
                 ->get();
         } else {
-            $dbpolicies = $this->model->where('status', '')->show();
+            $dbpolicies = $this->model
+                ->where('issue_date', '')
+                ->where('policy_number', '--not issued--')
+                ->show();
         }
 
         $policies = $this->_translatePolicies($dbpolicies);

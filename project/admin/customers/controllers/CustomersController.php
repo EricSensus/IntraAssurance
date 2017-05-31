@@ -236,7 +236,7 @@ class CustomersController extends Controller{
     }
 
     /**
-     * @acl\role agent
+     * @acl\role customer
      */
     public function show()
     {

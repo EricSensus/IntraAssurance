@@ -6,13 +6,13 @@ class Config
 {
     /*     * *** Project settings *********************** */
 
-    public $project = 'Intraasurance Portal';
-    public $mailfrom = 'noreply@intraasurance.com';
-    public $mailadmin = 'info@intraasurance.com';
+    public $project = 'Esurance 365 Portal';
+    public $mailfrom = 'noreply@esurance365.com';
+    public $mailadmin = 'info@esurance365.com';
 
     /*     * **** Database Settings ************** */
-    public $db = 'intraasurance_db';
-    public $dbprefix = 'itr_';
+    public $db = 'esurance_db';
+    public $dbprefix = 'esu_';
     public $host = '127.0.0.1';
     public $username = 'root';
     public $password = 'root';
