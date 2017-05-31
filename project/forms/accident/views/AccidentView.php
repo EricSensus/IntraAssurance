@@ -19,27 +19,59 @@ use Jenga\App\Views\View;
 class AccidentView extends View
 {
 
+    /**
+     * View data from the controller
+     * @var \stdClass
+     */
     private $data;
+    /**
+     * Whether to render the form or just get its schematic
+     * @var bool
+     */
+    private $want_schematic = false;
 
+    /**
+     * Get the schematic from form wizard
+     * @param null $data
+     * @return array|null|void
+     */
+    public function getSchematic($data = null)
+    {
+        $this->want_schematic = true;
+        return $this->wizard($data);
+    }
+
+    /**
+     * The form wizard to switch between which form to display
+     * @param null|\stdClass $data
+     * @return array|null|void
+     */
     public function wizard($data = null)
     {
         $this->data = $data;
-        switch ($this->data->step) {
+        $x = null;
+        switch ($this->data->step) { //switch user steps
             case "1":
-                $this->personalDetails();
+                $x = $this->personalDetails();
                 break;
             case "2":
-                $this->personalAccidentDetails();
+                $x = $this->personalAccidentDetails();
                 break;
             case "3":
-                $this->coverDetails();
+                $x = $this->coverDetails();
                 break;
             case "4":
-                $this->showQuotations();
+                $x = $this->showQuotations();
                 break;
         }
+        if ($this->want_schematic) {
+            return $x;
+        }
     }
-
+    /**
+     * Cover details - Step 3 for accident quotation
+     * @return array
+     */
     private function coverDetails()
     {
         $schematic = [
@@ -74,11 +106,19 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
                 '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
             ]
         ];
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
         $form = Generate::Form('accident_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('cover_details');
     }
 
+    /**
+     * Step 1 form for personal accidents
+     * @return array
+     */
     private function personalAccidentDetails()
     {
         $schematic = [
@@ -130,6 +170,10 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
                 '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
             ]
         ];
+
+        if ($this->want_schematic) {
+            return $schematic;
+        }
         $form = Generate::Form('accident_other_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('accident_details');

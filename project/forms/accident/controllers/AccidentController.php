@@ -14,7 +14,9 @@ use Jenga\App\Controllers\Controller;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
 use Jenga\App\Views\Redirect;
+use Jenga\MyProject\Accident\Models\AccidentModel;
 use Jenga\MyProject\Accident\Repositories\AccidentQuotation;
+use Jenga\MyProject\Accident\Views\AccidentView;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Entities\Controllers\EntitiesController;
@@ -22,6 +24,8 @@ use Jenga\MyProject\Quotes\Controllers\QuotesController;
 
 /**
  * Class AccidentController
+ * @property-read AccidentModel $model
+ * @property-read AccidentView $view
  */
 class AccidentController extends Controller
 {
@@ -41,31 +45,45 @@ class AccidentController extends Controller
      * @var QuotesController
      */
     private $_quotes;
+    /**
+     * @var ProductsController
+     */
+    private $_products;
 
-    public function __construct()
+    /**
+     * Setup entities. Via Elements call
+     */
+    private function setEntities()
     {
-        parent::__construct();
         $this->_customer = Elements::call('Customers/CustomersController');
         $this->_entity = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
+        $this->_products = Elements::call('Products/ProductsController');
     }
 
+    /**
+     * Default entry point for external form. Switch between display forms depending on the step. [1 to 4]
+     * @param string $step
+     */
     public function index($step = "1")
     {
         if ($step != "1") {
-            if (empty(Session::get('customer_id')) || (Session::get('type') != 'accident')) {
-                Redirect::to('/accident/step/1');
-                exit;
-            }
+//            if (!Session::has('user_id')) {
+//                Redirect::to('/accident/step/1');
+//                exit;
+//            }
         }
-        $this->loadData($step);
+        $this->loadViewData($step);
         $this->view->wizard($this->data);
     }
 
+    /**
+     * Save incoming forms posted from the front end
+     * @param $step
+     */
     public function save($step)
     {
-//        print_r($this->filteredData());
-//        exit;
+        $this->setEntities();
         switch ($step) {
             case "1":
                 $this->savePersonalDetails();
@@ -84,58 +102,85 @@ class AccidentController extends Controller
 
     }
 
+
+    /**
+     * Save personal details from step 1. Relies on POST
+     */
     private function savePersonalDetails()
     {
-        if ($this->_customer->saveMyCustomer($this->filteredData())) {
+        if ($this->_customer->saveCustomer('accident', $this->getInputForStep(1), false)) {
             Session::set('type', 'accident');
-            Redirect::to('/accident/step/2');
+
+            $notification = 'Saved Please proceed to step two';
+            // get the verification notification if new customer registration
+            if (Session::has('sent_confirmation'))
+                $notification = Session::get('sent_confirmation');
+
+            Redirect::withNotice($notification, 'success')->to('/accident/step/2');
         } else {
             Redirect::to('/accident/step/1')->withNotice('Could not save your info, try again', 'error');
         }
     }
 
+    /**
+     * Save accident details from step 2
+     */
     private function saveAccidentDetails()
     {
         $entity_id = $this->_entity->getEntityIdByAlias('person')->id;
+        $product_id = $this->_products->getProductByAlias('personal_accident')->id;
         $id = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'),
-            $entity_id,
-            json_encode($this->filteredData()));
+            $entity_id, json_encode($this->getInputForStep(2)), $product_id);
         Session::set('main_id', $id);
         Session::set('other_id', serialize([]));
         Redirect::to('/accident/step/3');
     }
 
-
+    /**
+     * Save Cover Details
+     * Save step 3 of form the redirect
+     */
     private function saveCoverDetails()
     {
         if (!empty(Input::post('howmany'))) {
-            $this->saveExtracovers(Input::post('howmany'));
+            $this->saveExtraCovers(Input::post('howmany'));
         }
         $ids['customer_id'] = Session::get('customer_id');
         $ids['product_id'] = 5;
         $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById(Session::get('customer_id'), null)));
         $entities = unserialize(Session::get('other_id'));
         array_push($entities, Session::get('main_id'));
-        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->filteredData(), null, $entities);
+        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->getInputForStep(3), null, $entities);
         Session::set('quote_id', $id);
         Redirect::to('/accident/step/4');
     }
 
-    private function saveExtracovers($count)
+    /**
+     * Save extra covers
+     * Count the number of extra covers and map them to entity data
+     * @param $count
+     */
+    private function saveExtraCovers($count)
     {
         $saved = [];
+        $product_id = $this->_products->getProductByAlias('personal_accident')->id;
         for ($i = 1; $i <= $count; $i++) {
             $got = $this->__buildStack($i);
             $entity_id = $this->_entity->getEntityIdByAlias('person')->id;
             $saved[] = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'),
-                $entity_id,
-                json_encode($got));
+                $entity_id, json_encode($got), $product_id);
         }
         Session::set('other_id', serialize($saved));
     }
 
-    private function loadData($step)
+    /**
+     * Load View Data
+     * Set up some data needed in the View and panels
+     * @param $step
+     */
+    private function loadViewData($step)
     {
+        $this->setEntities();
         $this->data = new \stdClass();
         $this->data->step = $step;
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
@@ -147,7 +192,7 @@ class AccidentController extends Controller
             'band4' => 'Band 4: Covers you upto a limit of 2000000 for accidental death',
             'band5' => 'Band 5: Covers you upto a limit of 4000000 for accidental death',
             'band6' => 'Band 6: Covers you upto a limit of 8000000 for accidental death',
-            'band7' => 'Band 7: Covers you upto a limit of 1000000 for accidental death',
+            'band7' => 'Band 7: Covers you upto a limit of 10000000 for accidental death',
         ];
         $this->data->towns = $this->__select(['Baragoi',
             'Bungoma', 'Busia', 'Butere', 'Dadaab', 'Diani Beach',
@@ -179,12 +224,16 @@ class AccidentController extends Controller
             'Nyeri, Sohan Plaza, Moi Nyayo Way',
             'Thika, Thika Arcade, Thika Town, 4th Floor',
             'Post to my address in your records (a small extra charge will apply)']);
-        $this->data->relationships = $this->__select(["Wife", "Husband", "Son", "Daughter", "Other"]);
         if ($step == "4") {
-            $this->data->quotation = new AccidentQuotation();
+            $this->data->payments = $this->_quotes->getQuotations(Session::get('quote_id'));
         }
     }
 
+    /**
+     * Transform an array to its key:value representation
+     * @param $data
+     * @return array
+     */
     private function __select($data)
     {
         $_data = [];
@@ -194,6 +243,11 @@ class AccidentController extends Controller
         return $_data;
     }
 
+    /**
+     * Generate some years for the specified span
+     * @param int $span
+     * @return array
+     */
     private function __years($span = 100)
     {
         $year = date('Y');
@@ -205,24 +259,53 @@ class AccidentController extends Controller
         return $yearlist;
     }
 
-    private function filteredData()
-    {
-        $block = ['name_accident_personal_details', 'zebra_honeypot_accident_personal_details',
-            'zebra_csrf_token_accident_personal_details', 'btnsubmit', 'zebra_honeypot_accident_other_cover_details',
-            'name_accident_other_cover_details', 'zebra_csrf_token_accident_other_cover_details', 'btnSubmitSpecial',
-            'name_accident_cover_details', 'zebra_honeypot_accident_cover_details', 'zebra_csrf_token_accident_cover_details'
-        ];
-        return array_except(Input::post(), $block);
-    }
-
+    /**
+     * Attempt to get an array of each person for extra covers
+     * @param $index
+     * @return array
+     */
     private function __buildStack($index)
     {
         $build = [];
-        foreach ($this->filteredData() as $key => $value) {
+        foreach (Input::post() as $key => $value) {
             if (ends_with($key, $index)) {
                 $build[rtrim($key, $index)] = $value;
             }
         }
         return $build;
+    }
+
+    /**
+     * Get the form schematic for displaying form
+     * @return array
+     */
+    public function getSchematic()
+    {
+        $forms = [1, 2, 3];
+        $schematic = [];
+        $this->setEntities();
+        $count = 0;
+        foreach ($forms as $form) {
+            $this->loadViewData(++$count);
+            $schematic[$form] = $this->view->getSchematic($this->data, false);
+        }
+        return $schematic;
+    }
+
+    /**
+     * Return only specified input for a step
+     * @param $step
+     * @return array
+     */
+    public function getInputForStep($step)
+    {
+        $this->setEntities();
+        $this->loadViewData($step);
+        $schematic = $this->view->getSchematic($this->data, false);
+        $my_array = [];
+        foreach ($schematic['controls'] as $schema) {
+            $my_array[] = $schema[1];
+        }
+        return array_only(Input::post(), $my_array);
     }
 }
