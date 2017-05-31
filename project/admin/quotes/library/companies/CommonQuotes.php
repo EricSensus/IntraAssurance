@@ -347,7 +347,6 @@ class CommonQuotes extends QuotesBlueprint
         $this->tsi_a = (empty($this->quote_product_info->a_premium)) ? 0 : $this->quote_product_info->a_premium;
         $this->tsi_b = (empty($this->quote_product_info->b_premium)) ? 0 : $this->quote_product_info->b_premium;
         $this->tsi_c = (empty($this->quote_product_info->c_premium)) ? 0 : $this->quote_product_info->c_premium;
-
         $section_a_rate = $this->getReturnRate('Section A', 'Property');
         $this->section_a = ($this->tsi_a * $section_a_rate) / 100;
         $section_b_rate = $this->getReturnRate('Section B', 'Property');

@@ -44,7 +44,7 @@ use Jenga\App\Request\Url;
             <?php
             $count = 0;
             $quote_id = $data->quote->id;
-            dump($data);exit;
+            $data = $data->payments[0];
             ?>
             <div class="col-md-12">
                 <div class="panel panel-info">

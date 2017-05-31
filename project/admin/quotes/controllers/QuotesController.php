@@ -1937,6 +1937,9 @@ Class QuotesController extends Controller
         foreach ($companies as $insures) {
             $alias = $insures->alias;
             $name = "Jenga\MyProject\Quotes\Library\Companies\\" . $alias; //get class reflection
+            if (!class_exists($name, false)) {
+                $name = "Jenga\MyProject\Quotes\Library\Companies\\CommonQuotes"; //get class reflection
+            }
             $r = new $name($the_quote);
             $values[] = $r->calculate();
         }

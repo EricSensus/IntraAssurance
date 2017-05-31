@@ -21,10 +21,23 @@ use Jenga\App\Helpers\Help;
 class MotorView extends View
 {
 
+    /**
+     * View data from the controller
+     * @var \stdClass
+     */
     private $data;
+    /**
+     * Whether to render the form or just get its schematic
+     * @var bool
+     */
     private $want_schematic = false;
     protected $special = false;
 
+    /**
+     * Get the schematic from form wizard
+     * @param null $data
+     * @return array|null|void
+     */
     public function getSchematic($data = null, $count = null)
     {
         if (!empty($count)) {
@@ -37,6 +50,11 @@ class MotorView extends View
         return $this->wizard($data);
     }
 
+    /**
+     * The form wizard to switch between which form to display
+     * @param null|\stdClass $data
+     * @return array|null|void
+     */
     public function wizard($data = null)
     {
         $this->data = $data;
@@ -64,6 +82,10 @@ class MotorView extends View
         }
     }
 
+    /**
+     * Personal details
+     * @return array
+     */
     private function personalDetails()
     {
         $schematic = [
@@ -77,7 +99,7 @@ class MotorView extends View
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
                 'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
-                'Full Name *' => ['text', 'FullName', '', ['class' => 'form-control', 'required' => '']],
+                'Full Name *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
                 'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control datepicker', 'required' => '']],
                 'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
                 'ID or Passport No. *' => ['text', 'id_passport_no', '', ['class' => 'form-control', 'required' => '']],
@@ -101,6 +123,10 @@ class MotorView extends View
         $this->setViewPanel('personal_details');
     }
 
+    /**
+     * Car details
+     * @return array
+     */
     private function carDetails()
     {
 
@@ -131,7 +157,7 @@ class MotorView extends View
                 'Seating Capacity *' => ['text', 'SeatingCapacity', '', ['class' => 'form-control', 'required' => '']],
                 'Year of Manufacture *' => ['select', 'ManufactureDate', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
                 'Insured Value (Estimated Value of Vehicle)*'
-                => ['text', 'ValueEstimate', '', ['class' => 'form-control', 'required' => '']],
+                => ['text', 'valueestimate', '', ['class' => 'form-control', 'required' => '']],
                 'Is the vehicle fitted with any anti theft device *' => ['radios', 'AntiTheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
                 'If Yes, please give particulars below (type and condition)*' => ['textarea', 'AntiTheftDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Are there any non-standard accessories in the vehicle (roof rack) *' => ['radios', 'NonStandardAccessories', ['yes' => 'Yes', 'no' => 'No'], 'no'],
@@ -177,6 +203,10 @@ class MotorView extends View
         $this->setViewPanel('car_details');
     }
 
+    /**
+     * Cover details
+     * @return array
+     */
     private function coverDetails()
     {
         $schematic = [
@@ -264,15 +294,21 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
         $this->setViewPanel('cover_details');
     }
 
+    /**
+     * Display quotations on front end
+     */
     private function showQuotations()
     {
         $this->set('data', $this->data);
-        $this->setViewPanel('show_quotations');
-//
-//        $this->set('data_array', $this->data->payments);
-//        $this->setViewPanel('motor_insurance');
+//        $this->setViewPanel('show_quotations');
+        $this->set('data_array', $this->data->payments);
+        $this->setViewPanel('motor_insurance');
     }
 
+    /**
+     * Display forms for other car details
+     * @return array|string
+     */
     private function otherCarDetails()
     {
         $this->data->cars = Session::get('other_covers');

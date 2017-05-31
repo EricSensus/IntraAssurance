@@ -12,7 +12,7 @@ class Config
 
     /*     * **** Database Settings ************** */
     public $db = 'intraasurance';
-    public $dbprefix = 'esu_';
+    public $dbprefix = 'itr_';
     public $host = '127.0.0.1';
     public $username = 'root';
     public $password = 'root';
@@ -45,5 +45,5 @@ class Config
     public $lock_to_ip = false; /* (Optional) Whether to restrict the session to the same IP as when the session was first opened. */
 
     /*     * **** Esurance Settings ********************** */
-    public $policy_prefix = 'ESU';
+    public $policy_prefix = 'ITR';
 }
