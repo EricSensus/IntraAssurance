@@ -20,7 +20,6 @@ class FrontController extends Controller {
 
     //this is the default function
     public function index(){
-
     }
     
     /**

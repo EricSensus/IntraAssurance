@@ -40,7 +40,8 @@ class ErrorHandler
     private $reservedMemory;
     private static $fatalErrors = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
 
-    public function __construct(LoggerInterface $logger){
+    public function __construct(LoggerInterface $logger)
+    {
         $this->logger = $logger;
     }
 
