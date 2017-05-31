@@ -17,15 +17,25 @@ use Jenga\MyProject\Elements;
 
 class QuotesView extends View
 {
+    /**
+     * @var bool
+     */
     private $dash = false;
+    /**
+     * @var string
+     */
     public $url;
 
+    /**
+     * Generate quotes table
+     * @param bool $dashboard
+     */
     public function generateMiniTable($dashboard = false)
     {
         $count = $this->get('count');
         $source = $this->get('source');
         $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
-        $quote_preview_url = Url::link('/admin/myquote/view/');
+        $quote_preview_url = Url::link('/quotes/previewquote/');
         $columns = ['No', 'Full Names', 'Insured Entity', 'Status', 'Preview'];
         $rows = ['{{<div style="width:100%;text-align:center">'
             . '<a href="' . Url::base() . $quoteurl . '/edit/{id}">{id}</a>'
@@ -33,7 +43,7 @@ class QuotesView extends View
             '{customer}',
             '{entity}',
             '{status}',
-            '{{<a href="' . $quote_preview_url . '{id}" data-toggle="modal" data-target="#quoteModal"><i class="fa fa-eye"></i> Preview</a>}}'
+            '{{<a href="' . $quote_preview_url . '{_id}" target="_blank" ><i class="fa fa-eye"></i> Preview</a>}}'
         ];
 
         $dom = '<"top">rt<"bottom"p><"clear">';
@@ -57,6 +67,9 @@ class QuotesView extends View
         $this->set('quoteModal', Overlays::Modal($modal_settings));
     }
 
+    /**
+     * SHow the leeds
+     */
     public function showLeads()
     {
         $count = $this->get('count');
@@ -64,17 +77,19 @@ class QuotesView extends View
 
         $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
 
-        $columns = ['No', 'Date Created', 'Full Names', 'Product', 'Status', 'Actions'];
-        $rows = ['{{
-                <div style="width:100%;text-align:center">
-                    <a href="' . $quoteurl . '/edit/{quote_no}">{quote_no}</a>
-                </div>
-            }}',
-            '{datetime}',
-            '{name}',
-            '{products_id}',
-            '{status}',
-            '{actions}'
+        $columns = ['No', 'Actions', 'Lead Details', '', ''];
+        $rows = [
+            '{quote_no}',
+            '{actions}',
+            '{{
+                        <div style="width:100%;text-align:left">
+                            {cname} got a <strong>{products_id}</strong> quote on <strong>{datetime}</strong>
+                        </div>
+                    }}',
+            '{{<a class="btn btn-default btn-sm" href="' . $quoteurl . '/edit/{quote_no}">View</a>}}',
+            '{{<a data-toggle="modal" data-target="#confirmquotemodal" class="btn btn-default btn-sm" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/{quote_no}">'
+            . 'Confirm Quote'
+            . '</a>}}'
         ];
         $dom = '<"top">rt<"clear">';
 
@@ -100,8 +115,19 @@ class QuotesView extends View
         ];
 
         echo $assign = Overlays::Modal($modal_settings);
+        echo Overlays::Modal(['id' => 'confirmquotemodal', 'size' => 'large']);
     }
 
+    /**
+     * SHow leeds table
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @return \Jenga\App\Html\type
+     */
     private function leadsTable($name, $count, array $columns, array $rows, $source, $dom)
     {
 
@@ -149,11 +175,50 @@ class QuotesView extends View
         ];
 
         $table = Generate::Table($name, $schematic);
+
+        $table->buildShortcutMenu('{actions}', 'mouseover', [
+
+            function ($customers_id, $name, $insurer_agents_id) {
+                return '<li><a href="' . Url::base() . '/admin/customers/show/' . $customers_id . '"><i class="fa fa-address-book-o" aria-hidden="true"></i> View ' . $name .
+                    (!empty($insurer_agents_id) ? ' (Existing)' : ' (New)')
+                    . '</a></li>';
+            },
+            '<li class="divider"></li>',
+            function ($status, $quote_no, $insurer_agents_id) {
+
+                if ($status == 'New') {
+                    return '<li><a title="Link an Agent" class="dropdown-item" data-toggle="modal" data-target="#assign-agent-modal" href="' . Url::link('/admin/leads/assignAgent/') . $quote_no . '">
+                            <i class="fa fa-hand-lizard-o"></i> Link to an Agent</a>
+                          </li>';
+                } else {
+                    return '<li><a id="quo_' . $quote_no . '" class="dropdown-item" data-toggle="modal" data-target="#addtaskmodal" href="' . Url::link('/admin/leads/createTask/') . Help::encrypt($insurer_agents_id) . '">'
+                        . '<i class="fa fa-eye"></i> Create a New Task</a>'
+                        . '</li>';
+                }
+            },
+            '<li class="divider"></li>',
+            function ($quote_no) {
+                $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
+                return '<li><a class="dropdown-item" href="' . $quoteurl . '/edit/' . $quote_no . '"><i class="fa fa-eye"></i> View Quote</a></li>';
+            },
+            '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . '{quote_no}">'
+            . '<i class="fa fa-check-square-o"></i> Confirm Quote'
+            . '</a></li>',
+            '<li class="divider"></li>',
+            //TODO Add Delete functionality
+            '<li><a class="dropdown-item" title="Mark Customer Response" href="#">'
+            . '<i class="fa fa-check-square-o"></i> Delete Quote'
+            . '</a></li>'
+        ]);
+
         $minitable = $table->render(TRUE);
 
         return $minitable;
     }
 
+    /**
+     * Incomplete table for policy
+     */
     public function generateIncompleteTable()
     {
 
@@ -190,19 +255,21 @@ class QuotesView extends View
 
         $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
 
-        $columns = ['Quote No',
+        $columns = ['Actions',
+            'Quote No',
             'Date Generated',
             'Full Names',
             'Insured Entity',
             'Product',
             'Linked Agent',
             'Status',
-            'Premium',
+            'Premium'
             //'Source',
-            'Actions'
+
         ];
 
-        $rows = ['{{<a href="' . $quoteurl . '/edit/{id}">'
+        $rows = ['{actions}',
+            '{{<a href="' . $quoteurl . '/edit/{id}">'
             . '<div style="width:100%;text-align:center">'
             . '{id}'
             . '</div></a>}}',
@@ -214,8 +281,7 @@ class QuotesView extends View
             '{agent}',
             '{status}',
             '{{<div style="text-align:right">{premium}</div>}}',
-            //'{source}',
-            '{actions}'
+            //'{source}'
         ];
 
         if ($dash) {
@@ -230,6 +296,11 @@ class QuotesView extends View
         $this->set('quotes_table', $quotestable);
     }
 
+    /**
+     * @param $needle
+     * @param array $array
+     * @return array
+     */
     public function removeValue($needle, $array = array())
     {
         $key = array_search($needle, $array);
@@ -239,6 +310,16 @@ class QuotesView extends View
         return $array;
     }
 
+    /**
+     * Transform table
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @return \Jenga\App\Html\type
+     */
     private function _table($name, $count, array $columns, array $rows, $source, $dom)
     {
 
@@ -291,6 +372,16 @@ class QuotesView extends View
         return $minitable;
     }
 
+    /**
+     * Get the main table for display
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @return \Jenga\App\Html\type
+     */
     private function _mainTable($name, $count, array $columns, array $rows, $source, $dom)
     {
 
@@ -398,14 +489,59 @@ class QuotesView extends View
         if (Input::post('printer')) {
             $table->printOutput();
         } else {
-            if (!$this->dash)
+
+            if (!$this->dash) {
                 $table->buildTools($tools); //->assignPanel('search');
+            }
+
+            $table->buildShortcutMenu('{actions}', 'mouseover', [
+                function ($id) {
+                    return '<li><a target="_blank" class="dropdown-item" title="Preview Quote" href="' . SITE_PATH . '/quotes/previewquote/' . Help::encrypt($id) . '/' . Help::encrypt('internal') . '">'
+                        . '<i class="fa fa-eye"></i> Preview Quote</a></li>';
+                },
+                function ($status, $id) {
+                    if ($status != 'Accepted') {
+                        return '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . $id . '">'
+                            . '<i class="fa fa-check-square-o"></i> Mark Customer Response</a></li>';
+                    }
+                    return null;
+                },
+                '<li class="divider"></li>',
+                function ($id) {
+                    return '<li><a data-toggle="modal" data-target="#emailmodal" class="dropdown-item" title="Email Quote" href="' . SITE_PATH . '/ajax/admin/quotes/emailquote/' . $id . '">'
+                        . '<i class="fa fa-envelope"></i> Email Quote</a></li>';
+                },
+                function ($id) {
+                    return '<li><a target="_blank" class="dropdown-item" title="Create PDF Quote" href="' . SITE_PATH . '/ajax/admin/quotes/pdfquote/' . $id . '">'
+                        . '<i class="fa fa-file-pdf-o fa-lg"></i> Generate PDF from Quote</a></li>';
+                },
+                function ($id) {
+                    return '<li><a  class="dropdown-item" title="Archive Quote" href="' . SITE_PATH . '/admin/quotes/archiveQuote/' . $id . '">'
+                        . '<i class="fa fa-archive"></i> Archive Quote</a></li>';
+                },
+                '<li class="divider"></li>',
+                function ($id) {
+                    return '<li><a class="dropdown-item btn-danger" title="Delete Quote" href="' . SITE_PATH . '/ajax/admin/quotes/pdfquote/' . $id . '">'
+                        . '<i class="fa fa-trash-o"></i> Delete Quote</a></li>';
+                },
+            ]);
             $maintable = $table->render(TRUE);
 
             return $maintable;
         }
     }
 
+    /**
+     * Minimal table with mapped attributes
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @param null $tools
+     * @return \Jenga\App\Html\type
+     */
     private function _minitable($name, $count, array $columns, array $rows, $source, $dom, $tools = null)
     {
 
@@ -451,14 +587,19 @@ class QuotesView extends View
 
         $table = Generate::Table($name, $schematic);
 
-        if (!is_null($tools))
+        if (!is_null($tools)) {
             $table->buildTools($tools);
+        }
 
         $minitable = $table->render(TRUE);
 
         return $minitable;
     }
 
+    /**
+     * Get the quote list
+     * @param $list
+     */
     public function getQuoteList($list)
     {
 
@@ -479,19 +620,18 @@ class QuotesView extends View
      * @param type $agents
      * @param type $products
      * @param type $insurers
+     * @param null $customer
      */
     public function addQuote($agents, $products, $insurers, $customer = null)
     {
-
         if (!empty($customer)) {
             $controls = [
                 '{id}' => ['hidden', 'customerid', $customer->id],
                 '{status}' => ['hidden', 'status', 'new'],
                 'Date Generated' => ['date', 'dategen', date('d F Y', time()), ['format' => 'd F Y']],
-                'Linked Agent' => ['select', 'agent', '', $agents],
-                'Customer Name' => ['text', 'customer', $customer->name, ['class' => 'form-control', 'overwrite' => TRUE]],
-                'Email Address' => ['text', 'email', $customer->email],
-                'Telephone' => ['text', 'phone', $customer->mobile_no],
+                'Name' => ['text', 'customer', $customer->name, ['class' => 'form-control', 'readonly' => 'readonly']],
+                'Email Address' => ['text', 'email', $customer->email, ['readonly' => 'readonly']],
+                'Telephone' => ['text', 'phone', $customer->mobile_no, ['readonly' => 'readonly']],
                 'Select Product' => ['select', 'product', '', $products],
                 '{insurers}' => ['select', 'insurers', '', $insurers],
                 '{submit}' => ['submit', 'btnsubmit', 'Create Quote']
@@ -502,7 +642,7 @@ class QuotesView extends View
                 '{id}' => ['hidden', 'customerid', ''],
                 '{status}' => ['hidden', 'status', 'new'],
                 'Date Generated' => ['date', 'dategen', date('d F Y', time()), ['format' => 'd F Y']],
-                'Linked Agent' => ['select', 'agent', '', $agents],
+                'Linked Agent' => ['select', 'agent', '', $agents, ['required' => '']],
                 'Customer Name' => ['select', 'customer', '', [], ['class' => 'form-control', 'id' => 'customer']],
                 'Email Address' => ['text', 'email', ''],
                 'Telephone' => ['text', 'phone', ''],
@@ -518,12 +658,6 @@ class QuotesView extends View
             'action' => '/admin/quotes/save',
             'controls' => $controls,
             'validation' => [
-                'agent' => [
-                    'required' => 'Please select the agent to be linked with the quote'
-                ],
-//                'customer' => [
-//                    'required' => 'Please enter the customer names'
-//                ],
                 'product' => [
                     'required' => 'Please select insurance product'
                 ]
@@ -543,6 +677,14 @@ class QuotesView extends View
         $this->setViewPanel('internal' . DS . 'full-quote-form');
     }
 
+    /**
+     * Add quote for policy
+     * @param $agents
+     * @param $products
+     * @param $insurers
+     * @param null $customer
+     * @return string
+     */
     public function addQuoteForPolicy($agents, $products, $insurers, $customer = null)
     {
         $controls = [
@@ -696,16 +838,23 @@ class QuotesView extends View
         $this->setViewPanel('edit' . DS . 'editquotepanel');
     }
 
-    public function internalConfirmQuote($quote, $customer, $products, $agent)
+    /**
+     * Confirm quote internally
+     * @param array $data
+     */
+    public function internalConfirmQuote($data)
     {
-
-        $names = ucwords(strtolower($customer->name));
-        $this->set('name', $names);
-        $this->set('product', $products);
-        $this->set('quote', $quote);
+        $this->set('data', $data);
         $this->setViewPanel('confirm-quote-form');
     }
 
+    /**
+     * Send an email of quote
+     * @param $quote
+     * @param $customer
+     * @param $products
+     * @param $agent
+     */
     public function mailQuote($quote, $customer, $products, $agent)
     {
 
@@ -719,7 +868,7 @@ class QuotesView extends View
             'preventjQuery' => TRUE,
             'preventZebraJs' => TRUE,
             'method' => 'POST',
-            'action' => '/ajax/admin/quotes/sendemail/' . $quote->id,
+            'action' => '/customer/quote/sendemail',
             'controls' => [
                 '{id}' => ['hidden', 'id', $quote->id],
                 '{customer}' => ['hidden', 'customer_name', $names],
@@ -733,7 +882,8 @@ class QuotesView extends View
                 ], ['class' => 'modal_required']],
                 'Email Address*' => ['text', 'email', $customer->email, ['class' => 'modal_required']],
                 'Subject*' => ['text', 'subject', 'Your ' . $products['name'] . ' Insurance Offer: Please review your quotation', ['class' => 'modal_required']],
-                'Message*' => ['textarea', 'content', '', ['class' => 'email_content modal_required']]
+                'Message*' => ['textarea', 'content', '', ['class' => 'email_content modal_required']],
+                '{submit}' => ['submit', 'btnsubmit', 'Send Email']
             ]
         ];
         $emailform = Generate::Form('emailform', $email_schema)->render('vertical', TRUE);
@@ -765,6 +915,12 @@ class QuotesView extends View
         $this->setViewPanel('email-quote-form');
     }
 
+    /**
+     *
+     * @param $quote
+     * @param $product
+     * @param $offers
+     */
     public function markForm($quote, $product, $offers)
     {
 
@@ -818,6 +974,10 @@ class QuotesView extends View
         $this->setViewPanel('statusform');
     }
 
+    /**
+     * Create email attachment
+     * @param $file
+     */
     public function createEmailAttachment($file)
     {
 
@@ -879,6 +1039,11 @@ class QuotesView extends View
         </table>';
     }
 
+    /**
+     * Create quote preview
+     * @param $data
+     * @param bool $confirm
+     */
     public function createQuotePreview($data, $confirm = false)
     {
         $object = (object)$data;
@@ -888,6 +1053,11 @@ class QuotesView extends View
         $this->setViewPanel('previews/' . $object->product_info->alias);
     }
 
+    /**
+     * Covers
+     * @param $object
+     * @return string
+     */
     private function covers($object)
     {
         $primitives = ['windscreen', 'riotes', 'audio', 'passenger', 'terrorism'];
@@ -904,6 +1074,7 @@ class QuotesView extends View
     }
 
     /**
+     * Get quote preview
      * @param array $data
      */
     public function quotePreview($data)
@@ -912,7 +1083,11 @@ class QuotesView extends View
         $this->setViewPanel('quotations/' . $data[0]->product->alias);
     }
 
-
+    /**
+     * Load assignments for agent
+     * @param $insurer_agents
+     * @param $quote_no
+     */
     public function loadAgentAssignment($insurer_agents, $quote_no)
     {
         $this->disable();
@@ -953,10 +1128,14 @@ class QuotesView extends View
 
         $form = Generate::Form('assign-agent', $schematic);
         $aform = $form->render('horizontal', TRUE);
-
         echo $assign = Overlays::ModalDialog($modal_settings, $aform);
     }
 
+    /**
+     * The quote wizard
+     * @param $schematic
+     * @param $customer
+     */
     public function quoteWizard($schematic, $customer)
     {
         $schematic = $this->oneSchematic($schematic);
@@ -966,15 +1145,27 @@ class QuotesView extends View
         $this->setViewPanel('internal/tab-form');
     }
 
-    public function quoteEditWizard($schematic, $customer)
+    /**
+     * Wizard to edit quote
+     * @param $schematic
+     * @param $customer
+     * @param $quote
+     */
+    public function quoteEditWizard($schematic, $customer, $quote)
     {
         $schematic = $this->oneSchematic($schematic);
         $form = Generate::Form('quoteform', $schematic);
         $this->set('form', $form->render('horizontal', TRUE));
         $this->set('customer_data', $customer);
+        $this->set('_quote', $quote);
         $this->setViewPanel('edit/tab-form');
     }
 
+    /**
+     * A full schematic for the whole product input fields [Step1, step 2 and step3]
+     * @param $schematic
+     * @return array
+     */
     private function oneSchematic($schematic)
     {
         $controls = [];
@@ -1009,21 +1200,28 @@ class QuotesView extends View
             'map' => $maps];
     }
 
-    public function loadTabs($schematics, $customer = array(), $pdt){
+    /**
+     * Loading tabs
+     * @param $schematics
+     * @param array $customer
+     * @param $pdt
+     */
+    public function loadTabs($schematics, $customer = array(), $pdt)
+    {
         foreach ($schematics as $key => $schematic) {
             $this->set('tab' . $key, $schematic);
         }
 
-        if($pdt == 'medical') {
+        if ($pdt == 'medical') {
             $entity_data = Elements::call('Medical/MedicalController')
                 ->view->createEntityDataArr($this->get('entity_data'));
-        } else if($pdt == 'travel') {
+        } else if ($pdt == 'travel') {
             $entity_data = Elements::call('Travel/TravelController')
                 ->view->createEntityDataArr($this->get('entity_data'));
         }
 
         $this->set('entity_data_arr', $entity_data);
         $this->set('customer_data', $customer);
-        $this->setViewPanel('internal/'.$pdt);
+        $this->setViewPanel('internal/' . $pdt);
     }
 }

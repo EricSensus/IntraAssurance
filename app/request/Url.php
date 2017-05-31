@@ -13,8 +13,7 @@ class Url{
      * @param type $url
      * @return type
      */
-    public static function link($url){
-        
+    public static function link($url){        
         return SITE_PATH.$url;
     }
     

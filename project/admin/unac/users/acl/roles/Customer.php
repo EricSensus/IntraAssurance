@@ -2,6 +2,7 @@
 namespace Jenga\MyProject\Users\Acl\Roles;
 
 use Jenga\App\Project\Logs\Log;
+use Jenga\App\Views\Notifications;
 use Jenga\App\Project\Core\Project;
 use Jenga\App\Project\Security\Permissions;
 
@@ -44,9 +45,11 @@ class Customer extends Project {
      * @param type $method
      */
     public function onDenied($element, $controller, $method){
-        
+        $controller = explode('\\',$controller);
         Log::Alert('The current user is denied access to '
                         .ucfirst($element).'/'.end($controller).'@'.$method);
+        
+        Notifications::Alert('Access denied to '.ucfirst($element).'/'.end($controller).'@'.$method, 'error', FALSE, TRUE);
     }
     
     /**
@@ -57,6 +60,6 @@ class Customer extends Project {
      * @param type $controller
      * @param type $method
      */
-    public function onAllowed($element, $controller, $method) {    
+    public function onAllowed($element, $controller, $method) {
     }
 }

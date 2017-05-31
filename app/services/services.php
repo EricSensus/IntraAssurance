@@ -6,6 +6,8 @@ use Jenga\App\Request\Session;
 use Jenga\App\Database\Mysqli\Database;
 use Jenga\MyProject\Users\Acl\Gateway;
 
+use Jenga\MyProject\Elements;
+
 /**
  * Register all the Application and Project services here
  */
@@ -29,6 +31,10 @@ return [
         'ajax' => [
                 'class' => Ajax::class,
                 'mode' => 'lazy'
-            ]
+            ],
+        'notice' => function(){
+                        //insert the Notifications element
+                        return Elements::call('Notifications/NotificationsController');
+                     }
     ]
 ];

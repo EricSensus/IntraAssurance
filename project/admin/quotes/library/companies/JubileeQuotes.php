@@ -44,7 +44,8 @@ class JubileeQuotes extends QuotesBlueprint
         $this->total = ($this->total + $this->policy_levy + $this->training_levy + $this->stamp_duty);
     }
 
-    /**getA
+    /**
+     * Get other quotes
      * @param $_car
      * @param bool $is_main
      * @return \stdClass
@@ -53,17 +54,17 @@ class JubileeQuotes extends QuotesBlueprint
     {
         $car = new \stdClass();
         $car->tsi = $_car->valueestimate;
-        $car->reg = $_car->regno;
+        $car->reg = strtoupper($_car->regno);
         if ($is_main) {
-            $car->tsi = $tsi = $this->main_entity->ValueEstimate;
-            $car->reg = $this->main_entity->RegNo;
+            $car->tsi = $tsi = $this->main_entity->valueestimate;
+            $car->reg = strtoupper($this->main_entity->regno);
             $this->cover_type = $this->quote_product_info->covertype;
         }
 
         switch ($this->cover_type) {
             case 'Comprehensive';
                 //$basic_premium = (($tsi*7.75)/100);
-                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive Private', 'Motor', 'percentage');
+                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive', 'Motor', 'percentage');
                 $car->cover_type = 'Comprehensive';
                 break;
             case 'Third Party Fire and Theft';
@@ -74,10 +75,9 @@ class JubileeQuotes extends QuotesBlueprint
             case 'Third Party Only':
                 //$basic_premium = 12500;
                 $car->basic_premium = $this->getRates($car->tsi, 'Third Party Only', 'Motor', 'fixed');
-                $car->cover_type = 'Third Party Only';
+                $car->cover_type = 'Third Party Fire and Theft';
                 break;
         }
-        $car->bp = $car->basic_premium;
         //calculate riot and strikes value
         switch ($_car->riotes) {
             case 'yes':
@@ -92,9 +92,9 @@ class JubileeQuotes extends QuotesBlueprint
             $car->riotes = null;
         }
         //calculate terrorism value
-        switch ($_car->political_violence) {
+        switch ($_car->terrorism) {
             case 'yes':
-                $car->terrorism = $this->getRates($car->tsi, 'Political Violence', 'Motor', 'percentage');
+                $car->terrorism = $this->getRates($car->tsi, 'Terrorism', 'Motor', 'percentage');
                 break;
             default :
                 $car->terrorism = null;
@@ -110,36 +110,12 @@ class JubileeQuotes extends QuotesBlueprint
                 break;
         }
         //$radio_cassette = 0;
-        switch ($_car->entertainment_equipment) {
+        switch ($_car->audio) {
             case 'yes':
-                $car->audio = $this->getRates($car->tsi, 'Entertainment Equipment', 'Motor', 'percentage');
+                $car->audio = $this->getRates($car->tsi, 'Audio System', 'Motor', 'percentage');
                 break;
             default :
                 $car->audio = null;
-                break;
-        }
-        switch ($_car->excess_protector) {
-            case 'yes':
-                $car->excess_protector = $this->getRates($car->tsi, 'Excess Protector', 'Motor', 'percentage');
-                break;
-            default :
-                $car->excess_protector = null;
-                break;
-        }
-        switch ($_car->srcc) {
-            case 'yes':
-                $car->srcc = $this->getRates($car->tsi, 'SRCC (Strikes Riots & Civil Commotion)', 'Motor', 'percentage');
-                break;
-            default :
-                $car->srcc = null;
-                break;
-        }
-        switch ($_car->loss_of_use) {
-            case 'yes':
-                $car->loss_of_use = $this->getRates($car->tsi, 'Loss of Use', 'Motor', 'percentage');
-                break;
-            default :
-                $car->loss_of_use = null;
                 break;
         }
         //$passenger_legal = 0;
@@ -188,8 +164,7 @@ class JubileeQuotes extends QuotesBlueprint
         }
 
         //calculate the net premium
-        $car->net_premium = ($car->basic_premium2 + $car->riotes +
-            $car->windscreen + $car->audio + $car->passenger + $car->terrorism + $car->srcc + $car->loss_of_use + $car->excess_protector);
+        $car->net_premium = ($car->basic_premium2 + $car->riotes + $car->windscreen + $car->audio + $car->passenger + $car->terrorism);
         if ($is_main) {
             $this->basic_premium = $car->net_premium;
         }
@@ -203,7 +178,33 @@ class JubileeQuotes extends QuotesBlueprint
      */
     protected function getTravelQuote()
     {
-        // TODO: Implement getTravelQuote() method.
+        $this->setupTravelValues();
+        $this->cover = $this->getCoverForTravel($this->quote_product_info->cover_plan);
+        $this->travel_days = $this->quote_product_info->no_travel_days;
+        $this->premium_rate = $this->getRateForTravel($this->cover, $this->travel_days);
+
+        $this->training_levy = $this->getRates($this->premium_rate, 'Training Levy', 'Travel');
+        $this->policy_levy = $this->getRates($this->premium_rate, 'P.H.C.F Fund', 'Travel');
+        $this->stamp_duty = $this->getRates($this->premium_rate, 'Stamp Duty', 'Travel');
+
+        $this->basic_premium = $this->premium_rate * 90;
+
+
+        $this->other_total = 0;
+        $list = [];
+        foreach ($this->other_entities as $_companion) {
+            // get the entity data ids
+            $companion = new \stdClass();
+            $companion->id = $_companion->id;
+            $companion->name = ucwords(strtolower($_companion->name));
+            $companion->basic_premium = $this->basic_premium;
+            $this->other_total += $companion->basic_premium;
+            $list[] = $companion;
+        }
+        $this->companions = $list;
+        $this->total = $this->other_total + $this->basic_premium +
+            $this->training_levy + $this->policy_levy + $this->stamp_duty;
+
     }
 
     /**
@@ -281,7 +282,60 @@ class JubileeQuotes extends QuotesBlueprint
      */
     protected function getMedicalQuote()
     {
-        // TODO: Implement getMedicalQuote() method.
+        $this->age_bracket = $this->determineAgeBracket($this->customer->age_range_bracket, $this->customer->gender);
+//        dd($age_bracket);
+
+        $this->selected_plan = $this->determinePlan($this->quote_product_info->core_plans);
+
+        // get the optional benefits
+        $this->core_optional_benefits = $this->getTheOptionalBenefits($this->quote_product_info, 'core');
+
+        // get core premium
+        $this->core_premium = $this->_model->table('medical_pricing')->find(['agerange_benefits' => $this->age_bracket])->{$this->selected_plan};
+
+        // get core optional benefits total
+        $this->optional_total = $this->getOptionalBenefitsTotal($this->selected_plan, $this->core_optional_benefits);
+        $this->other_total = 0;
+        /*
+                // add other covers amounts
+                if ($product_info['have_dependants'] == 'yes') {
+                    if ($product_info['additional_covers']) {
+
+                        $dependants = $this->entity->getEntityDataByCustomerAndEntityId(Session::get('customer_id'), $this->entity_id, $this->product_id);
+        //                dump(count($dependants));
+                        if (count($dependants)) {
+                            $i = 1;
+                            $dt_total = 0;
+                            $entity_data_ids = [];
+                            foreach ($dependants as $dependant) {
+                                $entity_values = json_decode($dependant->entity_values);
+                                $dep_age_bracket = $this->determineAgeBracket($entity_values->age_range_bracket, $entity_values->gender);
+                                $dep_premium = $this->model->table('medical_pricing')->find(['agerange_benefits' => $dep_age_bracket])->$selected_plan;
+
+                                $subtotal = $dep_premium + $optional_total;
+
+                                $dependant_name = $entity_values->{'proposer_surname'} . ' ' . $entity_values->{'other_names'};
+                                $deps[$dependant_name] = [
+                                    'basic_premium' => $dep_premium,
+                                    'core_optional_benefits' => $optional_total
+                                ];
+                                $dt_total += $subtotal;
+
+
+                                // get the entity data ids
+                                $entity_data_ids[] = $dependant->id;
+                                $i++;
+                            }
+                            $amounts['other_covers'] = $deps;
+                        }
+                    }
+                }*/
+
+        $this->premium_rate = $this->basic_premium = $this->core_premium + $this->optional_total + $this->other_total;
+        $this->training_levy = $this->getRates($this->premium_rate, 'Medical Levy', 'Medical');
+        $this->policy_levy = $this->getRates($this->premium_rate, 'P.H.C.F Fund', 'Medical');
+        $this->stamp_duty = $this->getRates($this->premium_rate, 'Stamp Duty', 'Medical');
+        $this->total = $this->premium_rate + $this->training_levy + $this->policy_levy + $this->stamp_duty;
     }
 
     /**
@@ -293,7 +347,6 @@ class JubileeQuotes extends QuotesBlueprint
         $this->tsi_a = (empty($this->quote_product_info->a_premium)) ? 0 : $this->quote_product_info->a_premium;
         $this->tsi_b = (empty($this->quote_product_info->b_premium)) ? 0 : $this->quote_product_info->b_premium;
         $this->tsi_c = (empty($this->quote_product_info->c_premium)) ? 0 : $this->quote_product_info->c_premium;
-
         $section_a_rate = $this->getReturnRate('Section A', 'Property');
         $this->section_a = ($this->tsi_a * $section_a_rate) / 100;
         $section_b_rate = $this->getReturnRate('Section B', 'Property');

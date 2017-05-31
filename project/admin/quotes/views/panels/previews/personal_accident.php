@@ -4,6 +4,7 @@ use Jenga\App\Views\HTML;
 
 /** @var stdClass $product */
 extract($info);
+$quotation = array_first($quotation);
 
 HTML::head(TRUE, TRUE);
 HTML::css('admin/css/admin_css.css', FALSE, TRUE);
@@ -138,46 +139,53 @@ HTML::css('preview/css/preview.css', FALSE, TRUE);
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive">
-                        <table class="table table-condensed table-stripped">
-                            <tbody>
-                            <?php
-                            foreach ($quotation as $index => $info):
-                                if (is_array($info) || is_object($info)) {
-                                    foreach ($info as $i => $v):
-                                        ?>
-                                        <tr>
-                                            <th colspan="3"><?= $i ?><i><?= $v->relationship ?></i></th>
-                                        </tr>
-                                        <?php
-                                        foreach ($v as $e => $t):
-                                            if (empty($t))
-                                                continue;
-                                            ?>
-                                            <tr>
-                                                <td>-</td>
-                                                <td><?= ucwords($e) ?></td>
-                                                <td><?= number_format($t, 2) ?></td>
-                                            </tr>
-                                            <?php
-                                        endforeach;
-                                    endforeach;
-                                }
-                            endforeach;
-                            ?>
-                            <tr>
-                                <td colspan="2">P.H.C.F</td>
-                                <td><?= number_format($quotation->policy_fund, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">Stamp Duty</td>
-                                <td><?= number_format($quotation->stamp_duty, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">Total</td>
-                                <td><?= number_format($quotation->total, 2) ?></td>
-                            </tr>
-                            </tbody>
-                        </table>
+
+                        <?php foreach ($_quote as $quote) { ?>
+                            <table class="table table-condensed table-stripped">
+                                <thead>
+                                <th>#</th>
+                                <th><?= $quote->insurer->name ?></th>
+                                </thead>
+                                <tbody>
+                                <?php
+                                /* foreach ($quotation as $index => $info):
+                                     if (is_array($info) || is_object($info)) {
+                                         foreach ($info as $i => $v):
+                                             ?>
+                                             <tr>
+                                                 <th colspan="3"><?= $i ?><i><?= $v->relationship ?></i></th>
+                                             </tr>
+                                             <?php
+                                             foreach ($v as $e => $t):
+                                                 if (empty($t))
+                                                     continue;
+                                                 ?>
+                                                 <tr>
+                                                     <td>-</td>
+                                                     <td><?= ucwords($e) ?></td>
+                                                     <td><?= number_format($t, 2) ?></td>
+                                                 </tr>
+                                                 <?php
+                                             endforeach;
+                                         endforeach;
+                                     }
+                                 endforeach;*/
+                                ?>
+                                <tr>
+                                    <td>P.H.C.F</td>
+                                    <td><?= number_format($quote->policy_fund, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Stamp Duty</td>
+                                    <td><?= number_format($quote->stamp_duty, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Total</td>
+                                    <td><?= number_format($quote->total, 2) ?></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        <?php } ?>
                     </div>
                 </div>
             </div>

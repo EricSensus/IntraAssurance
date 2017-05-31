@@ -101,9 +101,9 @@
     </tr>
 </table>
 <?php
-    if(isset($_GET['policy'])){
-?>
-<input type="hidden" name="policy" value="<?=$_GET['policy']; ?>"/>
+if (isset($_GET['policy'])) {
+    ?>
+    <input type="hidden" name="policy" value="<?= $_GET['policy']; ?>"/>
 <?php } ?>
 <div class="buttons">
     <div class="row last">

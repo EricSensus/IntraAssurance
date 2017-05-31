@@ -2,6 +2,7 @@
 
 namespace Jenga\MyProject\Rates\Views;
 
+use Jenga\App\Helpers\Help;
 use Jenga\App\Html\Generate;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Url;
@@ -34,6 +35,45 @@ class RatesView extends View
 
         $row_vars = [
             '{company}',
+            '{{<a data-toggle="modal" data-target="#edit_rate_modal" href="' . Url::link('/admin/editrates/{id}') . '">{rate_name}</a>}}',
+            '{rate_value}',
+            '{rate_type}',
+            '{rate_category}'
+        ];
+
+        $this->showtable('rates_table', $columns, $count, $source, $row_vars, $rate_types, $this->get('rate_cats'));
+
+        $modal_settings = [
+            'id' => 'edit_rate_modal',
+            'role' => 'dialog',
+            'title' => 'Edit Rate Details'
+        ];
+
+        $editform = Overlays::Modal($modal_settings);
+        $this->set('editmodal', $editform);
+        $this->setViewPanel('rates');
+        if ($setup) {
+
+            $this->setViewPanel('rates-s');
+
+        }
+    }
+
+    public function generateSetupTable($setup = false)
+    {
+
+        $count = $this->get('count');
+        $source = $this->get('source');
+        $rate_types = $this->get('rate_types');
+
+        $columns = [
+            'Rate Name',
+            'Rate Value',
+            'Rate Type',
+            'Rate Category'
+        ];
+
+        $row_vars = [
             '{{<a data-toggle="modal" data-target="#edit_rate_modal" href="' . Url::link('/admin/editrates/{id}') . '">{rate_name}</a>}}',
             '{rate_value}',
             '{rate_type}',
@@ -117,7 +157,7 @@ class RatesView extends View
         $table = Generate::Table('companies', $schematic);
 
         $tools = [
-            'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small',
+            'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small',
             'settings' => [
                 'add_tool_names' => false,
                 'wrap_with' => 'div' //the default option is wrap_with => 'table'
@@ -134,7 +174,7 @@ class RatesView extends View
                 ],
                 'delete' => [
                     'path' => '/admin/companies/deleteinsurer',
-                    'using' => ['{id}'=>'{name}']
+                    'using' => ['{id}' => '{name}']
                 ]
             ]
         ];
@@ -173,6 +213,10 @@ class RatesView extends View
 
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
+            'settings' => [
+                'add_tool_names' => false,
+                'wrap_with' => 'div' //the default option is wrap_with => 'table'
+            ],
             'tools' => [
                 'add' => [
                     'path' => '/admin/rates/add',
@@ -189,8 +233,7 @@ class RatesView extends View
                 ]
             ]
         ];
-
-        $tools = $table->buildTools($tools, TRUE);
+        $table->buildTools($tools);
         $rates_table = $table->render(TRUE);
 
         $this->set('rates_table', $rates_table);
@@ -256,13 +299,12 @@ class RatesView extends View
     public function showEditRateForm($rate, $rate_types, $rate_cats, $insurer)
     {
         $this->disable();
-
         $schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
             'action' => '/admin/rates/update',
             'controls' => [
-                'destination' => ['hidden', 'destination', '/admin/rates'],
+                'destination' => ['hidden', 'destination', '/admin/setup?__company=' . Help::encrypt($insurer->id)],
                 'edit' => ['hidden', 'edit', $rate->id],
                 'Rate Name' => ['text', 'rate_name', $rate->rate_name],
                 'Rate Value' => ['text', 'rate_value', $rate->rate_value],
@@ -270,9 +312,7 @@ class RatesView extends View
                 'Rate Category' => ['select', 'rate_category', $rate->rate_category, $rate_cats],
                 'Insurance Company' => ['select', 'insurer_id', $insurer->id, [
                     $insurer->id => $insurer->name
-                ], [
-                    'disabled' => 'disabled'
-                ]]
+                ], ['required' => '', 'readonly' => 'readonly']]
             ],
             'validation' => [
                 'rate_name' => [

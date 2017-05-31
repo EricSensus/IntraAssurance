@@ -7,7 +7,7 @@ use Jenga\App\Project\Routing\Route;
 Route::get('/customer/my-claims', 'ClaimsController@myClaims')
     ->attachTemplate('admin')
     ->assignPanels([
-        'top' => 'UsersController@index:login',
+        'top' => 'NotificationsController@load:notices',
         'navigation' => 'NavigationController@display:menus',
         'logout' => 'UsersController@logout:logout'
     ]);
@@ -17,7 +17,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::any('/admin/claims/{action}', 'ClaimsController@index')
         ->attachTemplate('admin')
         ->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ])->assignResources([

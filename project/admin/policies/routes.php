@@ -12,11 +12,13 @@ Route::any('/policies/previewpolicy/{id}/{pdf}', 'PoliciesController@previewPoli
 Route::get('/admin/policies/downloaddocs/{id}', 'PoliciesController@showRelatedDocs')
         ->attachTemplate('admin')
         ->assignPanels(['_ajax' => TRUE]);
+// cron
+Route::get('/expired-policies', 'PoliciesController@checkForExpiredPolicies');
 
 Route::get('/customer/my-policies', 'PoliciesController@myPolicies')
     ->attachTemplate('admin')
     ->assignPanels([
-        'top' => 'UsersController@index:login',
+        'top' => 'NotificationsController@load:notices',
         'navigation' => 'NavigationController@display:menus',
         'logout' => 'UsersController@logout:logout'
     ]);
@@ -28,7 +30,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/policies/createpolicy/{offer}', 'PoliciesController@createpolicy')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
     ]);
@@ -37,9 +39,14 @@ Route::group(['before' => 'auth.check'], function () {
             ->attachTemplate('admin')
             ->assignPanels(['_ajax' => TRUE]);
 
+    Route::get('/admin/policies/renewpolicy/{id}', 'PoliciesController@showRenewPolicy')
+            ->attachTemplate('admin')
+            ->assignPanels(['_ajax' => TRUE]);
+
     Route::get('/admin/policies/{action}/{id}', 'PoliciesController@index', ['action' => 'show'])
             ->attachTemplate('admin')
             ->assignPanels([
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout',
                 'company-details' => 'CompaniesController@ownCompany:own-company-details',
@@ -57,7 +64,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::post('/admin/policies/{action}', 'PoliciesController@index')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
     ]);

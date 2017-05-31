@@ -22,7 +22,7 @@ class PoliciesView extends View
 {
     private $dash = false;
 
-    public function generateTable($mypolicies = true, $dash = false)
+    public function generateTable($mypolicies = false, $dash = false)
     {
         $this->dash = $dash;
 
@@ -44,9 +44,12 @@ class PoliciesView extends View
         $suburl = Elements::call('Navigation/NavigationController')->getUrl('customers');
         $polurl = Elements::call('Navigation/NavigationController')->getUrl('policies');
 
-        $columns = ['Created', 'Policy No', 'Validity', 'Issue Date', 'Customer', 'Product', 'Premium', 'Issue', 'Actions'];
+        $columns = ['Actions', 'Created', 'Policy No', 'Validity', 'Issue Date', 'Customer', 'Product', 'Premium',
+//            'Issue', 'Renew'
+        ];
 
         $rows = [
+            '{actions}',
             '{created}',
             '{{<a href="' . $polurl . '/edit/{id}">{policyno}</a>}}',
             '{validity}',
@@ -54,8 +57,8 @@ class PoliciesView extends View
             '{{<a href="' . $suburl . '/show/{customers_id}">{customer}</a>}}',
             '{product}',
             '{premium}',
-            '{image}',
-            '{actions}'
+//            '{image}',
+//            '{renew}'
         ];
 
         if($mypolicies) {
@@ -81,7 +84,23 @@ class PoliciesView extends View
 
         $form = Overlays::Modal($modal_settings);
 
+        $renewal_settings = [
+            'id' => 'renewal_modal',
+            'formid' => 'renewal_modal_form',
+            'role' => 'dialog',
+            'title' => 'Renew Policy',
+            'buttons' => [
+                'Cancel' => [
+                    'class' => 'btn btn-default',
+                    'data-dismiss' => 'modal'
+                ]
+            ]
+        ];
+
+        $renewal_container = Overlays::Modal($renewal_settings);
+
         $this->set('mailmodal', $form);
+        $this->set('renewal_container', $renewal_container);
         $this->set('policies_table', $policiestable);
         $this->set('mypolicies', $mypolicies);
     }
@@ -142,6 +161,42 @@ class PoliciesView extends View
         ];
 
         $table = Generate::Table($name, $schematic);
+
+        $table->buildShortcutMenu('{actions}', 'mouseover', [
+            function($id) {
+                return '<li><a href="' . Url::link('/admin/policies/edit/'. $id) . '"><i class="fa fa-edit"></i> Open Policy</a></li>';
+            },
+            '<li class="divider"></li>',
+            function($id) {
+                return '<li><a href="' . Url::link('/admin/policies/processissue/' . $id) . '"><i class="fa fa-check-square"></i> Issue Policy</a></li>' .
+                    '<li>
+                        <a href="' . Url::link('/ajax/admin/policies/renewpolicy/' . $id) . '"
+                            data-target="#renewal_modal" data-toggle="modal">
+                        <i class="fa fa-refresh"></i> Renew Policy</a></li>'
+                    .'<li>
+                        <a href="'. Url::link('/admin/policies/downloaddocs/' . $id) .'" data-toggle="modal" data-target="#download-docs">
+                            <i class="fa fa-download"></i> Download Related Docs </a>
+                    </li>';
+            },
+            '<li class="divider"></li>',
+            function($id) {
+                return '<li><a target="_blank" href="' . Url::link('/admin/policies/previewpolicy/' . $id) . '"><i class="fa fa-eye"></i> Preview Policy</a></li>' .
+                    '<li>
+                        <a href="' . Url::link('/ajax/admin/policies/emailpolicy/' . $id) . '" 
+                            data-toggle="modal" data-target="#emailmodal">
+                                <i class="fa fa-envelope"></i> Email Policy</a></li>'.
+                    '<li><a href="' . Url::link('/ajax/admin/policies/pdfpolicy/' . $id) . '"><i class="fa fa-file-pdf-o"></i> Generate PDF</a></li>';
+            },
+            '<li class="divider"></li>',
+            function($id){
+                return '<li><a href="javascript::void();" onclick="deletePolicy();">'
+                . '<i class="fa fa-check-square-o"></i> Delete Policy'
+                . '</a></li>'
+                . '<form id="del_policy" action="'. Url::link('/admin/policies/deletesingle') .'" method="post">'
+                . '<input type="hidden" name="id" value="'.$id.'"/>'
+                . '</form>';
+            }
+        ]);
 
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
@@ -284,6 +339,13 @@ class PoliciesView extends View
         ];
 
         $table = Generate::Table($name, $schematic);
+        $table->buildShortcutMenu('{actions}', 'mouseover', [
+            '<li class="divider"></li>',
+            '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . '{quote_no}">'
+            . '<i class="fa fa-check-square-o"></i> Confirm Quote'
+            . '</a></li>'
+        ]);
+
         $minitable = $table->render(TRUE);
 
         return $minitable;
@@ -438,9 +500,9 @@ class PoliciesView extends View
 
         $table .= '<tr><td colspan="2">&nbsp;</td></tr>';
 
-        $amounts = json_decode($coverage['amounts']);
+        $amounts = $coverage['amounts'];
+//        dump($amounts);
         $other_covers = $amounts->other_covers;
-
         if (count($other_covers)) {
 //            print_r($other_covers);exit;
             foreach ($other_covers as $key => $cover) {
@@ -495,6 +557,15 @@ class PoliciesView extends View
     public function loadCoverDetails($amounts, $products)
     {
         $amounts = json_decode($amounts['amounts']);
+        if (count($amounts)) {
+            foreach ($amounts as $title => $amount) {
+                if ($amount->chosen) {
+                    $amounts = $amount;
+                }
+            }
+        }
+
+
         $table = '<table style="width: 100%;">';
 
         //process product
@@ -538,15 +609,23 @@ class PoliciesView extends View
 
         $table .= '<tr><td colspan="2">&nbsp;</td></tr>';
 
-        // core
-        $table .= $this->loadCore(array_except($this->amountAsArray($amounts), [
-            'stamp_duty',
-            'training_levy',
-            'policy_levy',
-            'other_covers',
-            'insurer_id',
-            'total'
-        ]));
+        if (count($amounts)) {
+            foreach ($amounts as $title => $amount) {
+                if($amount->chosen) {
+                    unset($amount->chosen);
+                    // core
+//                    dump($amount);exit;
+                    $table .= $this->loadCore(array_except($this->amountAsArray($amounts), [
+                        'stamp_duty',
+                        'training_levy',
+                        'policy_levy',
+                        'other_covers',
+                        'insurer_id',
+                        'total'
+                    ]));
+                }
+            }
+        }
 
         $other_covers = $amounts->other_covers;
         if (count($other_covers)) {
@@ -660,6 +739,13 @@ class PoliciesView extends View
 
     public function editPolicy($policy)
     {
+        $readonly = [];
+        $dates = 'date';
+        if($this->user()->is('customer')) {
+            $readonly = ['readonly' => 'readonly'];
+            $dates = 'text';
+        }
+//        dump($readonly);exit;
         $editschematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
@@ -672,10 +758,10 @@ class PoliciesView extends View
                 '{customer_quotes_id}' => ['hidden', 'customer_quotes_id', $policy->quoteid],
                 '{products_id}' => ['hidden', 'products_id', $policy->product['id']],
                 '{status}' => ['hidden', 'status', $policy->status],
-                '{policynumber}' => ['text', 'policynumber', $policy->policy_number],
-                '{issuedate}' => ['date', 'issuedate', date('d F Y', $policy->issue_date), ['format' => 'd F Y']],
-                '{startdate}' => ['date', 'startdate', date('d F Y', $policy->start_date), ['format' => 'd F Y']],
-                '{enddate}' => ['date', 'enddate', date('d F Y', $policy->end_date), ['format' => 'd F Y']],
+                '{policynumber}' => ['text', 'policynumber', $policy->policy_number, $readonly],
+                '{issuedate}' => [$dates, 'issuedate', date('d F Y', $policy->issue_date), ['format' => 'd F Y'], $readonly],
+                '{startdate}' => [$dates, 'startdate', date('d F Y', $policy->start_date), ['format' => 'd F Y'], $readonly],
+                '{enddate}' => [$dates, 'enddate', date('d F Y', $policy->end_date), ['format' => 'd F Y'], $readonly],
                 '{submit}' => ['submit', 'btnsubmit', 'Save Edits']
             ],
             'validation' => [
@@ -809,7 +895,7 @@ class PoliciesView extends View
     public function issuePolicy($policy, $output = 'policiesaddpanel')
     {
 
-        $customer = Elements::load('Users/UsersController@getCustomerName', ['id' => $policy->customers_id]);
+        $customer = Elements::call('Customers/CustomersController')->model->where('id', $policy->customers_id)->first();
 
         $issue_schematic = [
             'preventjQuery' => TRUE,
@@ -826,13 +912,13 @@ class PoliciesView extends View
             ]
         ];
 
-        $emaillabel = ['label' => 'Send email notification to ' . $customer];
+        $emaillabel = ['label' => 'Send email notification to ' . $customer->name];
 
         $iform = Generate::Form('issueform', $issue_schematic);
         $issueform = $iform->render(ABSOLUTE_PATH . DS . 'project' . DS . 'admin' . DS . 'policies' . DS . 'views' . DS . 'panels' . DS . 'policyissue.php', TRUE, $emaillabel);
 
         $this->set('policyadd', $issueform);
-        $this->set('policyguide', $this->_policyGuide('three'));
+        $this->set('policyguide', $this->_policyGuide('four'));
 
         $this->setViewPanel($output);
     }
@@ -846,7 +932,6 @@ class PoliciesView extends View
         $label_list = [];
 
         foreach ($policies as $policy) {
-
             $customer = Elements::call('Customers/CustomersController')->find($policy->customers_id);
             $polurl = Elements::call('Navigation/NavigationController')->getUrl('policies');
 
@@ -1102,20 +1187,31 @@ class PoliciesView extends View
         $this->set('insurer', $policy_data->insurer);
         $this->set('amounts', $policy_data->amounts);
 
-        $amounts = $this->amountAsArray($policy_data->amounts);
+        $amounts = $policy_data->amounts;
+        if (count($amounts)) {
+            foreach ($amounts as $title => $amount) {
+                if ($amount->chosen) {
+                    unset($amount->chosen);
+                    $amounts = $amount;
+                }
+            }
+        }
+        $amounts_arr = $this->amountAsArray($amounts);
+//        dump($amounts);exit;
 
-        $core = $this->loadCore(array_except($amounts, [
+        $core = $this->loadCore(array_except($amounts_arr, [
             'stamp_duty',
             'training_levy',
             'policy_levy',
             'other_covers',
             'insurer_id',
-            'total'
+            'total',
+            'total_net_premiums'
         ]));
 
         $product_details = $this->loadProductDetails($policy_data->product_info, $this->get('product_alias'));
         $other_covers = $this->loadOtherCovers($policy_data->amounts->other_covers);
-        $more = $this->moreAmounts($policy_data->amounts);
+        $more = $this->moreAmounts($amounts);
 
         $modal_settings = [
             'id' => 'download-docs',
@@ -1138,6 +1234,7 @@ class PoliciesView extends View
         $this->set('more', $more);
         $this->set('product_details', $product_details);
         $this->set('other_covers', $other_covers);
+        $this->set('amounts', $amounts);
         $this->setViewPanel('preview_policy');
     }
 
@@ -1235,19 +1332,19 @@ class PoliciesView extends View
         return $html;
     }
 
-    public function loadCore($amounts)
+    public function loadCore($amount)
     {
         $core = [];
-        if (count($amounts)) {
-            $html = '';
-            foreach ($amounts as $title => $amount) {
-                $html .= '<tr>
-                    <td>' . ucwords(str_replace('_', ' ', $title)) . '</td>
-                    <td>Ksh. ' . number_format($amount, 2) . '</td>
-                </tr>';
-            }
-            return $html;
+
+        $html = '';
+
+        foreach ($amount as $key => $value) {
+            $html .= '<tr>
+                <td>' . ucwords(str_replace('_', ' ', $key)) . '</td>
+                <td>Ksh. ' . number_format($value, 2) . '</td>
+            </tr>';
         }
+        return $html;
     }
 
     public function amountAsArray($amounts)
@@ -1263,6 +1360,7 @@ class PoliciesView extends View
 
     public function moreAmounts($amounts)
     {
+//        dump($amounts);exit;
         $more = '';
         $more .= '<tr>
                     <td><b>Training Levy</b></td>
@@ -1311,6 +1409,10 @@ class PoliciesView extends View
         $this->setViewPanel('related_docs');
     }
 
+    /**
+     * Renew one or more of the selected policies
+     * @param $policies
+     */
     public function renewPolicies($policies)
     {
         $this->set('policies', $policies);
@@ -1319,8 +1421,6 @@ class PoliciesView extends View
 
     public function showMailModal()
     {
-
-
         $this->setViewPanel('email-policy-form');
     }
 
@@ -1427,5 +1527,49 @@ class PoliciesView extends View
             $indices = Elements::call('Domestic/DomesticController')->view->domesticIndices();
 
         return $indices;
+    }
+
+    public function showRenewalModal($policy){
+        $renew_schema = [
+            'preventjQuery' => TRUE,
+            'preventZebraJs' => TRUE,
+            'method' => 'POST',
+            'action' => '/admin/policies/renewpolicy',
+            'controls' => [
+                '{id}' => ['hidden', 'id', $policy->id],
+                '{note}' => ['note', 'note', '<h5>Policy#: <b>'.$policy->policy_number.'</b></h5>'],
+                'End Date' => ['date', 'end_date', $policy->end_date],
+                'Period' => ['select', 'period', '', [
+                        '3 month' => '3 Months',
+                        '6 month' => '6 Months',
+                        '1 year' => '1 Year'
+                    ]
+                ]
+//                '{submit}' => ['submit', 'btnsubmit', 'Send Email']
+            ]
+        ];
+        $renewalform = Generate::Form('renewal_modal_form', $renew_schema)->render('vertical', TRUE);
+
+        $modal_settings = [
+            'formid' => 'renewal_modal_form',
+            'role' => 'dialog',
+            'size' => 'large',
+            'title' => 'Renew Policy',
+            'buttons' => [
+                'Cancel' => [
+                    'class' => 'btn btn-default',
+                    'data-dismiss' => 'modal'
+                ],
+                'Renew Policy' => [
+                    'type' => 'submit',
+                    'class' => 'btn btn-primary mail',
+                    'id' => 'renew_pol_btn'
+                ]
+            ]
+        ];
+
+        $modal_content = Overlays::ModalDialog($modal_settings, $renewalform, true);
+        $this->set('modal_content', $modal_content);
+        $this->setViewPanel('renewal_policy_modal');
     }
 }

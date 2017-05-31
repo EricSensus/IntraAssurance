@@ -45,5 +45,5 @@ echo '</div>'
     . '</div>';
 
 echo Overlays::Modal(['id' => 'emailmodal']); ?>
-<?= Overlays::Modal(['id' => 'confirmquotemodal']); ?>
+<?= Overlays::Modal(['id' => 'confirmquotemodal', 'title' => 'Mark Customer Response']); ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.5.6/tinymce.min.js"></script>

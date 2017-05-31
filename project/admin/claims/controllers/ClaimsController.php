@@ -2,14 +2,12 @@
 
 namespace Jenga\MyProject\Claims\Controllers;
 
-use App;
 use Jenga\App\Controllers\Controller;
+use Jenga\App\Core\App;
 use Jenga\App\Helpers\FileUpload;
-use Jenga\App\Project\Security\User;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
 use Jenga\App\Request\Url;
-use Jenga\App\Views\Notifications;
 use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Claims\Models\ClaimsModel;
 use Jenga\MyProject\Claims\Views\ClaimsView;
@@ -33,9 +31,14 @@ class ClaimsController extends Controller
      * @var CustomersController
      */
     private $customerCtrl;
-
+    /**
+     * @var string
+     */
     protected $upload_dir = PROJECT_PATH . DS . 'uploads/';
 
+    /**
+     * Entry route
+     */
     public function index()
     {
         if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
@@ -90,11 +93,37 @@ class ClaimsController extends Controller
         $data->quote = $quote = $this->model->findFromTable($quote_id, 'customer_quotes');
         $data->customer = $this->getCustomerDataArray($policy->customers_id);
         $data->product = (object)Elements::load('Products/ProductsController@getProduct', ['id' => $quote->products_id]);
-        $quote_amounts = json_decode($quote->amount);
+        $quote_amounts = $this->getQuoteAmount($quote);
         $insurer_id = $quote_amounts->insurer_id;
+        $data->agent = Elements::call('Users/UsersController')->getAgentUserInfo($data->customer->insurer_agents_id);
         $data->insurer = (object)Elements::call('Insurers/InsurersController')->getInsurer($insurer_id);
         $data->entities = Elements::call('Entities/EntitiesController')->getCustomerEntity($quote->customer_entity_data_id);
         return $data;
+    }
+
+    /**
+     * Get the array amounts
+     * @param $quote
+     * @return int|null|object
+     */
+    private function getQuoteAmount($quote)
+    {
+        $amounts = json_decode($quote->amount);
+        $use_amount = null;
+        if (empty($amounts)) {
+            return 0;
+        }
+        try {
+            foreach ($amounts as $struct) {
+                if ($struct->chosen) {
+                    $use_amount = $struct;
+                    break;
+                }
+            }
+        } catch (\Exception $e) {
+            $use_amount = (object)[];
+        }
+        return $use_amount;
     }
 
     /**
@@ -121,6 +150,9 @@ class ClaimsController extends Controller
         return $list;
     }
 
+    /**
+     * File a claim
+     */
     public function fileclaim()
     {
         $claim_process = $this->model->getProcess(Input::get('id'));
@@ -130,6 +162,35 @@ class ClaimsController extends Controller
         $this->view->uploadClaimAdditionalDocs();
     }
 
+    /**
+     * Notification handler for accepted}quote
+     * @param $claim
+     * @return mixed
+     */
+    private function notificationForNewClaim($claim)
+    {
+        $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
+        $data = $this->getPolicyDetails($claim->policy_id);
+        $content = '<p>Hello, ' . $data->customer->name . '</p>';
+        $content .= '<p>Your client ' . $data->product->name . ' has filled a new claim</p>
+     <p>Please log into the portal to view all the details. Click the link below.</p>
+                 <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
+                 <p>Thanks</p>
+                 <p><strong>' . $data->insurer->name . ' Insurance Portal</strong></p>';
+
+        $subject = 'You started a new claim for ' . $data->product->name . '. Policy #' . $data->policy->policy_number;
+        $message = 'Your client "' . $data->customer->name . '" has filled a new claim for ' . $data->product->name . '. Policy #' . $data->policy->policy_number;
+        $_cust = Elements::call('Users/UsersController')->getCustomerUserInfo($data->customer->id);
+
+        $notice = App::get('notice');
+        $notice->add($message, 'agent', $data->agent->id, 'claims');
+        $notice->add($subject, 'customer', $_cust->id, 'claims');
+        $notice->sendAsEmail([$data->agent->username => $data->agent->username], $content, 'New claim for your client ' . $data->customer->name, [$own->email_address => $own->name]);
+    }
+
+    /**
+     * Save claim from post data
+     */
     public function saveclaim()
     {
         $policy_id = Input::post('policy_id');
@@ -139,9 +200,14 @@ class ClaimsController extends Controller
         $claim->subject = Input::post('subject');
         $claim->description = Input::post('description');
         $claim->policy_id = $policy_id;
-        $claim->agent_id = Session::get('agentsid');
+        $claim->agent_id = $policy->customer->insurer_agents_id;
         $claim->customer_id = $policy->customer->id;
+        $claim->created_at = time();
+        $claim->status = 'New';
+
+        $this->notificationForNewClaim($claim);
         $claim->save();
+
         $this->updateTimeline($claim->last_altered_row, "Started filing a claim : Status -> Processing");
         if ($claim->hasNoErrors()) {
             Redirect::withNotice('The claim has been saved')
@@ -149,6 +215,35 @@ class ClaimsController extends Controller
         }
     }
 
+    /**
+     * @param $claim
+     * @param $desc
+     */
+    public function notificationsForClaim($claim, $desc)
+    {
+        $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
+        $data = $this->getPolicyDetails($claim->policy_id);
+        $content = '<p>Hello, ' . $data->customer->name . '</p>';
+        $content .= '<p>Your claim for ' . $data->product->name . ' product was updated. Current Status is ' . Input::post('action') . '</p>
+       <p>Please log into the portal to view all the details. Click the link below.</p>
+                   <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
+                   <p>Thanks</p>
+                   <p><strong>' . $data->insurer->name . ' Insurance Portal</strong></p>';
+
+        $subject = 'You have updated claim #' . $claim->id . '  Description:' . $desc;
+        $message = 'Your claim #' . $claim->id . ' for product "' . $data->product->name . ' was updated . ' . $desc;
+        $_cust = Elements::call('Users/UsersController')->getCustomerUserInfo($data->customer->id);
+
+        $notice = App::get('notice');
+        $notice->add($subject, 'agent', $this->user()->id, 'claims');
+        $notice->add($message, 'customer', $_cust->id, 'my-claims');
+        $notice->sendAsEmail([$data->customer->email => $data->customer->name], $content, $subject, [$own->email_address => $own->name]);
+
+    }
+
+    /**
+     * Get a claim preview
+     */
     public function previewclaim()
     {
 //        $customer_id = Input::post('customer_id');
@@ -158,6 +253,9 @@ class ClaimsController extends Controller
         $this->view->addClaim($data);
     }
 
+    /**
+     * Get the customer policies
+     */
     public function getPolicies()
     {
 
@@ -196,12 +294,18 @@ class ClaimsController extends Controller
         echo json_encode($return);
     }
 
+    /**
+     * Create a new quote
+     */
     public function add()
     {
         $customer = null;
-        if (!empty(Input::get('id'))) {
-            $customer = Elements::call('Customers/CustomersController')->getCustomerById(Input::get('id'), 'raw');
-            $policies = Elements::call('Quotes/PoliciesController')->getPoliciesByCustomer($customer->id);
+        if ($this->user()->is('customer')) {
+            $id = $this->user()->customer_id;
+        }
+        if (!empty($id)) {
+            $customer = Elements::call('Customers/CustomersController')->getCustomerById($id, 'raw');
+            $policies = Elements::call('Policies/PoliciesController')->getPoliciesByCustomer($customer->id);
             //get product
             //print_r($policies);
             $product = Elements::call('Products/ProductsController');
@@ -229,12 +333,19 @@ class ClaimsController extends Controller
         $this->view->addClaimForm($customer);
     }
 
+    /**
+     * Get policy preview
+     */
     public function getPolicyPreview()
     {
         $meta = $this->getPolicyDetails(Input::get('id'));
         $this->view->previewPolicy($meta);
     }
 
+    /**
+     * Upload a document form
+     * @param $id
+     */
     public function upload($id)
     {
         $settings = [
@@ -254,7 +365,7 @@ class ClaimsController extends Controller
     {
         $process = $this->model->getProcessModel();
         $process->claim_id = $claim;
-        $process->user_id = Session::get('userid');
+        $process->user_id = $this->user()->id;
         $process->description = $description;
         if (!empty($file)) {
             $process->documents_id = $file;
@@ -262,6 +373,23 @@ class ClaimsController extends Controller
         return $process->save();
     }
 
+    /**
+     *
+     */
+    public function delete()
+    {
+        $this->view->disable();
+        $id = Input::get('id');
+        $this->model->where('id', '=', $id)->delete();
+
+        $url = Url::route('/admin/claims/');
+        Redirect::withNotice('The claim has been deleted', 'success')
+            ->to($url);
+    }
+
+    /**
+     * Edit a claim
+     */
     public function edit()
     {
         $claim = $this->model->find(Input::get('id'));
@@ -272,22 +400,31 @@ class ClaimsController extends Controller
         $this->view->editClaim($claim, $meta);
     }
 
+    /**
+     * Update a claim
+     */
     public function updateclaim()
     {
         $this->view->disable();
         $claim = $this->model->find(Input::post('claim'));
         $claim->status = Input::post('status');
         $claim->save();
-        $desc = "Changed the claim status to " . Input::post('status');
+        $desc = "Claim status: " . Input::post('status') . "<br/>";
+        $desc .= "Message: " . Input::post('message');
         if (Input::post('sendemail') == 'yes') {
             $desc .= "<br/>Sent email to customer";
         }
         $this->updateTimeline($claim->id, $desc);
+        $this->notificationsForClaim($claim, $desc);
         if ($claim->hasNoErrors()) {
             Redirect::withNotice('The claim has been saved')
                 ->to(Url::base() . '/admin/claims');
         }
     }
+
+    /**
+     * Process upload
+     */
 
     public function processUpload()
     {
@@ -315,14 +452,15 @@ class ClaimsController extends Controller
             if ($process) {
                 Redirect::withNotice('The document has been saved', 'success')
                     ->to(Url::base() . '/admin/claims/edit/' . $id);
-            } else {
-                throw App::exception($process->errors[0]);
             }
-        } else {
-            throw App::exception($handler->getErrorMsg());
         }
     }
 
+    /**
+     * Get all claims form a particular customer
+     * @param $id
+     * @return array|null
+     */
     public function getClaimsByCustomer($id)
     {
         $claims_db = $this->model->where('customer_id', '=', $id)->show();
@@ -334,6 +472,10 @@ class ClaimsController extends Controller
         }
     }
 
+    /**
+     * Close a policy
+     * @param $id
+     */
     public function closepolicy($id)
     {
         $claim = $this->model->find($id);
@@ -341,11 +483,21 @@ class ClaimsController extends Controller
         $this->view->closeClaim($claim, $policy);
     }
 
+    /**
+     * @param null $search
+     */
     public function show($search = NULL)
     {
-
         if (is_null($search)) {
-            $rawClaims = $this->model->show();
+            if ($this->user()->is('agent')) {
+                $rawClaims = $this->model->select(TABLE_PREFIX . 'claims.*')
+                    ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "claims.customer_id", 'LEFT')
+                    ->where('insurer_agents_id', $this->user()->insurer_agents_id)
+                    ->get();
+            } else {
+                $rawClaims = $this->model->all();
+            }
+
         } else {
             $results = $this->model->search($search);
             $this->set('condition', $results['condition']);
@@ -360,6 +512,11 @@ class ClaimsController extends Controller
         $this->view->generateTable();
     }
 
+    /**
+     * Get a representational state of claim fields
+     * @param $claims
+     * @return array
+     */
     private function _mapClaimsFields($claims)
     {
         $__stash = [];
@@ -370,34 +527,22 @@ class ClaimsController extends Controller
             $new_claim->policyno = $claim->policy_id;
             $new_claim->status = $claim->status;
             $new_claim->claim = $claim->id;
+            $new_claim->id = $claim->id;
             $new_claim->insurer = $meta->insurer->name;
             $new_claim->policy = $meta->policy->policy_number;
             $new_claim->customer = $meta->customer->name;
             $new_claim->product = $meta->product->name;
             $new_claim->customer_id = $meta->customer->id;
-            $new_claim->actions = '<div class="row">'
-                . '<div class="col-md-2">'
-                . '<a target="_blank" href="' . SITE_PATH . '/admin/claims/edit/' . $claim->id . '" >'
-                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to preview claim') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
-                . '</a>'
-                . '</div>'
-//                . '<div class="col-md-2">'
-//                . '<a data-toggle="modal" data-target="#emailmodal" href="' . SITE_PATH . '/ajax/admin/claims/emailpolicy/' . $claim->id . '" >'
-//                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to email claim') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/email-icon.png" />'
-//                . '</a>'
-//                . '</div>'
-//                . '<div class="col-md-2">'
-//                . '<a target="_blank" href="' . SITE_PATH . '/ajax/admin/claims/pdfpolicy/' . $claim->id . '" >'
-//                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to create claim PDF') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/pdf_icon.png" />'
-//                . '</a>'
-//                . '</div>'
-                . '</div>';
+            $new_claim->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
             $__stash[] = $new_claim;
         }
-
         return $__stash;
     }
 
+    /**
+     * Search for a claim
+     * @return array
+     */
     private function _seekForm()
     {
         //generate products list
@@ -429,6 +574,10 @@ class ClaimsController extends Controller
         return $searchform;
     }
 
+    /**
+     * Get my claims
+     * @param bool $dash
+     */
     public function myClaims($dash = false)
     {
         $this->setData();
@@ -446,13 +595,20 @@ class ClaimsController extends Controller
         $this->view->generateTable($dash);
     }
 
+    /**
+     * Set the elements in place
+     */
     public function setData()
     {
         $this->userCtrl = Elements::call('Users/UsersController');
         $this->customerCtrl = Elements::call('Customers/CustomersController');
     }
 
-    public function myDashClaims(){
+    /**
+     * Get my claims on the dashboard
+     */
+    public function myDashClaims()
+    {
         $this->myClaims(true);
     }
 }

@@ -58,6 +58,15 @@
     <?php } ?>
     console.log(entity_data);
 </script>
-
 <script src="<?=RELATIVE_PROJECT_PATH.'/forms/travel/assets/js/common.js'; ?>"></script>
 <script src="<?=RELATIVE_PROJECT_PATH.'/admin/quotes/assets/js/custom-travel-quote.js'; ?>"></script>
+
+<?php if(!isset($_POST['product'])) { ?>
+<script>
+    // swith to the quote tab
+    Travel.switchToQuote();
+
+    var site_path = $('#site_path').val();
+    Travel.generateQuote(site_path);
+</script>
+<?php } ?>

@@ -45,42 +45,31 @@ use Jenga\MyProject\Services\Charts;
  * @property-read CustomersModel $model
  * @package Jenga\MyProject\Customers\Controllers
  */
-class CustomersController extends Controller
-{
-
-
-    public function index()
-    {
-
-
-        if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
-
-
-            $action = 'show';
-
-        } else {
-
-
-            if (!is_null(Input::get('action')))
-
-                $action = Input::get('action');
-
-
-            elseif (!is_null(Input::post('action')))
-
-                $action = Input::post('action');
-
-        }
-
-
-        $this->$action();
-
-    }
-
+class CustomersController extends Controller{
 
     /**
-     * @acl\role subscriber
-     * @acl\alias add
+     * @acl\role customer
+     */
+    public function index(){
+
+        if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
+            $action = 'show';
+        } 
+        else {
+
+            if (!is_null(Input::get('action')))
+                $action = Input::get('action');
+            elseif (!is_null(Input::post('action')))
+                $action = Input::post('action');
+        }
+
+        if($this->user()->can($action, 'customers')){
+            $this->$action();
+        }
+    }
+
+    /**
+     * @acl\role agent
      */
     public function add()
     {
@@ -246,14 +235,13 @@ class CustomersController extends Controller
 
     }
 
-
     /**
-     * @acl\role "subscriber"
-     * @acl\action "view"
+     * @acl\role agent
      */
     public function show()
     {
         if (is_null(Input::get('id'))) {
+            
             $dbcustomers = $this->model->getCustomers();
 
             if (count($dbcustomers)) {
@@ -298,186 +286,193 @@ class CustomersController extends Controller
 
         } else {
 
-
             $id = Input::get('id');
 
-
-            $customer = $this->model->findCustomer($id);
-
-            $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'customers']);
-
-
-            if (!is_null($customer)) {
-
-
-                //personal details section
-
-                $this->view->set('customer_name', ucfirst($customer->name));
-
-                $this->view->set('customer', $customer);
-
-                $this->view->set('personalmodal', ['id' => 'editmodal']);
-
-
-                //linked agent section
-
-                $agent = Elements::call('Agents/AgentsController')->getAgentById($customer->insurer_agents_id);
-
-
-                $this->view->set('agent', $agent);
-
-                $this->view->set('agentmodal', ['id' => 'agentmodal']);
-
-
-                //customer polices section
-
-                $policies = Elements::call('Policies/PoliciesController')->getPoliciesByCustomer($id);
-
-                $this->view->set('policycount', count($policies));
-
-                $this->view->set('policies', $policies);
-
-                $this->view->generatePolicies();
-
-                //customer claims
-                $claims = Elements::call('Claims/ClaimsController')->getClaimsByCustomer($id);
-                $this->view->set('claims_count', count($claims));
-                $this->view->set('claims', $claims);
-                $this->view->generateClaims();
-                //customer quotes section
-
-                $customerquotes = Elements::call('Quotes/QuotesController')->getQuotesByCustomer($id);
-
-
-                $this->view->set('quote_count', count($customerquotes));
-
-                $this->view->set('quotes', $customerquotes);
-
-
-                $this->view->generateQuotesTable();
-
-
-                //customer entities section
-
-                $dbentities = Elements::call('Entities/EntitiesController')->getCustomerEntity($id, 'customers_id');
-
-
-                if (!is_null($dbentities)) {
-
-
-                    foreach ($dbentities as $entity) {
-
-
-                        $entityobj = $this->model->createEmpty();
-
-
-                        $entityobj->id = $entity['id'];
-
-                        $entityobj->type = $entity['type'];
-
-                        $entityobj->customerid = $id;
-
-
-                        $entkeys = array_keys($entity['entity']);
-
-                        $entityobj->summary = '<strong>' . str_replace('_', ' ', $entkeys[0]) . ':</strong> ' . $entity['entity'][$entkeys[0]]
-
-                            . ' <strong>' . str_replace('_', ' ', $entkeys[1]) . ':</strong> ' . $entity['entity'][$entkeys[1]];
-
-
-                        $entitylist[] = $entityobj;
-
-                    }
-
-                }
-
-
-                //get generic entities list
-
-                $entities = Elements::call('Entities/EntitiesController')->model->show();
-
-                $genericlist = '<ul style=\"margin: 0px; padding: 0px; margin-left: 5px; list-style: none\">';
-
-
-                foreach ($entities as $entity) {
-
-
-                    $genericlist .= '<li>'
-
-                        . '<a href=\"' . Url::base() . '/ajax/admin/customers/getfullentity/' . $entity->id . '/' . $id . '\" '
-
-                        . 'data-target=\"#addnewentity\" data-backdrop=\"static\" data-toggle=\"modal\" '
-
-                        . '>'
-
-                        . 'Add New ' . $entity->name
-
-                        . '</a>'
-
-                        . '</li>';
-
-                }
-
-
-                $genericlist .= '</ul>';
-
-
-                //add the add and edit modal
-
-                $addnewentity = Overlays::Modal(['id' => 'addnewentity']);
-
-                $this->set('addnewentity', $addnewentity);
-
-
-                $this->view->set('generic_entity_links', $genericlist);
-
-                $this->view->set('entitycount', count($entitylist));
-
-
-                $this->view->generateEntitiesTable($entitylist);
-
-
-                //customer tasks section
-
-                $returnurl = $url . '/show/' . $id . '#tasks';
-
-                $tasks = Elements::call('Tasks/TasksController')->getTasksByCustomer($id, true, ['url' => $returnurl, 'disable_edit' => true]);
-
-
-                if (is_null($tasks)) {
-
-
-                    $tasks['count'] = 0;
-
-                    $tasks['html'] = Notifications::Alert('No tasks linked to this customer', 'info', true);
-
-                }
-
-
-                $this->view->set('taskcount', $tasks['count']);
-
-                $this->view->set('tasks', $tasks['html']);
-
-
-                //add the delete confirm modal
-
-                $deletemodal = Overlays::confirm();
-
-                $this->set('deletemodal', $deletemodal);
-
-
-                $this->view->setViewPanel('customer-details');
-
-            } else {
-
-
-                Redirect::withNotice('Customer has not been found', 'error')
-                    ->to($url);
-
-            }
+            $this->getCustomerProfile($id);
 
         }
 
+    }
+
+    public function getCustomerProfile($id){
+        $customer = $this->model->findCustomer($id);
+
+        $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'customers']);
+
+
+        if (!is_null($customer)) {
+            if($this->user()->is('customer'))
+                unset($customer->additional_info);
+
+            //personal details section
+
+            $this->view->set('customer_name', ucfirst($customer->name));
+
+            $this->view->set('customer', $customer);
+
+            $this->view->set('personalmodal', ['id' => 'editmodal']);
+
+
+            //linked agent section
+
+            $agent = Elements::call('Agents/AgentsController')->getAgentById($customer->insurer_agents_id);
+
+
+            $this->view->set('agent', $agent);
+
+            $this->view->set('agentmodal', ['id' => 'agentmodal']);
+
+
+            //customer polices section
+
+            $policies = Elements::call('Policies/PoliciesController')->getPoliciesByCustomer($id);
+
+            $this->view->set('policycount', count($policies));
+
+            $this->view->set('policies', $policies);
+
+            $this->view->generatePolicies();
+
+            //customer claims
+            $claims = Elements::call('Claims/ClaimsController')->getClaimsByCustomer($id);
+            $this->view->set('claims_count', count($claims));
+            $this->view->set('claims', $claims);
+            $this->view->generateClaims();
+            //customer quotes section
+
+            $customerquotes = Elements::call('Quotes/QuotesController')->getQuotesByCustomer($id);
+
+
+            $this->view->set('quote_count', count($customerquotes));
+
+            $this->view->set('quotes', $customerquotes);
+
+
+            $this->view->generateQuotesTable();
+
+
+            //customer entities section
+
+            $dbentities = Elements::call('Entities/EntitiesController')->getCustomerEntity($id, 'customers_id');
+
+
+            if (!is_null($dbentities)) {
+
+
+                foreach ($dbentities as $entity) {
+
+
+                    $entityobj = $this->model->createEmpty();
+
+
+                    $entityobj->id = $entity['id'];
+
+                    $entityobj->type = $entity['type'];
+
+                    $entityobj->customerid = $id;
+
+
+                    $entkeys = array_keys($entity['entity']);
+
+                    $entityobj->summary = '<strong>' . str_replace('_', ' ', $entkeys[0]) . ':</strong> ' . $entity['entity'][$entkeys[0]]
+
+                        . ' <strong>' . str_replace('_', ' ', $entkeys[1]) . ':</strong> ' . $entity['entity'][$entkeys[1]];
+
+
+                    $entitylist[] = $entityobj;
+
+                }
+
+            }
+
+
+            //get generic entities list
+
+            $entities = Elements::call('Entities/EntitiesController')->model->show();
+
+            $genericlist = '<ul style=\"margin: 0px; padding: 0px; margin-left: 5px; list-style: none\">';
+
+
+            foreach ($entities as $entity) {
+
+
+                $genericlist .= '<li>'
+
+                    . '<a href=\"' . Url::base() . '/ajax/admin/customers/getfullentity/' . $entity->id . '/' . $id . '\" '
+
+                    . 'data-target=\"#addnewentity\" data-backdrop=\"static\" data-toggle=\"modal\" '
+
+                    . '>'
+
+                    . 'Add New ' . $entity->name
+
+                    . '</a>'
+
+                    . '</li>';
+
+            }
+
+
+            $genericlist .= '</ul>';
+
+
+            //add the add and edit modal
+
+            $addnewentity = Overlays::Modal(['id' => 'addnewentity']);
+
+            $this->set('addnewentity', $addnewentity);
+
+
+            $this->view->set('generic_entity_links', $genericlist);
+
+            $this->view->set('entitycount', count($entitylist));
+
+
+            $this->view->generateEntitiesTable($entitylist);
+
+
+            //customer tasks section
+
+            $returnurl = $url . '/show/' . $id . '#tasks';
+
+            $tasks = Elements::call('Tasks/TasksController')->getTasksByCustomer($id, true, ['url' => $returnurl, 'disable_edit' => true]);
+
+
+            if (is_null($tasks)) {
+
+
+                $tasks['count'] = 0;
+
+                $tasks['html'] = Notifications::Alert('No tasks linked to this customer', 'info', true);
+
+            }
+
+
+            $this->view->set('taskcount', $tasks['count']);
+
+            $this->view->set('tasks', $tasks['html']);
+
+
+            //add the delete confirm modal
+
+            $deletemodal = Overlays::confirm();
+
+            $this->set('deletemodal', $deletemodal);
+
+//            if($this->user()->is('customer')){
+//                $profile_data = get_defined_vars();
+//                Elements::call('Profile/ProfileController')->view->myProfile($profile_data);
+//            } else {
+                $this->view->setViewPanel('customer-details');
+//            }
+
+        } else {
+
+
+            Redirect::withNotice('Customer has not been found', 'error')
+                ->to($url);
+
+        }
     }
 
     public function loginmodal()
@@ -1573,6 +1568,7 @@ class CustomersController extends Controller
      * @param bool $internal
      * @return bool
      */
+
     public function saveCustomer($product = null, $data = null, $internal = true)
     {
         $user_ctrl = Elements::call('Users/UsersController');
@@ -1588,14 +1584,13 @@ class CustomersController extends Controller
             ->orWhere('id_number', $data['id_passport_no'])->get();
 
         if (count($cust_check)) {
-
             $exist = true;
         }
 
 
         $customer = $this->model->find(['email' => $data['email']]);
 
-        $customer->name = ucwords($data['FullName']);
+        $customer->name = ucwords($data['surname'] . ' ' . $data['names']);
 
         $customer->mobile_no = $data['mobile'];
 
@@ -1619,13 +1614,13 @@ class CustomersController extends Controller
 
             $customer->additional_info = json_encode(
 
-                [$product => array_except($data, ['FullName', 'mobile', 'address', 'dob', 'code'])]);
+                [$product => array_except($data, ['surname', 'names', 'mobile', 'address', 'dob', 'code'])]);
 
         } else {
 
             $already = get_object_vars(json_decode($customer->additional_info));
 
-            $already[$product] = array_except($data, ['FullName', 'mobile', 'address', 'dob', 'code']);
+            $already[$product] = array_except($data, ['surname', 'names', 'mobile', 'address', 'dob', 'code']);
 
             $customer->additional_info = json_encode($already);
 
@@ -1657,13 +1652,15 @@ class CustomersController extends Controller
 
                         Session::set('customer_email', $data['email']);
                         Session::set('verified', true);
-                        Session::set('step_feed', 'Your record was found! Please login!');
+
+                        //SNGUMO - Changed the customer found notice
+                        Session::set('step_feed', 'Your email ' . $data['email'] . ' has been discovered in our records. Please login to continue as a registered customer');
 
                         return $customer_id;
 
                     } else {
 //                        $user_ctrl->logInfo('User is not verified...');
-                        Session::set('sent_confirmation', 'Verify your Email Address! Check your email for a verification link!');
+                        Session::set('sent_confirmation', 'A verification email has been sent to ' . $data['email'] . '. Check your email for the verification link');
                         return $customer_id;
                     }
 
@@ -1675,20 +1672,13 @@ class CustomersController extends Controller
                 // create a login account for the customer send a verification email
 //                $user_ctrl->logInfo('Attempting to create a user');
                 $user_id = $user_ctrl->createLoginAccountRemotely([
-
                     'email' => $data['email'],
-
                     'customer_name' => ucwords($data['surname'] . ' ' . $data['names']),
-
                     'element' => $product,
-
                     'exist' => $exist,
-
-                    'customer_id' => $customer_id,
-
-                    'acl' => 'customer'
-
+                    'customer_id' => $customer_id
                 ]);
+
 
                 if ($user_id) {
 //                    $user_ctrl->logInfo('User has been created user#: ' . $user_id);
@@ -1712,7 +1702,25 @@ class CustomersController extends Controller
     public function attachAgentToCustomer($customer_id, $agent_id)
     {
 
-        $this->model->attachAgentToCustomer($customer_id, $agent_id);
+        if($this->model->attachAgentToCustomer($customer_id, $agent_id)){
+            $agent = Elements::call('Agents/AgentsController')->getAgentById($agent_id);
+            $own_company = Elements::call('Companies/CompaniesController')->ownCompany(true);
+            $user = Elements::call('Users/UsersController')->getUserByAgentId($agent->id);
+
+            // message
+            $content = '<p>Dear <b>' . $agent->names . '</b></p>';
+            $content .= 'You have been attached to a quote <b>Quote#: </b>';
+
+            // subject
+            $subject = 'You have been attached to a quote!';
+
+            // send email to attached agent
+            $notice = App::get('notice');
+            $notice->sendAsEmail([$agent->email_address => $agent->names], $content, $subject, [
+                $own_company->email_address => $own_company->name
+            ]);
+            $notice->add($subject, 'agent', $user->id, 'dashboard');
+        }
 
     }
 

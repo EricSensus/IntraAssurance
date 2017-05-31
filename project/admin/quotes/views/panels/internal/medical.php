@@ -60,6 +60,18 @@
         var entity_data = <?= json_encode($entity_data_arr); ?>;
     <?php } ?>
 </script>
-
 <script src="<?=RELATIVE_PROJECT_PATH.'/forms/travel/assets/js/common.js'; ?>"></script>
 <script src="<?=RELATIVE_PROJECT_PATH.'/admin/quotes/assets/js/custom-medical-quote.js'; ?>"></script>
+
+<?php
+    if(!isset($_POST['product'])){
+?>
+<script>
+    // switch to quote tab first
+    Medical.switchToQuote();
+
+    // generate quote
+    var site_path = $('#site_path').val();
+    Medical.generateQuote(site_path);
+</script>
+<?php } ?>

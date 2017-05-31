@@ -12,6 +12,17 @@ use Jenga\App\Views\Notifications;
 use Jenga\App\Controllers\Controller;
 use Jenga\MyProject\Elements;
 
+use Jenga\MyProject\Navigation\Views\NavigationView;
+use Jenga\MyProject\Navigation\Models\NavigationModel;
+
+/**
+ * Class NavigationController 
+ * 
+ * @property-read NavigationModel $model
+ * @property-read NavigationView $view
+ * 
+ * @package Jenga\MyProject\Notifications\Controllers
+ */
 class NavigationController extends Controller
 {
 
@@ -151,15 +162,16 @@ class NavigationController extends Controller
      * 
      * @acl\role customer
      */
-    public function display($name, $template = null)
+    public function display($name, $template = null, $as_array = false)
     {
-
         $names = explode(',', $name);
 
         $namelist = [];
         foreach ($names as $name) {
 
             $menu = $this->model->getMenuFromGroupAlias($name);
+            if($as_array)
+                return $menu;
 
             if (strpos($name, '-') != false) {
                 $name = str_replace('-', '_', $name);
@@ -340,7 +352,7 @@ class NavigationController extends Controller
 
     public function editGroup()
     {
-
+        
         $id = Input::get('id');
         $group = $this->model->findGroup($id);
 
@@ -375,4 +387,32 @@ class NavigationController extends Controller
         return $menu_group->id;
     }
 
+    public function frontMenu(){
+        $menuname = $this->getMenusFromAccesslevel();
+        $menu_items = $this->display($menuname, null, true);
+
+        return $this->view->showFrontMenu($menu_items);
+    }
+    
+    /**
+     * Gets the default link for each menu group by sent acl
+     * @param type $acl
+     */
+    public function getDefaultLinkByAcl($acl) {
+        
+        $url = $this->model->getDefaultLinkByAcl($acl);
+        return $this->view->processHref($url->href);
+    }
+    
+    /**
+     * Get link by alias and acl
+     * 
+     * @param type $alias
+     * @param type $acl
+     */
+    public function getLinkByAliasAcl($alias, $acl){
+        
+        $url = $this->model->getLinkByAliasAcl($alias, $acl);
+        return $this->view->processHref($url->href);
+    }
 }

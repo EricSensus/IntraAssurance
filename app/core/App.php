@@ -246,7 +246,7 @@ class App extends HttpKernel\HttpKernel{
                     break;
 
                 case 'development':
-                    $level = Logger::ERROR;
+                    $level = Logger::WARNING;
                     break;
 
                 default:
@@ -517,21 +517,22 @@ class App extends HttpKernel\HttpKernel{
     }
     
     /**
-     * Throws a critical error
+     * Throws a critical error and exits
+     * 
      * @param type $message
      * @throws \Exception
      */
     public static function critical_error($message){
+        
         Log::critical($message);
+        exit();
     }
     
     /**
      * Throws a warning
      * @param type $message
-     * @throws \Exception
      */
     public static function warning($message){
-        //throw new \Exception($message);
         Log::warning($message);
     }
     

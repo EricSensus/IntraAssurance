@@ -37,7 +37,6 @@ class HTML {
             array_push($resources, $resource);
         }
         else{
-            
             $resources = $resource;
         }       
         
@@ -119,7 +118,7 @@ class HTML {
                 foreach($resource as $htmlresource){
                     
                     if(is_string($htmlresource) && !in_array($htmlresource, self::$keywords)){                        
-                        echo html_entity_decode($htmlresource);
+                        $htmlassets .= html_entity_decode($htmlresource);
                     }
                 }
             }
@@ -139,13 +138,7 @@ class HTML {
             $resource = [];
         }
         
-        if(in_array('dataTables', $resource)){
-
-            //datatables scripts and css
-            echo '<link rel="stylesheet" href="'. RELATIVE_APP_PATH .'/html/facade/DataTables/css/jquery.dataTables.min.css">
-            <script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/js/jquery.dataTables.js"></script>';
-        }
-
+        
         if(in_array('overlay_modal', $resource)){
 
             $script .= '//this is to prevent caching of remote bootstrap modals
@@ -155,22 +148,26 @@ class HTML {
                     var target = $(this).attr("href");
 
                     if(target != "#"){ 
-
-                        var idtarget = $(this).attr("data-target");
                         $(".modal-content").html(\''.self::AddPreloader('center','50','50').'\');
-
-                        // load the url and show modal on success
-                        $(idtarget+" .modal-content").load(target, function() { 
-                            $(idtarget).modal("show"); 
-                        });
                     }
                 });';
         }
 
+        if(in_array('dataTables', $resource)){
+
+            //datatables scripts and css
+            echo '<link rel="stylesheet" href="'. RELATIVE_APP_PATH .'/html/facade/DataTables/css/jquery.dataTables.min.css">
+            <script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/js/jquery.dataTables.js"></script>';
+        }
+        
         if(in_array('rowreorder', $resource)){
             echo '<script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/plugins/rowReordering/jquery.dataTables.rowReordering.js"></script>';
         }
 
+        if($htmlassets != ''){
+            echo $htmlassets;
+        }
+        
         if($script != '' || $build != ''){
             
             self::script('$(function () {'
@@ -284,10 +281,12 @@ class HTML {
                         echo html_entity_decode($resource);
                 }
             }
+            
+            //load the notifications css and scripts
+            //self::$notifications->init();
         }   
         
-        //load the notifications css and scripts
-        //self::$notifications->init();
+        
     }
     
     public static function notifications(){

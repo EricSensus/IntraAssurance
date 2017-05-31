@@ -1,10 +1,11 @@
 <?php
 namespace Jenga\MyProject\Users\Views;
 
-use Jenga\App\Request\Url;
-use Jenga\App\Request\Input;
+use Jenga\App\Views\HTML;
 use Jenga\App\Views\View;
+use Jenga\App\Request\Url;
 use Jenga\App\Html\Generate;
+use Jenga\App\Request\Input;
 use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
 
@@ -19,7 +20,6 @@ class UsersView extends View {
                     'Full Names',
                     'Username',
                     'Access Level',
-                    'Type',
                     'Enabled',
                     'Last Login',
                     ''
@@ -27,12 +27,11 @@ class UsersView extends View {
         
         $editurl = Elements::load('Navigation/NavigationController@getUrl', ['alias'=>'users']);
         $rows = ['{{<div style="width:100%;text-align:center">{id}</div>}}',
-                '{{<a href="'.Url::base().$editurl.'/edit/{id}">{fullname}</a>}}',
+                '{{<a href="'.Url::base().'/admin/user/profile/{acl}/{id}">{fullname}</a>}}',
                 '{{<a data-toggle="modal" data-backdrop="static" data-target="#editlogins" href="'.Url::base().'/ajax'.$editurl.'/loginsedit/{id}">'
                     . '<span '.Notifications::tooltip('Directly edit user login details').'>{username}</span>'
                 . '</a>}}',
-                '{access}',
-                '{type}',
+                '{acl}',
                 '{enabled}',
                 '{login}',
                 '{{<a class="smallicon" data-confirm="{fullname} will be deleted. Are you sure?" href="'.Url::base().$editurl.'/delete/{id}" >'
@@ -80,9 +79,6 @@ class UsersView extends View {
                 ],
                 'header_row' => [
                     'class' => 'header'
-                ],
-                '4' => [
-                    'align' => 'left'
                 ]
             ],
             'row_count' => $count,
@@ -192,8 +188,12 @@ class UsersView extends View {
                 'Username or Email Address' => ['text','username',$user->username],
                 'Password' => ['password', 'apassword', $user->password],
                 'Confirm Password' => ['password', 'cpassword', $user->password],
-                'Access Level' => ['select','accesslevel',$user->accesslevels_id,$levels],
-                'Enabled' => ['checkbox','enabled','yes',($user->enabled == 'yes' ? ['checked'=>'checked'] : [])]
+                'Enabled' => ['checkbox','enabled','yes',($user->enabled == 'yes' ? ['checked'=>'checked'] : [])],
+                'ACL' => ['select', 'acl', 'Agent', [
+                    'Agent' => 'Agent'
+                ], [
+                    'disabled' => 'disabled'
+                ]]
             ],
             'validation' =>[
                 'username' => [
@@ -245,7 +245,89 @@ class UsersView extends View {
         return $iform;
     }
 
+    /**
+     * Shows the full user profile form with the profile and login detail forms
+     * @param type $user
+     */
+    public function showProfileForm($user){
+        
+        $profileform = $this->getUserProfileForm($user);
+        $loginform = $this->getUserLoginForm($user);
+        
+        $this->set('login', $loginform);
+        $this->set('profile', $profileform);
+        
+        $this->set('placeholder', HTML::AddPreloader('center', 80, 80, TRUE, 'Saving Profile Data'));
+        $this->set('userfullname', $user->name);
+        $this->setViewPanel('profileform');
+    }
+    
+    /**
+     * Return the user profile form
+     * 
+     * @param type $user
+     * @return type
+     */
+    public function getUserProfileForm($user){
+        
+        $schematic = [
+            'preventjQuery' => true,
+            'engine' => 'bootstrap',
+            'css' => FALSE,
+            'method' => 'post',
+            'map' => [1,2,1,2],
+            'attributes' => ['data-parsley-validate' => ''],
+            'controls' => [
+                '{acl}' => ['hidden','acl',$user->acl],
+                '{id}' => ['hidden','id',$user->id],
+                'Full Names' => ['text','names',$user->name, ['class' => 'form-control']],
+                'Mobile Number' => ['text', 'mobileno', $user->mobile_no, ['class' => 'form-control']],
+                'Email Address' => ['text', 'email', $user->email, ['class' => 'form-control']],
+                'Date of Birth' => ['text', 'dob', ($user->date_of_birth != 0 ? $user->date_of_birth : '') , ['class' => 'form-control', 'placeholder' => 'Date of Birth']],
+                'Postal Code' => ['text', 'postcode', ($user->postal_code != 0 ? $user->postal_code : ''), ['class' => 'form-control', 'placeholder' => 'Postal Code']],
+                'Postal Address' => ['text', 'post', ($user->postal_address != 0 ? $user->postal_address : ''), ['class' => 'form-control', 'placeholder' => 'Postal Address']]
+            ]
+        ];
+        
+         $form = Generate::Form('profile_form', $schematic)
+            ->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+        
+        return $form;
+    }
+    
+    /**
+     * Returns the user login details form
+     * 
+     * @param type $user
+     * @return type
+     */
+    public function getUserLoginForm($user){
+        
+        $schematic = [
+            'preventjQuery' => true,
+            'engine' => 'bootstrap',
+            'validator' => 'parsley',
+            'css' => 'none',
+            'method' => 'post',
+            'map' => [1,1,1],
+            'attributes' => ['data-parsley-validate' => ''],
+            'controls' => [
+                '{acl}' => ['hidden','acl',$user->acl],
+                '{id}' => ['hidden','id',$user->id],
+                'User Name' => ['text','username',$user->username, ['class' => 'form-control']],
+                'New Password <small class="pull-right" style="color: grey">(This will reset your existing password)</small>' => ['password', 'new_pass', '', ['class' => 'form-control', 'placeholder' => 'New Password']],
+                'Confirm New Password' => ['password', 'confirm_pass', '', ['class' => 'form-control','placeholder' => 'Confirm New Password','data-parsley-equalto'=>'#new_pass']]
+            ]
+        ];
+        
+        $form = Generate::Form('login_form', $schematic)
+            ->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+        
+        return $form;
+    }
+    
     public function showResetPasswordForm($user_id){
+        
         $schematic = [
             'preventjQuery' => true,
             'engine' => 'bootstrap',

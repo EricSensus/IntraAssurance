@@ -38,7 +38,10 @@ echo '<div class="tabs row-padding">
       <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#claims" aria-expanded="true">Claims ('.$claims_count.')</a></li>
       <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#generated-quotes" aria-expanded="true">Generated Quotations ('.$quote_count.')</a></li>'
     .'<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#entities" aria-expanded="true">Entities ('.$entitycount.')</a></li>';
-echo '<li class=""><a aria-controls="profile" data-toggle="tab" role="tab" href="#tasks" aria-expanded="false">Related Tasks and Remainders ('.$taskcount.')</a></li>
+
+if(!$this->user()->is('customer'))
+    echo '<li class=""><a aria-controls="profile" data-toggle="tab" role="tab" href="#tasks" aria-expanded="false">Related Tasks and Remainders ('.$taskcount.')</a></li>
+    
     </ul>
     </div>';
 

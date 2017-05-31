@@ -6,6 +6,8 @@ use Jenga\App\Core\App;
 use Jenga\App\Views\HTML;
 use Jenga\App\Html\Tools;
 use Jenga\App\Views\View;
+use Jenga\App\Helpers\Help;
+use Jenga\App\Request\Session;
 use Jenga\App\Views\Notifications;
 use Jenga\App\Request\Facade\Sanitize;
 
@@ -28,8 +30,10 @@ class Table extends View {
     private $_tools;
     private $_instancekey = 0;
     private $_attachtools = true;
-    
     private $_checkbox = false;
+    private $_contextmenu = false;
+    private $_contextmenuvars = [];
+    private $_contextmenuscript;
     
     public function __construct($name, $schematic, Sanitize $cleaner) {
         
@@ -102,6 +106,16 @@ class Table extends View {
             
             //add the table initialisation
             $this->table .= $tableinit;
+            
+            //build shorcut menus
+            if($this->_contextmenu){
+                
+                $this->table .= '$("#'.$this->name.' .dropdown").shortcutMenu({
+                                        menuSelector: "#shortcutMenu-",
+                                        trigger: "'.$this->_contextmenuvars['trigger'].'",
+                                        tablename: "'.$this->name.'"
+                                });';
+            }
             
             $rowcheck = $this->_getToolsRequiringRowData($this->_tools);
             if($rowcheck['present'] == TRUE){                
@@ -279,7 +293,7 @@ class Table extends View {
      * 
      * @param type $schematic
      */
-    public function buildtable(){
+    public function buildTable(){
         
         $this->_rowcount = $this->_schematic['row_count'];
         
@@ -385,7 +399,8 @@ class Table extends View {
                 $this->toolbar = $build['bar'];
                 $this->_tools = $build['tools'];
                 
-                $this->table .= $this->toolbar;
+                if(!$return)
+                    $this->table .= $this->toolbar;
             }
         }
         
@@ -395,6 +410,33 @@ class Table extends View {
             $this->_attachtools = FALSE;
             return $build['bar'];
         }
+        
+        return $this;
+    }
+    
+    /**
+     * Add a shortcut menu to apply to each of the table rows
+     */
+    public function buildShortcutMenu($handle, $trigger = 'click', $list = [], $align = 'bottom'){
+        
+        $this->_contextmenu = TRUE;
+        
+        //register context menu
+        if(App::$shell->has('current_page')){
+            
+            $resource = App::$shell->get('current_page');
+            
+            if(!in_array('datatables_shortcut_menu', $resource)){
+                //HTML::register('<script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/plugins/shortcutmenu/position-calculator.min.js"></script>');
+                HTML::register('<script src="'. RELATIVE_APP_PATH .'/html/facade/DataTables/plugins/shortcutmenu/shortcutmenu.js"></script>');                
+            }
+        }
+        
+        //assign the menu vars
+        $this->_contextmenuvars['handle'] = $handle;
+        $this->_contextmenuvars['trigger'] = $trigger;
+        $this->_contextmenuvars['list'] = $list;
+        $this->_contextmenuvars['align'] = $align;
         
         return $this;
     }
@@ -546,8 +588,6 @@ class Table extends View {
         elseif(!isset($this->_schematic['row_variables']))
             App::critical_error ('The \'row_variables\' parameter must be specified');
         
-        
-        
         $rows .= '<tbody>';
         $rowcount = $this->_getCount();  
         
@@ -583,23 +623,19 @@ class Table extends View {
      */
     public function limit($start, $length, $end=''){
         
-        if(array_key_exists('object',$this->_schematic['row_source'])){
-            
+        if(array_key_exists('object',$this->_schematic['row_source'])){            
             $source = $this->_schematic['row_source']['object'];
         }
-        elseif(array_key_exists('array', $this->_schematic['row_source'])){
-            
+        elseif(array_key_exists('array', $this->_schematic['row_source'])){            
             $source = $this->_schematic['row_source']['array'];
         }
         
         array_splice($source, $start, $length);
         
-        if(array_key_exists('object',$this->_schematic['row_source'])){
-            
+        if(array_key_exists('object',$this->_schematic['row_source'])){            
             $this->_schematic['row_source']['object'] = $source;
         }
-        elseif(array_key_exists('array', $this->_schematic['row_source'])){
-            
+        elseif(array_key_exists('array', $this->_schematic['row_source'])){            
             $this->_schematic['row_source']['array'] = $source;
         }
     }
@@ -611,20 +647,16 @@ class Table extends View {
      */
     private function _isEvalString($string){
         
-        if($this->_isHtml($string)){
-            
+        if($this->_isHtml($string)){            
             return 'html';
         }
-        elseif(strstr($string, '{{')){
-            
+        elseif(strstr($string, '{{')){            
             return 'metavar';
         }
-        elseif(strstr($string, '{')){
-            
+        elseif(strstr($string, '{')){            
             return 'var';
         }
-        else{
-            
+        else{            
             return 'static';
         }
     }
@@ -709,13 +741,35 @@ class Table extends View {
                     
                     if(array_key_exists('object', $source)){
                        
-                        $object = $this->_schematic['row_source']['object'];                         
-                        $trcell .= $object[$rowcount]->$pcell;  
+                        $object = $this->_schematic['row_source']['object']; 
+                        $rowcell = $object[$rowcount]->$pcell;  
                     }
                     elseif(array_key_exists('array', $source)){
                         
                         $array = $this->_schematic['row_source']['array'];
-                        $trcell .= $array[$rowcount][$pcell];
+                        $rowcell = $array[$rowcount][$pcell];
+                    }
+                    
+                    //replace the ID for the context menu element
+                    if($this->_contextmenu){
+                        
+                        $handle = $this->_processVar($this->_contextmenuvars['handle']);
+                        
+                        if($pcell == $handle){
+                            
+                            $actions = $this->_returnShortcutMenuActions($this->_contextmenuvars['list'], $rowcount, $this->_schematic['row_source']);
+                        
+                            $trcell .= '<div class="dropdown" data-toggle="dropdown" style="width: 100%; text-align:center">';
+                            $trcell .= $rowcell.'<span class="caret"></span>';
+                            $trcell .= $actions;
+                            $trcell .= '</div>';
+                        }
+                        else{
+                            $trcell .= $rowcell;
+                        }
+                    }
+                    else{
+                        $trcell .= $rowcell;
                     }
                     
                     break;
@@ -735,10 +789,11 @@ class Table extends View {
                     
                     $trcell .= $this->_processMetaVar($cell, $datasource, $type, $rowcount);
                     break;
-            }
-
+            }            
+            
             $trcell .= '</td>';
             
+            //set checkbox to false for the initial checkbox row
             if($colcount == 1){
                 $this->_checkbox = false;
             }
@@ -749,19 +804,78 @@ class Table extends View {
         return $trcell;
     }
     
+    /**
+     * Return shortcut menu actions
+     * @param type $list
+     */
+    private function _returnShortcutMenuActions($list, $rowcount, $source){
+        
+        $actions = '<ul id="shortcutMenu-'.($rowcount+1).'" class="dropdown-menu" role="shortcutmenu" >';
+        
+        foreach($list as $item){
+            
+            if(!Help::is_closure($item)){
+                
+                $var = $this->_processVar($item);
+
+                if(is_string($var)){
+
+                    if(array_key_exists('object', $source)){
+
+                        $object = $this->_schematic['row_source']['object']; 
+                        $cellvar = $object[$rowcount]->$var;  
+                    }
+                    elseif(array_key_exists('array', $source)){
+
+                        $array = $this->_schematic['row_source']['array'];
+                        $cellvar = $array[$rowcount][$var];
+                    }
+
+                    $completeitem .= str_replace('{'.$var.'}', $cellvar, $item);
+                }
+                //bypass the var
+                else{
+                    $completeitem .= $item;
+                }
+            }
+            elseif(Help::is_closure($item)){
+                
+                //use reflection to get the parameters for each row
+                $eval = new \ReflectionFunction($item);
+                $params = $eval->getParameters();
+                
+                if(count($params) > 0){
+                    
+                    $object = $this->_schematic['row_source']['object']; 
+                    foreach($params as $param){
+                        
+                        $name = $param->name;
+                        $parameters[$name] = $object[$rowcount]->{$param->name};
+                    }
+                    
+                    $completeitem .= call_user_func_array($item, $parameters);
+                    unset($parameters);
+                }
+            }
+        }
+        
+        $actions .= $completeitem;
+        $actions .= '</ul>';
+        
+        return $actions;
+    }
+    
     private function _processCellAttributes($colcount ,$rowcount){
         
         if(isset($this->_schematic['cell_attributes'])){
             
-            if(isset($this->_schematic['cell_attributes']['default'])){
-                
+            if(isset($this->_schematic['cell_attributes']['default'])){                
                 $attributes = $this->_processAttributes($this->_schematic['cell_attributes']['default']);
-             }
+            }
              
              $cood = $colcount.','.$rowcount;
              
-             if(isset($this->_schematic['cell_attributes'][$cood])){
-                 
+             if(isset($this->_schematic['cell_attributes'][$cood])){                 
                  $attributes .= $this->_processAttributes($this->_schematic['cell_attributes'][$cood]);
              }
         }
@@ -796,8 +910,7 @@ class Table extends View {
      * @param type $data
      * @return type
      */
-    private function _processVar($data){
-        
+    private function _processVar($data){        
         return HTML::findInTags('{', '}', $data);
     }
     
@@ -978,11 +1091,9 @@ class Table extends View {
         foreach($columns as $column){
             
             if(is_int($column)){
-
                 $this->_addrows[$this->_addrowcount]['cell_attributes'] = $cell_attributes;
             }
             else{
-
                 App::critical_error('The cell attribute \'column\' must be an integer, while using this \''.__METHOD__.'\' method');
             }
         }
@@ -1062,7 +1173,12 @@ class Table extends View {
             $this->_init();
         
             //build the table
-            $this->buildtable($this->_schematic);
+            $this->buildTable($this->_schematic);
+            
+            //attach the shortcut menus
+            if($this->_contextmenu){                 
+                $this->table .= $this->_contextmenuscript;
+            }
         }
         else{
             $this->table .= '<div class="clearfix"></div>'.Views\Notifications::Alert('No records found', 'info', TRUE, TRUE);
@@ -1085,7 +1201,7 @@ class Table extends View {
         
         if($rowcount >= '1'){        
             //build the table
-            $this->buildtable($this->_schematic);
+            $this->buildTable($this->_schematic);
         }
         else{            
             $this->table .= Views\Notifications::Alert('No records found', 'info', TRUE, TRUE);

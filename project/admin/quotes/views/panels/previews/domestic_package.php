@@ -4,6 +4,8 @@ use Jenga\App\Views\HTML;
 
 /** @var stdClass $product */
 extract($info);
+//dump(get_defined_vars());exit;
+$quotation = array_first($quotation);
 
 HTML::head(TRUE, TRUE);
 HTML::css('admin/css/admin_css.css', FALSE, TRUE);
@@ -148,43 +150,54 @@ HTML::css('preview/css/preview.css', FALSE, TRUE);
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive">
-                        <table class="table table-condensed table-stripped">
-                            <tbody>
-                            <tr>
-                                <td>Section A</td>
-                                <td><?= number_format($quotation->section_a, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Section B</td>
-                                <td><?= number_format($quotation->section_b, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Section C</td>
-                                <td><?= number_format($quotation->section_c, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Workmen Compensation</td>
-                                <td><?= number_format($quotation->workmen, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Gross Premium</td>
-                                <td><?= number_format($quotation->gross_premium, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>P.H.C.F</td>
-                                <td><?= number_format($quotation->policy_levy, 2) ?></td>
-                            </tr>
+                        <?php foreach ($_quote as $quote) { ?>
+                            <table class="table table-condensed table-stripped">
+                                <tbody>
+                                <thead>
+                                <tr>
+                                    <th>Insurer</th>
+                                    <th><?= $quote->insurer->name ?></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Section A</td>
+                                    <td><?= number_format($quote->section_a, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Section B</td>
+                                    <td><?= number_format($quote->section_b, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Section C</td>
+                                    <td><?= number_format($quote->section_c, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Workmen Compensation</td>
+                                    <td><?= number_format($quote->workmen, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>Gross Premium</td>
+                                    <td><?= number_format($quote->gross_premium, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>P.H.C.F</td>
+                                    <td><?= number_format($quote->policy_levy, 2) ?></td>
+                                </tr>
 
-                            <tr>
-                                <td>Training</td>
-                                <td><?= number_format($quotation->training_levy, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Total</td>
-                                <td><?= number_format($quotation->total, 2) ?></td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                <tr>
+                                    <td>Training</td>
+                                    <td><?= number_format($quote->training_levy, 2) ?></td>
+                                </tr>
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <th>Total</th>
+                                    <th><?= number_format($quote->total, 2) ?></th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        <?php } ?>
                     </div>
                 </div>
             </div>

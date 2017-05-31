@@ -5,7 +5,7 @@
         $pesa = $data;
         $quote_id = $data->quote->id;
         ?>
-        <div class="col-md-5 col-md-offset-1">
+        <div class="col-md-12">
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Name: <?= $pesa->customer->name ?></h3>
@@ -39,7 +39,7 @@
                                 </tr>
                                 <tr>
                                     <td>Sub Total</td>
-                                    <td>Ksh <?= number_format($item->total, 2) ?></td>
+                                    <td>Ksh <?= number_format($item->basic_premium, 2) ?></td>
                                 </tr>
                                 <?php
                             endforeach;

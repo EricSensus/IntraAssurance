@@ -71,4 +71,36 @@ class NavigationModel extends ORM{
     public function findGroup($id) {        
         return $this->table('menu_groups')->find($id);
     }
+    
+    /**
+     * Returns the default link for each ACL level
+     * 
+     * @param type $acl
+     * @return type
+     */
+    public function getDefaultLinkByAcl($acl) {
+        
+        return $this->join('menu_groups', 
+                            TABLE_PREFIX.'menu_groups.id = '.TABLE_PREFIX.'menus.menu_groups_id')
+                    ->where(TABLE_PREFIX.'menus.published', '=', '1')
+                    ->where(TABLE_PREFIX.'menus.home','=','yes')
+                    ->where(TABLE_PREFIX.'menu_groups.acl','=',$acl)
+                    ->first();
+    }
+    
+    /**
+     * Get link by alias and acl
+     * 
+     * @param type $alias
+     * @param type $acl
+     */
+    public function getLinkByAliasAcl($alias, $acl){
+        
+        return $this->join('menu_groups', 
+                            TABLE_PREFIX.'menu_groups.id = '.TABLE_PREFIX.'menus.menu_groups_id')
+                    ->where(TABLE_PREFIX.'menus.published', '=', '1')
+                    ->where(TABLE_PREFIX.'menus.linkalias','=',$alias)
+                    ->where(TABLE_PREFIX.'menu_groups.acl','=',$acl)
+                    ->first();
+    }
 }

@@ -258,10 +258,4 @@ $(function(){
     if (typeof entity_data !== 'undefined') {
         Loader.autoFill(entity_data);
     }
-
-    // swith to the quote tab
-    Travel.switchToQuote();
-
-    var site_path = $('#site_path').val();
-    Travel.generateQuote(site_path);
 });

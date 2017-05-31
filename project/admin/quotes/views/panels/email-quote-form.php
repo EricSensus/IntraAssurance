@@ -10,7 +10,7 @@ echo $addform;
     var Email = {
         createPDFAttachment: function () {
             $.ajax({
-                url: '<?=Url::link('/admin/quotes/createAttachment'); ?>',
+                url: '<?=Url::link('/customer/quote/createAttachment'); ?>',
                 type: 'post',
                 data: {
                     id: <?=$id; ?>

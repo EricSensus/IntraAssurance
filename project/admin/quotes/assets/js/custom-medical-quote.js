@@ -205,11 +205,4 @@ $(function () {
     if (typeof entity_data !== 'undefined') {
         Loader.autoFill(entity_data);
     }
-
-    // switch to quote tab first
-    Medical.switchToQuote();
-
-    // generate quote
-    var site_path = $('#site_path').val();
-    Medical.generateQuote(site_path);
 });

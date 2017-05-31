@@ -26,4 +26,4 @@ use Jenga\App\Views\HTML;
     var PRELOADER1 = '<?= HTML::AddPreloader()?>';
     var PRELOADER2 = '<?= HTML::AddPreloader('left', '40px', '40px')?>';
 </script>
-<script src='<?= RELATIVE_PROJECT_PATH . "/admin/quotes/assets/js/alt-quote.min.js" ?>'></script>
+<script src='<?= RELATIVE_PROJECT_PATH . "/admin/quotes/assets/js/alt-quote.js" ?>'></script>

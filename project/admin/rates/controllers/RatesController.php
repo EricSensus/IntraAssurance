@@ -2,6 +2,7 @@
 
 namespace Jenga\MyProject\Rates\Controllers;
 
+use function DI\object;
 use Jenga\App\Controllers\Controller;
 use Jenga\App\Helpers\Help;
 use Jenga\App\Html\Excel;
@@ -34,6 +35,7 @@ class RatesController extends Controller
         $this->rates = $this->model->show();
         $rate_types = $this->model->select('distinct(rate_type)')->show();
         $rate_cats = $this->model->select('distinct(rate_category)')->show();
+
         $this->rate_types = $this->getRateTypes($rate_types);
         $this->rate_cats = $this->getRateCategories($rate_cats);
     }
@@ -76,7 +78,7 @@ class RatesController extends Controller
         $this->_init();
         $this->setViewData();
         $this->view->set('source', $this->_transformTable($this->rates));
-        $this->view->generateTable(true);
+        $this->view->generateSetupTable(true);
     }
 
     public function _transformTable($source)
@@ -230,13 +232,13 @@ class RatesController extends Controller
     {
         $this->_init();
         $rate = $this->model->getRateData($id);
-        $this->view->showEditRateForm($rate, $this->rate_types, $this->rate_cats, $this->insurer);
+        $insurer = (object)Elements::call('Insurers/InsurersController')->getInsurer($rate->insurer_id);
+        $this->view->showEditRateForm($rate, $this->rate_types, $this->rate_cats, $insurer);
     }
 
     public function update()
     {
-        $this->setInsurer();
-        if ($this->model->updateRate($this->insurer)) {
+        if ($this->model->updateRate()) {
             Session::flash('status', 'success');
             Session::flash('message', 'Success! The Rate has been updated');
 

@@ -43,6 +43,7 @@ class UsersModel extends ORM
             //->join('insurer_agents',
             //    TABLE_PREFIX."users.insurer_agents_id = ".TABLE_PREFIX."insurer_agents.id")
 
+            ->where('acl', '!=', 'customer')
             ->show();
 
         foreach ($users as $user) {
@@ -69,15 +70,17 @@ class UsersModel extends ORM
             $this->select($return);
         }
 
-        if ($searchby == 'user_profiles') {
-            $this->join('user_profiles',
-                TABLE_PREFIX . "users.user_profiles_id = " . TABLE_PREFIX . "user_profiles.id")
+        if ($searchby == 'user_profiles'){
+            
+            $this->join('user_profiles', TABLE_PREFIX . "users.user_profiles_id = " . TABLE_PREFIX . "user_profiles.id")
                 ->where(TABLE_PREFIX . 'users.user_profiles_id', '=', $id);
-        } elseif ($searchby == 'agents') {
-            $this->join('insurer_agents',
-                TABLE_PREFIX . "users.insurer_agents_id = " . TABLE_PREFIX . "insurer_agents.id")
+        } 
+        elseif ($searchby == 'agents'){
+            
+            $this->join('insurer_agents', TABLE_PREFIX . "users.insurer_agents_id = " . TABLE_PREFIX . "insurer_agents.id")
                 ->where(TABLE_PREFIX . 'users.insurer_agents_id', '=', $id);
         }
+        
         $result = $this->first();
 
         return $result;

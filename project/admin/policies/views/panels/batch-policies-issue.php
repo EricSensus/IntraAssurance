@@ -1,47 +1,54 @@
 <?php
 use Jenga\App\Request\Url;
 use Jenga\App\Views\HTML;
+?>
+<script>
+    $(document).ready(function () {
+        $('input[type="submit"]').on('click',function(ev){
+            ev.preventDefault(); //prevent default form submit
 
-HTML::script('$(document).ready(function () {'
-        . "$('input[type=\"submit\"]').on('click',function(ev){ 
-                ev.preventDefault(); //prevent default form submit
-                
-                var idattr = $(this).attr('id');
-                var rowid = idattr.split('_')[1];
-                
-                //get the input
-                var policyid = $('#policyid_'+rowid).val(); 
-                var policyno = $('#policynumber_'+rowid).val();                
-                var issuedate = $('#issuedate_'+rowid).val();
-                var sendemail = $('#sendemail_'+rowid).val();
+            var idattr = $(this).attr('id');
+            var rowid = idattr.split('_')[1];
 
-                $('div.'+rowid).html('".HTML::AddPreloader()."');
+            //get the input
+            var policyid = $('#policyid_'+rowid).val();
+            var policyno = $('#policynumber_'+rowid).val();
+            var issuedate = $('#issuedate_'+rowid).val();
+            var sendemail = $('#sendemail_'+rowid).val();
 
-                $.ajax({
-                    method: 'post',
-                    url: '".Url::base()."/admin/policies/saveissue',
-                    data : {
-                        ajax: 'yes',
-                        policyid: policyid,
-                        policynumber: policyno,
-                        issuedate: issuedate                        
-                    },
-                    success: function(response){
-                        $('#policyid_'+rowid).remove();
-                        $('div.'+rowid).html(response);
-                        
-                        if($('input[name*=\"policyid_\"]').length == 0){                            
-                            var url = $('input[name=\"destination\"]').val();
-                            window.location.href = '".Url::base()."'+url;
-                        }
-                    },
-                    error: function(response){
-                        $('div.'+rowid).html(response);
+            $('div.'+rowid).html('".HTML::AddPreloader()."');
+
+            var data = {
+                ajax: 'yes',
+                policyid: policyid,
+                policynumber: policyno,
+                issuedate: issuedate,
+                btnsubmit: 'btnsubmit'
+            },
+            url = '<?=Url::base(); ?>/admin/policies/saveissue',
+            destination = '<?=Url::link('/admin/policies'); ?>';
+
+            $.ajax({
+                method: 'post',
+                url: url,
+                data : data,
+                success: function(response){
+                    $('#policyid_'+rowid).remove();
+                    $('div.'+rowid).html(response);
+
+                    if($('input[name*="policyid_"]').length == 0){
+                        var url = $('input[name="destination"]').val();
+                        window.location.href = destination;
                     }
-                });
-            })"
-        . '});');
-
+                },
+                error: function(response){
+                    $('div.'+rowid).html(response);
+                }
+            });
+        })
+    });
+</script>
+<?php
 echo '<table width="100%" class="policy table-striped">
       <tr>
           <td class="heading" colspan="2">'
@@ -49,7 +56,7 @@ echo '<table width="100%" class="policy table-striped">
         . '</td>
       </tr>
       </table>';
-      
+//      print_r(get_defined_vars());exit;
 for($r = 0; $r < $count; $r++){
     
     echo '<div class="'.$r.'">'

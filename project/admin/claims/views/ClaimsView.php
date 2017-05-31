@@ -10,9 +10,20 @@ use Jenga\App\Views\Overlays;
 use Jenga\App\Views\View;
 use Jenga\MyProject\Elements;
 
+/**
+ * Class ClaimsView
+ * @package Jenga\MyProject\Claims\Views
+ */
 class ClaimsView extends View
 {
+    /**
+     * @var bool
+     */
     private $dash = false;
+
+    /**
+     * @param bool $dash
+     */
     public function generateTable($dash = false)
     {
         $this->dash = $dash;
@@ -31,19 +42,19 @@ class ClaimsView extends View
         }
         $cust_url = $_navigation->getUrl('customers');
         $polurl = $_navigation->getUrl('policies');
-        $columns = ['Claim No', 'Customer', 'Policy', 'Product', 'Start Date', 'Status', 'Actions'];
+        $columns = ['Actions', 'Claim No', 'Customer', 'Policy', 'Product', 'Start Date', 'Status'];
         //  print_r(get_defined_vars());exit;
         $rows = [
+            '{actions}',
             '{{<a href="' . Url::link('/admin/claims/edit/') . '{claim}">{claim}</a>}}',
             '{{<a href="' . $cust_url . '/show/{customer_id}">{customer}</a>}}',
             '{{<a href="' . $polurl . '/edit/{policyno}">{policy}</a>}}',
             '{product}',
             '{created}',
-            '{status}',
-            '{actions}'
+            '{status}'
         ];
         $dom = '<"top">rt<"bottom"p><"clear">';
-        $policiestable = $this->_mainTable('claims_table', $count, $columns, $rows, $source, $dom, $search);
+        $claims_table = $this->_mainTable('claims_table', $count, $columns, $rows, $source, $dom, $search);
         $modal_settings = [
             'id' => 'emailmodal',
             'formid' => 'email-claim-form',
@@ -58,8 +69,20 @@ class ClaimsView extends View
         ];
         $form = Overlays::Modal($modal_settings);
         $this->set('mailmodal', $form);
-        $this->set('claims_table', $policiestable);
+        $this->set('claims_table', $claims_table);
     }
+
+    /**
+     * Get a framework table representation
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @param string $searchform
+     * @return \Jenga\App\Html\type
+     */
 
     private function _mainTable($name, $count, array $columns, array $rows, $source, $dom, $searchform = '')
     {
@@ -72,10 +95,11 @@ class ClaimsView extends View
                 'border' => 0,
                 'cellpadding' => 5
             ],
+            'format' => 'dataTable',
             'dom' => $dom,
             'columns' => $columns,
             'ordering' => [
-                'Created' => 'desc',
+                'Customer' => 'desc',
                 'disable' => 0
             ],
             'column_attributes' => [
@@ -108,22 +132,50 @@ class ClaimsView extends View
                 ]
             ]
         ];
-
+        //   $new_claim->actions = '<div class="row">'
+//                . '<div class="col-md-2">'
+//                . '<a target="_blank" href="' . SITE_PATH . '/admin/claims/edit/' . $claim->id . '" >'
+//                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to preview claim') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
+//                . '</a>'
+//                . '</div>'
+//                . '</div>';
         $table = Generate::Table($name, $schematic);
-
+        $table->buildShortcutMenu('{actions}', 'mouseover', [
+            function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '">'
+                    . '<i class="fa fa-check-circle"></i> Open Claim'
+                    . '</a></li>';
+            },
+            function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/policies/previewpolicy/' . $id . '">'
+                    . '<i class="fa fa-eye-slash"></i> View Linked Policy'
+                    . '</a></li>';
+            },
+            '<li class="divider"></li>',
+            function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '#claim-timeline">'
+                    . '<i class="fa fa-eye-slash"></i> View Claim Timeline'
+                    . '</a></li>';
+            },
+            function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '#edit-claim">'
+                    . '<i class="fa fa-check-circle"></i> Update Claim'
+                    . '</a></li>';
+            },
+            '<li class="divider"></li>', function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '#edit-claim">'
+                    . '<i class="fa fa-ban"></i> Close Claim'
+                    . '</a></li>';
+            },
+            function ($id) {
+                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/delete/' . $id . '">'
+                    . '<i class="fa fa-trash-o"></i> Delete Claim'
+                    . '</a></li>';
+            }
+        ]);
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
             'tools' => [
-//                'issue policy' => [
-//                    'path' => Url::link('/admin/policies/issuebatch'),
-//                    'using' => ['{id}', '{customer}', '{status}'],
-//                    'confirm' => true
-//                ],
-//                'Renew' => [
-//                    'path' => Url::link('/admin/policies/renewbatch'),
-//                    'using' => ['{id}', '{customer}', '{status}'],
-//                    'confirm' => true
-//                ],
                 'search' => $searchform,
                 'add' => [
                     'path' => '/admin/claims/add'
@@ -155,8 +207,13 @@ class ClaimsView extends View
 
             $table->printOutput();
         } else {
-            if(!$this->dash)
-                $table->buildTools($tools); //->assignPanel('search');
+
+            if (!$this->dash) {
+
+                $claims_tools = $table->buildTools($tools, true); //->assignPanel('search');
+                $this->set('claims_tools', $claims_tools);
+            }
+
             $maintable = $table->render(TRUE);
 
             return $maintable;
@@ -169,10 +226,18 @@ class ClaimsView extends View
      */
     public function addClaimForm($customer = null)
     {
-        $controls = ['Customer Name (Type Name Below)' =>
-            ['select', 'customer_id', $customer->name, [], [
-                'class' => 'form-control chosen-select',
-                'overwrite' => true]]];
+        if (!empty($customer)) {
+            $controls = [
+                'Name' =>
+                    ['text', 'customer_name', $customer->name, ['class' => 'form-control', 'readonly' => 'readonly']],
+                'Customer' => ['hidden', 'customer_id', $customer->id]
+            ];
+        } else {
+            $controls = ['Customer Name (Type Name Below)' =>
+                ['select', 'customer_id', $customer->name, [], [
+                    'class' => 'form-control chosen-select',
+                    'overwrite' => true]]];
+        }
         $claim_start_schematic = [
             'preventjQuery' => true,
             'method' => 'POST',
@@ -206,6 +271,11 @@ class ClaimsView extends View
         $this->setViewPanel('claimaddpanel');
     }
 
+    /**
+     * Get policy list
+     * @param $list
+     * @return string
+     */
     public function getPolicyList($list)
     {
         $select = '<select class="control" id="policies" name="policy_id">';
@@ -224,6 +294,11 @@ class ClaimsView extends View
         return $select;
     }
 
+    /**
+     * Close claim
+     * @param $claim
+     * @param $policy
+     */
     public function closeClaim($claim, $policy)
     {
         $update_schematic = [
@@ -250,6 +325,10 @@ class ClaimsView extends View
         $this->setViewPanel('claimaddpanel');
     }
 
+    /**
+     * Upload a claim document
+     */
+
     public function uploadClaimAdditionalDocs()
     {
 
@@ -274,12 +353,21 @@ class ClaimsView extends View
         $this->setViewPanel('claimaddpanel');
     }
 
+    /**
+     * Get a policy preview
+     * @param $data
+     */
+
     public function previewPolicy($data)
     {
         $this->set('meta', $data);
         $this->setViewPanel('preview-policy');
     }
 
+    /**
+     * Add a claim
+     * @param $data
+     */
     public function addClaim($data)
     {
 
@@ -316,6 +404,10 @@ class ClaimsView extends View
         $this->setViewPanel('claimaddpanel');
     }
 
+    /**
+     * Upload a document form
+     * @param array $settings
+     */
     public function uploadForm(array $settings)
     {
 
@@ -342,6 +434,16 @@ class ClaimsView extends View
         $this->set('uploadform', $form);
     }
 
+    /**
+     * Minimal features table
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @return \Jenga\App\Html\type
+     */
     private function _minitable($name, $count, array $columns, array $rows, $source, $dom)
     {
 
@@ -391,6 +493,11 @@ class ClaimsView extends View
         return $minitable;
     }
 
+    /**
+     * Edit claim
+     * @param $claim
+     * @param $meta
+     */
     public function editClaim($claim, $meta)
     {
         $update_schematic = [

@@ -197,7 +197,7 @@ class View extends Project {
     public function loadTemplate($filename, $section='minor'){
         
         //extract the variables for use everywhere
-        extract( $this->variables, EXTR_SKIP );
+        extract( $this->variables, EXTR_SKIP);
         
         if($section == 'minor'){
             

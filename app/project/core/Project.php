@@ -903,16 +903,63 @@ class Project implements ArgumentResolverInterface {
                     $arguments = array_merge($arguments, $this->arguments);
                 }
                 
-                $this->execute($this->controller, $this->main_method, $arguments);
+                /**
+                 * This canExecute function counterchecks with the assigned credentials 
+                 * to ensure the user can execute the sent method
+                 */
+                if(App::has('primaryelement')){
+                    
+                    if($this->user()->canExecute(App::get('primaryelement'),$this->controller,$this->main_method)){
+
+                        $this->execute($this->controller, $this->main_method, $arguments);
+
+                        //call the onAllowed() function
+                        $this->user()->role->onAllowed(App::get('primaryelement'), $controller, $this->main_method);
+                        return TRUE;
+                    }
+                    else{
+                        //disable the view set before the main method is executed
+                        App::get('view')->disable();
+
+                        //call the onDenial() function
+                        $this->user()->role->onDenied(App::get('primaryelement'), $controller,$this->main_method);
+                        return FALSE;
+                    }
+                }
+                else{
+                    
+                    //this is pimarily for accessing App Classes directly without an ACL check
+                    $this->execute($this->controller, $this->main_method, $arguments);
+                }
             }
             elseif($runtype == 'secondary'){
                 
-                $reflect = new \ReflectionClass($controller);
-                $reflect->newInstanceArgs($arguments);
+                /**
+                 * This canExecute function counterchecks with the assigned credentials 
+                 * to ensure the user can execute the sent method
+                 */
+                if($this->user()->canExecute(App::get('secondaryelement')['name'],$controller,$arguments['action'])){
+                    
+                    //call the onAllowed() function
+                    $this->user()->role->onAllowed(App::get('secondaryelement')['name'], $controller, $arguments['action']);
+                    
+                    $reflect = new \ReflectionClass($controller);
+                    $reflect->newInstanceArgs($arguments);
+                }
+                else{
+                    
+                    //disable the view set before the main method is executed
+                    App::get('view')->disable();
+
+                    //call the onDenied() function
+                    $this->user()->role->onDenied(App::get('secondaryelement')['name'], $controller, $arguments['action']);
+
+                    return FALSE;
+                }
             }
         }
         catch(\Exception $e){            
-            throw App::exception($e->getMessage(), $e->getCode());
+            App::exception($e->getMessage(), $e->getCode());
         }
     }
     
@@ -958,9 +1005,6 @@ class Project implements ArgumentResolverInterface {
             
             //execute the resolved parameters
             return $reflection->invokeArgs(new $controller, $pass);
-        }
-        else{            
-            return new $controller($args);
         }
     }
     

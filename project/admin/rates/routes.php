@@ -10,7 +10,7 @@ Route::group(['before' => 'auth.check'], function () {
     
     Route::get('/admin/rates/{action}/{id}', 'RatesController@index')
             ->assignPanels('admin', [
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
             ])

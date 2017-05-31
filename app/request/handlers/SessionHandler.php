@@ -25,42 +25,16 @@ class SessionHandler implements \SessionHandlerInterface {
         
         // store the connection link
         $this->link = $db->table($config->session_table);
-       
-        //assign the settings fron the config class
+
         $security_code = $config->session_key; 
-        $session_lifetime = $config->session_lifetime; 
-        $lock_to_user_agent = $config->lock_to_user_agent; 
-        $lock_to_ip = $config->lock_to_ip; 
-        $gc_probability = $config->gc_probability; 
-        $gc_divisor = $config->gc_divisor; 
+        $lock_to_user_agent = $config->lock_to_user_agent;
+        $lock_to_ip = $config->lock_to_ip;
         $table_name = $config->session_table; 
         $lock_timeout = $config->lock_timeout;
-
-        // make sure session cookies never expire so that session lifetime
-        // will depend only on the value of $session_lifetime
-        ini_set('session.cookie_lifetime', 0);
-
-        // if $session_lifetime is specified and is an integer number
-        if ($session_lifetime != '' && is_integer($session_lifetime))
-
-            // set the new value
-            ini_set('session.gc_maxlifetime', (int)$session_lifetime);
-
-        // if $gc_probability is specified and is an integer number
-        if ($gc_probability != '' && is_integer($gc_probability))
-
-            // set the new value
-            ini_set('session.gc_probability', $gc_probability);
-
-        // if $gc_divisor is specified and is an integer number
-        if ($gc_divisor != '' && is_integer($gc_divisor))
-
-            // set the new value
-            ini_set('session.gc_divisor', $gc_divisor);
-
+        
         // get session lifetime
         $this->session_lifetime = ini_get('session.gc_maxlifetime');
-
+        
         // we'll use this later on in order to try to prevent HTTP_USER_AGENT spoofing
         $this->security_code = $security_code;
 
@@ -105,7 +79,7 @@ class SessionHandler implements \SessionHandlerInterface {
         // handle flashdata after script execution
         register_shutdown_function(array($this, '_manage_flashdata'));
 
-    }
+    }   
 
     /**
      *  Get the number of active sessions - sessions that have not expired.

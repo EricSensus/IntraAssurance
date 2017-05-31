@@ -26,8 +26,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-2" for="end_date">End Date:</label>
                         <div class="col-sm-6">
-                            <input type="text" name="end_date<?=$i; ?>" value="<?=$policy['end_date']; ?>"
-                                   class="form-control" id="end_date" placeholder="End Date">
+                            <input type="text" name="end_date<?=$i; ?>" value="<?=date('m/d/Y', strtotime($policy['end_date'])); ?>"
+                                   class="form-control datepicker" placeholder="End Date">
                         </div>
                     </div>
                     <div class="form-group">
@@ -60,4 +60,6 @@
         </div>
     </div>
 </div>
-
+<script>
+    $('.datepicker').datepicker();
+</script>

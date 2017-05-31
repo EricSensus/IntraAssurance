@@ -1,5 +1,6 @@
 <?php
 use Jenga\App\Views\HTML;
+use Jenga\App\Views\Overlays;
 
 HTML::script('$(document).ready( function () {
     
@@ -46,5 +47,14 @@ echo '</div>'
 . '</div>';
 
 echo $mailmodal;
-
+echo $renewal_container;
+echo Overlays::Modal([
+    'id' => 'download-docs'
+]);
 ?>
+
+<script>
+    var deletePolicy = function(){
+        $('#del_policy').submit();
+    }
+</script>

@@ -6,8 +6,13 @@ use Jenga\App\Models\ORM;
 
 class ClaimsModel extends ORM
 {
-
+    /**
+     * @var string
+     */
     public $table = 'claims';
+    /**
+     * @var string
+     */
     protected $process_table = 'claim_process';
 
     /**
@@ -36,11 +41,21 @@ class ClaimsModel extends ORM
         return $this->table($table)->where('id', $id)->first();
     }
 
+    /**
+     * The claim process pivot point
+     * @return object
+     */
+
     public function getProcessModel()
     {
         return $this->table($this->process_table);
     }
 
+    /**
+     * Get the process timeline for the claim
+     * @param $claim_id
+     * @return array
+     */
     public function getProcess($claim_id)
     {
         $claim_process = $this->table($this->process_table)->where('claim_id', $claim_id)->show();

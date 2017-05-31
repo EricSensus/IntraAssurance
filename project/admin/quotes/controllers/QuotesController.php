@@ -2,9 +2,8 @@
 
 namespace Jenga\MyProject\Quotes\Controllers;
 
-use function DI\object;
-use Dompdf\Dompdf;
 use Jenga\App\Controllers\Controller;
+use Jenga\App\Core\App;
 use Jenga\App\Helpers\Help;
 use Jenga\App\Html\Excel;
 use Jenga\App\Request\Facade\Sanitize;
@@ -14,22 +13,14 @@ use Jenga\App\Request\Url;
 use Jenga\App\Views\HTML;
 use Jenga\App\Views\Notifications;
 use Jenga\App\Views\Redirect;
-use Jenga\MyProject\Accident\Repositories\AccidentQuotation;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
-use Jenga\MyProject\Domestic\Repositories\DomesticQuotation;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Entities\Controllers\EntitiesController;
-use Jenga\MyProject\Motor\Repositories\MotorQuotation;
-use Jenga\MyProject\Quotes\Library\Companies\AIGQuotes;
-use Jenga\MyProject\Quotes\Library\Companies\JubileeQuotes;
-use Jenga\MyProject\Quotes\Library\Quotes;
+use Jenga\MyProject\Policies\Controllers\PoliciesController;
 use Jenga\MyProject\Quotes\Models\QuotesModel;
 use Jenga\MyProject\Quotes\Views\QuotesView;
 use Jenga\MyProject\Services\Charts;
 use Jenga\MyProject\Users\Controllers\UsersController;
-use Symfony\Component\Debug\DebugClassLoader;
-use Symfony\Component\Debug\ErrorHandler;
-use Symfony\Component\Debug\ExceptionHandler;
 
 /**
  * Class QuotesController
@@ -47,16 +38,29 @@ Class QuotesController extends Controller
      * @var CustomersController
      */
     private $customerCtrl;
-
+    /**
+     * @var array
+     */
     public $statuslist = [
         'new' => 'New',
         'agent_attached' => 'Agent Attached',
         'pending' => 'Response Pending',
         'policy_pending' => 'Policy Pending',
         'policy_created' => 'Complete',
-        'rejected' => 'Rejected'
+        'policy_unprocessed' => 'Unprocessed Policy',
+        'rejected' => 'Rejected',
+        'Accepted' => 'Accepted',
+        'Declined' => 'Declined',
+        'archived' => 'Archived'
     ];
+    /**
+     * @var string
+     */
+    public $source = 'External';
 
+    /**
+     * Main entry point to qu
+     */
     public function index()
     {
         if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
@@ -72,6 +76,10 @@ Class QuotesController extends Controller
 
         $this->$action();
     }
+
+    /**
+     * @param $link
+     */
 
     public function acceptQuote($link)
     {
@@ -93,6 +101,10 @@ Class QuotesController extends Controller
         $this->view->createQuotePreview($data, true);
     }
 
+    /**
+     *
+     */
+
     public function getLeads()
     {
         $leads = $this->getTheLeads($this->statuslist);
@@ -103,10 +115,13 @@ Class QuotesController extends Controller
         $this->view->showLeads();
     }
 
+    /**
+     *
+     */
     public function add()
     {
-        if (isset($_GET['policy']) && $_GET['policy'] == true) {
-            Session::set('policy', $_GET['policy']);
+        if (Input::has('policy') && Input::get('policy') == true) {
+            Session::set('policy', Input::get('policy'));
         } else {
             Session::delete('policy');
         }
@@ -132,12 +147,17 @@ Class QuotesController extends Controller
         foreach ($insurers as $insurer) {
             $insurerlist[$insurer->id] = $insurer->name;
         }
-
+        if (empty($customer)) {
+            if ($this->user()->is('customer')) {
+                $customer = (object)$this->getCustomerDataArray($this->user()->customer_id);
+            }
+        }
         $this->view->addQuote($agentlist, $productlist, $insurerlist, $customer);
     }
 
     /**
      * Get the record to be edited
+     * @acl\role agent
      */
     public function edit()
     {
@@ -186,15 +206,21 @@ Class QuotesController extends Controller
         $arr = $this->explodeQuote($quote);
         $arr['quote_id'] = $quote->id;
         $arr['product'] = $alias;
-        $this->view->quoteEditWizard($_element->getSchematic(), $arr);
+        $this->view->quoteEditWizard($_element->getSchematic(), $arr, $quote);
     }
 
-    public function getEntityDataFromQuote($quote){
+    /**
+     * @param $quote
+     * @return array
+     */
+
+    public function getEntityDataFromQuote($quote)
+    {
         $entity_data_ids = json_decode($quote->customer_entity_data_id, true);
         $entity_data = array();
 
-        if(count($entity_data_ids)){
-            foreach($entity_data_ids as $entity_data_id){
+        if (count($entity_data_ids)) {
+            foreach ($entity_data_ids as $entity_data_id) {
                 $entity = $this->model->table('customer_entity_data')->where('id', $entity_data_id)->first();
                 $entity_data[] = json_decode($entity->entity_values, true);
             }
@@ -203,6 +229,11 @@ Class QuotesController extends Controller
         return $entity_data;
     }
 
+    /**
+     * Check if a policy is already attached to the quote
+     * @param $quote_id
+     * @return bool
+     */
     private function checkIfPolicyDone($quote_id)
     {
         $_p = Elements::call('Policies/PoliciesController');
@@ -210,11 +241,13 @@ Class QuotesController extends Controller
         return !empty($get);
     }
 
+    /**
+     * Get detailed quote information
+     * @param $quote
+     * @return array|bool
+     */
     private function explodeQuote($quote)
     {
-        if ($this->checkIfPolicyDone($quote->id)) {
-            return false; //throttle updates
-        }
         $build = [];
         $product_info = json_decode($quote->product_info);
         $_scope = json_decode($quote->customer_entity_data_id);
@@ -238,6 +271,11 @@ Class QuotesController extends Controller
         return $build;
     }
 
+    /**
+     * Shuffle arrays to get best key value pair
+     * @param $mix
+     * @return array
+     */
     private function mixin($mix)
     {
         $sharp = [];
@@ -249,6 +287,37 @@ Class QuotesController extends Controller
         return $sharp;
     }
 
+    /**
+     *
+     */
+    public function internalAcceptQuote()
+    {
+        $id = Input::get('id');
+        $data['quote'] = $quote = $this->model->where('id', $id)->first();
+        //get products
+        $data['product'] = Elements::call('Products/ProductsController')->getProduct($quote->products_id);
+        //get customer
+        $data['customer'] = (object)$this->getCustomerDataArray($quote->customers_id);
+        $data['insurer'] = $this->_processAmount($quote);
+        //get agent
+        $data['agent'] = Elements::call('Agents/AgentsController')->retrieveAgents($data['customer']->insurer_agents_id);
+        $this->view->internalConfirmQuote($data);
+    }
+
+    private function _processAmount($quote)
+    {
+        $_amount = json_decode($quote->amount);
+        $build = [];
+        $_insurer = Elements::call('Insurers/InsurersController');
+        foreach ($_amount as $k => $amount) {
+            $build[$k] = $_insurer->getInsurer($k)['name'] . '  - Total Ksh: ' . number_format(ceil($amount->total), 2);
+        }
+        return $build;
+    }
+
+    /**
+     * Show email quote modal
+     */
     public function emailQuote()
     {
         $id = Input::get('id');
@@ -265,6 +334,40 @@ Class QuotesController extends Controller
         $this->view->mailQuote($quote, $customer, $products, $agent);
     }
 
+    /**
+     * Set status of quote to 'archived'
+     */
+    public function archiveQuote()
+    {
+        $this->view->disable();
+        $quote = $this->model->find(Input::get('id'));
+        $quote->status = 'archived';
+        $quote->save();
+        Redirect::withNotice('The quote was archived')->to('/admin/quotes');
+    }
+
+    /**
+     * Show front email modal for sending a quote
+     */
+    public function frontEmailQuote()
+    {
+        $id = Session::get('quote_id');
+        $quote = $this->model->where('id', $id)->first();
+
+        //get products
+        $products = Elements::call('Products/ProductsController')->getProduct($quote->products_id);
+
+        //get customer
+        $customer = (object)$this->getCustomerDataArray($quote->customers_id);
+        //get agent
+        $agent = Elements::call('Agents/AgentsController')->retrieveAgents($customer->insurer_agents_id);
+        //the email quote form
+        $this->view->mailQuote($quote, $customer, $products, $agent);
+    }
+
+    /**
+     * Get quote status
+     */
     public function markStatus()
     {
 
@@ -289,17 +392,102 @@ Class QuotesController extends Controller
         $this->view->markForm($quote, $product, $offerslist);
     }
 
-    public function acceptRejectQuote()
+    /**
+     * Mark a quote as accepted or rejected. Relies on POST values
+     * @param PoliciesController $_policy
+     */
+    public function acceptRejectQuote(PoliciesController $_policy)
     {
+        $return = Input::get('return');
         $status = "Accepted";
+        $quote = $this->getQuoteById(Input::post('quote'));
+        $begin = true; // whether to start quote generation
         if (Input::post('action') == 'No') {
             $status = "Declined";
+            $begin = false;
         }
-        $this->saveStatus(Input::post('quote'), Input::post('action'), $status);
-        Redirect::withNotice('Your response was successfully recorded')
-            ->to(Url::base());
+        if (Input::has('insurer')) {
+            $insurer = Input::post('insurer');
+            $this->updateChosenInsurer($quote, $insurer);
+        }
+        if ($begin) {
+            $_policy->saveAcceptedQuotePolicy($quote);
+        }
+        $this->notificationForQuoteResponse($quote, $begin);
+        $this->saveStatus($quote->id, Input::post('action'), $status);
+
+        if (!empty($return)) {
+            Redirect::withNotice('Quote was marked as accepted')
+                ->to(Url::link('/admin/quotes/'));
+        } else {
+            Redirect::withNotice('Your response was successfully recorded')
+                ->to(Url::base());
+        }
     }
 
+    /**
+     * @param $quote
+     * @param $selected
+     * @return mixed
+     */
+    private function updateChosenInsurer($quote, $selected)
+    {
+        $amount = json_decode($quote->amount);
+        foreach ($amount as $item) {
+            $item->chosen = ($item->insurer_id == $selected);
+        }
+        $q = $this->model->find($quote->id);
+        $q->amount = json_encode($amount);
+        return $q->save();
+    }
+
+    /**
+     * Notification handler for accepted}quote
+     * @param $quote
+     * @param bool $accepted
+     * @return mixed
+     */
+    private function notificationForQuoteResponse($quote, $accepted = true)
+    {
+        $customer = (object)$this->getCustomerDataArray($quote->customers_id);
+        // get the insurer details
+        $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
+
+        //get the product
+        $product = Elements::call('Products/ProductsController')->model->find($quote->products_id)->data;
+
+        $content = '<p>Hello, ' . $customer->name . '</p>';
+        $content .= '<p>Your quotation for ' . $product->name . ' has been accepted and being processed.</p>
+<p>Please log into the portal to view all the details. Click the link below.</p>
+            <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
+            <p>Thanks</p>
+            <p><strong>' . $own->name . ' Insurance Portal</strong></p>';
+        if (!$accepted) {
+            $content .= '<p>Your quotation for ' . $product->name . ' has been declined</p>
+<p>Please log into the portal to view all the details. Click the link below.</p>
+            <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
+            <p>Thanks</p>
+            <p><strong>' . $own->name . ' Insurance Portal</strong></p>';
+        }
+
+        $subject = 'Your quotation on ' . $product->name . ' was updated!';
+        $message = 'You have marked ' . $customer->name . ' response on ' . $product->name . ' quote';
+        // send an email and notification to all admin/agents
+        $notice = App::get('notice');
+        $_cust = Elements::call('Users/UsersController')->getCustomerUserInfo($customer->id);
+        $notice->add($message, 'agent', $this->user()->id, 'quotes');
+        $notice->add($subject, 'customer', $_cust->id);
+        $notice->sendAsEmail([$customer->email => $customer->name], $content, $subject, [$own->email_address => $own->name]);
+    }
+
+    /**
+     * Set new status for a quote
+     * @param int|null $id The quote id
+     * @param string|null $offer Either accepted or rejected
+     * @param string|null $status The new status
+     * @param bool $redirect Whether to send a redirect header
+     * @return bool If save successful
+     */
     public function saveStatus($id = null, $offer = null, $status = null, $redirect = false)
     {
 
@@ -324,7 +512,6 @@ Class QuotesController extends Controller
             $quote->status = Input::post('response');
 
         $quote->save();
-
         if ($quote->hasNoErrors()) {
 
             if (Input::post('redirect') == 'true' || $redirect == true) {
@@ -337,15 +524,31 @@ Class QuotesController extends Controller
         }
     }
 
+    /**
+     * Create attachment for form modal before emailing quote
+     */
     public function createAttachment()
     {
-
         $this->view->disable();
         $quotefile = $this->generatePDFQuote(Input::post('id'), TRUE, TRUE);
 
         $this->view->createEmailAttachment($quotefile);
     }
 
+    /**
+     *
+     */
+    public function customerEmailAttachment()
+    {
+        $this->view->disable();
+        $quotefile = $this->generatePDFQuote(Input::post('id'), TRUE, TRUE);
+
+        $this->view->createEmailAttachment($quotefile);
+    }
+
+    /**
+     *
+     */
     public function sendEmail()
     {
         $mail = new \PHPMailer();
@@ -438,7 +641,7 @@ Class QuotesController extends Controller
 
     /**
      * Creates the entity form from the existing records and the respective javascript to populate the table
-     *
+     *s
      * @param type $entitydataid
      * @param type $formvalues
      * @return mixed
@@ -471,6 +674,7 @@ Class QuotesController extends Controller
 
         return $entityform;
     }
+
 
     /**
      * Porcesses the sent json ids and returns the rendered table
@@ -508,13 +712,18 @@ Class QuotesController extends Controller
         return $pricing;
     }
 
+    /**
+     * @param $dbquotes
+     * @return array
+     */
+
     private function _processQuotes($dbquotes)
     {
 //        print_r($dbquotes);
         foreach ($dbquotes as $quote) {
 
             $quote->date = date('d M Y', $quote->datetime);
-
+            $quote->_id = Help::encrypt($quote->id);
             //get customer
             $customer = Elements::call('Customers/CustomersController')->find($quote->customers_id);
             $quote->customer = (is_null($customer->name) ? 'Customer not found' : $customer->name);
@@ -529,11 +738,11 @@ Class QuotesController extends Controller
             //get agents
             $agent = Elements::call('Agents/AgentsController')->retrieveAgents($customer->insurer_agents_id);
             $quote->agent = $agent->names;
-            $quote->premium = number_format(json_decode($quote->amount)->total, 2);
+
+            $quote->premium = number_format($this->getPreviewQuoteAmount($quote), 2);
             //get entities
             if (Sanitize::is_json($quote->customer_entity_data_id) != false) {
                 $eids = json_decode($quote->customer_entity_data_id, true);
-
                 foreach ($eids as $eid) {
                     $entity = Elements::call('Entities/EntitiesController')->getCustomerEntity($eid);
                 }
@@ -547,40 +756,44 @@ Class QuotesController extends Controller
             $quote->entity = $first_entity['entity'][$first_entity_value]
                 . ' <br/> <span style="color:grey; font-size: 12px;">' . $first_entity['type'] . (count($entity) > 1 ? '(' . count($entity) . ')' : '') . '</span> ';
 
-            $quote->actions = '<div class="row">'
-                . '<div class="col-md-2">'
-                . '<a target="_blank" href="' . SITE_PATH . '/quotes/previewquote/' . Help::encrypt($quote->id) . '/' . Help::encrypt('internal') . '" >'
-                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to preview quote') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
-                . '</a>'
-                . '</div>'
-                . '<div class="col-md-2">'
-                . '<a data-toggle="modal" data-target="#emailmodal" href="' . SITE_PATH . '/ajax/admin/quotes/emailquote/' . $quote->id . '" >'
-                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to email quote') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/email-icon.png" />'
-                . '</a>'
-                . '</div>'
-                . '<div class="col-md-2">'
-                . '<a target="_blank" href="' . SITE_PATH . '/ajax/admin/quotes/pdfquote/' . $quote->id . '" >'
-                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to create quote PDF') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/pdf_icon.png" />'
-                . '</a>'
-                . '</div>'
-                . '</div>';
+            $quote->status = $this->statuslist[$quote->status];
 
-            //process status
-            $status = [
-                'new' => 'New',
-                'pending' => 'Response Pending',
-                'policy_pending' => 'Policy Pending',
-                'policy_created' => 'Complete',
-                'rejected' => 'Rejected'
-            ];
-            $quote->status = $status[$quote->status];
-
+            $quote->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
             $quotes[] = $quote;
         }
 
         return $quotes;
     }
 
+    /**
+     * Attempt to get amount for quote
+     * @param $quote
+     * @return int
+     */
+    private function getPreviewQuoteAmount($quote)
+    {
+        $amounts = json_decode($quote->amount);
+        $use_amount = null;
+        if (empty($amounts)) {
+            return 0;
+        }
+        try {
+            foreach ($amounts as $struct) {
+                if ($struct->chosen) {
+                    $use_amount = $struct->total;
+                    break;
+                }
+            }
+        } catch (\Exception $e) {
+            $use_amount = 0;
+        }
+        return $use_amount;
+    }
+
+    /**
+     * @param $dbquotes
+     * @return array
+     */
     private function _processQuotesForExport($dbquotes)
     {
 
@@ -618,17 +831,23 @@ Class QuotesController extends Controller
         return $quotes;
     }
 
+    /**
+     *
+     */
+
     public function showQuotes()
     {
 
         $dbquotes = $this->model->getQuotes();
-//        print_r($dbquotes);exit;
         $quotes = $this->_processQuotes($dbquotes);
         $this->view->set('count', count($quotes));
         $this->view->set('source', $quotes);
         $this->view->generateTable();
     }
 
+    /**
+     *
+     */
     public function showArchivedQuotes()
     {
 
@@ -660,8 +879,8 @@ Class QuotesController extends Controller
                 "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id")
             ->where('status', 'IN', ['new', 'pending']);
 
-        if (Session::has('agentsid'))
-            $dbquotes = $dbquotes->where('insurer_agents_id', Session::get('agentsid'));
+        if ($this->user()->is('agent'))
+            $dbquotes = $dbquotes->where('insurer_agents_id', $this->user()->insurer_agents_id);
 
         $quotes = $this->_processQuotes($dbquotes->show());
 
@@ -671,6 +890,10 @@ Class QuotesController extends Controller
         $this->view->generateMiniTable();
     }
 
+    /**
+     * @param $id
+     * @return array|null
+     */
     public function getQuotesByCustomer($id)
     {
 
@@ -683,10 +906,19 @@ Class QuotesController extends Controller
         }
     }
 
+    /**
+     * @param $id
+     * @return object
+     */
+
     public function getQuoteById($id)
     {
         return $this->model->where('id', $id)->first();
     }
+
+    /**
+     * @param array $settings
+     */
 
     public function analyseProducts($settings = [])
     {
@@ -728,6 +960,9 @@ Class QuotesController extends Controller
         $this->view->setViewPanel('products-share');
     }
 
+    /**
+     * @param $settings
+     */
     public function analyseQuotesByMonth($settings)
     {
 
@@ -789,6 +1024,9 @@ Class QuotesController extends Controller
         $this->view->setViewPanel('unpaid-quotes');
     }
 
+    /**
+     *
+     */
     public function incompleteQuotes()
     {
 
@@ -801,6 +1039,20 @@ Class QuotesController extends Controller
         $this->view->setViewPanel('incomplete-quotes');
     }
 
+    /**
+     * Update quote amount if empty
+     * @param $quote
+     * @return array
+     */
+    private function updateQuoteAmount($quote)
+    {
+        return $this->getQuotations($quote);
+    }
+
+    /**
+     * Get quote preview
+     * @param $id
+     */
     public function previewQuote($id)
     {
         $the_quote = $this->getQuoteById(Help::decrypt($id));
@@ -808,6 +1060,11 @@ Class QuotesController extends Controller
             Redirect::to('/admin/quotes/add')->withNotice('Quote was not found', 'danger');
             exit;
         }
+        if (empty($the_quote->amount)) {
+            $this->updateQuoteAmount($the_quote->id);
+            $the_quote = $this->getQuoteById(Help::decrypt($id));
+        }
+//        $this->updateQuoteAmount($the_quote);
         $data['customer'] = (object)$this->getCustomerDataArray($the_quote->customers_id);
         $data['quote'] = $the_quote;
         $data['product'] = json_decode($the_quote->product_info);
@@ -818,6 +1075,7 @@ Class QuotesController extends Controller
         }
         $data['product_info'] = Elements::call('Products/ProductsController')->getProduct($the_quote->products_id, 'stdClass');
         $data['quotation'] = json_decode($the_quote->amount);
+        $data['_quote'] = $this->getQuotations($the_quote->id);
         $this->view->createQuotePreview($data);
     }
 
@@ -840,12 +1098,27 @@ Class QuotesController extends Controller
 //        $dompdf->setPaper('A4', 'landscape');
 //        $dompdf->render();
 //        $dompdf->stream();
-        $this->generatePDFQuote($id);
+        $this->generatePDFQuote($id, true, false, true);
     }
 
-    public function generatePDFQuote($id, $savedoc = true, $return = false)
+    /**
+     * Allow customer generated pdf's on frontend
+     */
+    public function frontQuote()
     {
+        $quote_id = Session::get('quote_id');
+        $this->generatePDFQuote($quote_id, true, false, true);
+    }
 
+    /**
+     * @param $id
+     * @param bool $savedoc
+     * @param bool $return
+     * @param bool $exit
+     * @return string
+     */
+    public function generatePDFQuote($id, $savedoc = true, $return = false, $exit = false)
+    {
         //get quote
         $quote = $this->model->find($id);
         $this->view->disable();
@@ -893,9 +1166,18 @@ Class QuotesController extends Controller
             $this->model->saveQuoteDocuments($quote->id, $newid);
         }
 
-        return $qname;
+        if (!$exit)
+            return $qname;
+        else
+            exit;
     }
 
+    /**
+     * @param $id
+     * @param bool $savedoc
+     * @param bool $return
+     * @return string
+     */
     public function generateTCPDF($id, $savedoc = true, $return = false)
     {
 
@@ -985,6 +1267,10 @@ Class QuotesController extends Controller
         return $qname;
     }
 
+    /**
+     *
+     */
+
     public function search()
     {
 
@@ -1010,6 +1296,9 @@ Class QuotesController extends Controller
         $this->view->generateTable();
     }
 
+    /**
+     *
+     */
     public function export()
     {
 
@@ -1024,6 +1313,9 @@ Class QuotesController extends Controller
         $doc->generateDoc($columns, $quotes, Input::post('format'));
     }
 
+    /**
+     *
+     */
     public function printer()
     {
 
@@ -1041,6 +1333,9 @@ Class QuotesController extends Controller
         HTML::printPage();
     }
 
+    /**
+     *
+     */
     public function delete()
     {
 
@@ -1048,7 +1343,6 @@ Class QuotesController extends Controller
         $ids = Input::post('ids');
 
         foreach ($ids as $id) {
-
             $this->model->connectPayments();
             $this->model->where('id', '=', $id)->delete();
         }
@@ -1080,6 +1374,10 @@ Class QuotesController extends Controller
         }
     }
 
+    /**
+     *
+     */
+
     public function getQuotes()
     {
 
@@ -1107,6 +1405,9 @@ Class QuotesController extends Controller
         }
     }
 
+    /**
+     *
+     */
     public function getCustomer()
     {
 
@@ -1116,6 +1417,9 @@ Class QuotesController extends Controller
         echo Elements::call('Customers/CustomersController')->getCustomerByName($name, 'select');
     }
 
+    /**
+     * @param int|null $id
+     */
     public function getCustomerDetails($id = null)
     {
 
@@ -1259,18 +1563,22 @@ Class QuotesController extends Controller
      */
     public function saveQuoteRemotely($ids = [], $customer_info = [], $product_info = [], $amount = [], $entid = null, $quote_id = null)
     {
-        $this->userCtrl = Elements::call('Users/UsersController');
+        // get the customer that has generated the quote
+        $customer = Elements::call('Customers/CustomersController')->getCustomerById($ids['customer_id'], 'all');
+
         $quote = $this->model;
-        if (!empty($quote_id))
-//            $quote->id = $quote_id;
+
+        if (!empty($quote_id)) {
             $quote = $this->model->find($quote_id);
+        }
+
         $quote->customers_id = $ids['customer_id'];
         $quote->products_id = $ids['product_id'];
         $quote->datetime = time();
+        $quote->source = $this->source;
 
         $quote->customer_info = $customer_info;
         $quote->product_info = (count($product_info)) ? json_encode($product_info) : 0;
-
         if (!empty($entid))
             $quote->customer_entity_data_id = is_array($entid) ? json_encode($entid) : json_encode([$entid]);
         else
@@ -1278,12 +1586,39 @@ Class QuotesController extends Controller
 
         $quote->amount = (count($amount)) ? json_encode($amount) : json_encode(0);
         $quote->status = 'new';
+
         $quote->save();
+
         if ($quote->hasNoErrors()) {
+
+            // get the insurer details
+            $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
+
+            //get the product
+            $product = Elements::call('Products/ProductsController')->model->find($ids['product_id'])->data;
+
+            $subject = 'A ' . $product->name . ' Quote has been generated!';
+
+            $content = '<p>Dear ' . $own->name . ',</p>';
+            $content .= '<p>A customer by the name ' . $customer->name . ', has generated a ' . $product->name . ' quote.</p><p>Please log into the portal to view all the details. Click the link below.</p>
+            <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
+            <p>Thanks</p>
+            <p><strong>' . $own->name . ' Insurance Portal</strong></p>';
+
+            // send an email and notification to all admin/agents
+            $notice = App::get('notice');
+            $notice->sendAsEmail([$own->email_address => $own->name], $content, $subject, [$own->email_address => $own->name]);
+
+            $message = 'A new ' . $product->name . ' quote has been generated by ' . $customer->name;
+            $notice->add($message, 'admin|agent', 0, 'quotes');
+
             return $quote->last_altered_row;
         }
     }
 
+    /**
+     * @param $quote_no
+     */
     public function assignAgent($quote_no)
     {
         $agents = Elements::call('Agents/AgentsController')->getAllAgents();
@@ -1297,15 +1632,20 @@ Class QuotesController extends Controller
         $this->view->loadAgentAssignment($all_agents, $quote_no);
     }
 
+    /**
+     *
+     */
+
     public function attachAgent()
     {
-        $quote_no = Help::decrypt(Input::post('quote_no'));
+        $quote_no = Input::post('quote_no');
 
         // change the status of the quote
         $this->model->changeQuoteStatus($quote_no);
 
         // get the customer id from quote no
-        $customer_id = $this->model->find($quote_no)->customers_id;
+        $quote = $this->model->find($quote_no);
+        $customer_id = $quote->customers_id;
 
         // attach the selected agent to the customer
         Elements::call('Customers/CustomersController')->attachAgentToCustomer($customer_id, Input::post('agent'));
@@ -1315,6 +1655,9 @@ Class QuotesController extends Controller
         Redirect::to(Input::post('destination'))->withNotice('Agent has been attached');
     }
 
+    /**
+     * @return array
+     */
     public function getTheLeads()
     {
         $statuses = $this->statuslist;
@@ -1328,8 +1671,8 @@ Class QuotesController extends Controller
             ->join('customers c', $table_one . '.customers_id = c.id', 'LEFT')
             ->where('source', 'External');
 
-        if (Session::has('agentsid'))
-            $leads = $leads->where('insurer_agents_id', Session::get('agentsid'));
+        if ($this->user()->is('agent'))
+            $leads = $leads->where('insurer_agents_id', $this->user()->insurer_agents_id);
 
         $leads = $leads->where('status', 'new')
             ->orWhere('status', 'agent_attached');
@@ -1337,39 +1680,34 @@ Class QuotesController extends Controller
         $leads = $leads->get();
 
         if (count($leads)) {
+
+            $count = 0;
+
             foreach ($leads as $lead) {
 
-                $lead->datetime = date('Y-M-d', $lead->datetime);
-                $lead->name = '<a href="' . Url::base() . '/admin/customers/show/' . $lead->customers_id . '">' . $lead->name .
+                $lead->datetime = date('d M, Y H:i A', $lead->datetime);
+                $lead->cname = '<a href="' . Url::base() . '/admin/customers/show/' . $lead->customers_id . '">' . $lead->name .
                     (!empty($lead->insurer_agents_id) ? ' (Existing)' : ' (New)')
                     . '</a>';
                 $product = Elements::call('Products/ProductsController')
                     ->getProduct($lead->products_id);
                 $lead->products_id = $product['name'];
 
-                if ($lead->status == 'new') {
-                    $lead->actions = '<div class="row">'
-                        . '<div class="col-md-2">'
-                        . '<a data-toggle="modal" data-target="#assign-agent-modal" href="' . Url::link('/admin/leads/assignAgent/' . Help::encrypt($lead->quote_no)) . '">'
-                        . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to Assign Agent') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
-                        . '</a>'
-                        . '</div>';
-                } else {
-                    $lead->actions = '<div class="row">'
-                        . '<div class="col-md-2">'
-                        . '<a id="quo_' . $lead->quote_no . '" data-toggle="modal" data-target="#addtaskmodal" href="' . Url::link('/admin/leads/createTask/' . Help::encrypt($lead->insurer_agents_id)) . '">'
-                        . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to Create Task') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
-                        . '</a>'
-                        . '</div>';
-                }
+                $lead->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
+
+                //process status
                 $lead->status = $statuses[$lead->status];
 
                 $customer_leads[] = $lead;
+                $count++;
             }
         }
         return $customer_leads;
     }
 
+    /**
+     * @param $agent_id
+     */
     public function createTaskForAgent($agent_id)
     {
         $this->view->disable();
@@ -1386,6 +1724,12 @@ Class QuotesController extends Controller
         Elements::call('Tasks/TasksController')->view->addForm($agentslist, $agent_id, true);
     }
 
+    /**
+     * Format the customer object
+     * @deprecated Use getCustomerDataArray
+     * @param $_customer
+     * @return array
+     */
     private function formatCustomerObject($_customer)
     {
         $info = get_object_vars($_customer);
@@ -1404,11 +1748,18 @@ Class QuotesController extends Controller
         return $the_arrays;
     }
 
+    /**
+     * Get full information on customer
+     * @param null $customer_id
+     * @return array
+     */
     private function getCustomerDataArray($customer_id = null)
     {
         if (empty($customer_id)) {
-            if (empty($customer_id = Input::post('customer'))) {
-                return [];
+            if (empty($customer_id = Input::post('customerid'))) {
+                if (empty($customer_id = Input::post('customer'))) {
+                    return [];
+                }
             }
         }
         $_customer = Elements::call('Customers/CustomersController')->getCustomerById($customer_id, false);
@@ -1499,10 +1850,11 @@ Class QuotesController extends Controller
         if ($editing) {
             $this->clearTrash();
         }
+        $this->source = 'Internal';
         $customer_id = $_customer->saveCustomer($element, $step1, true);
         $entity_id = $_entity->getEntityIdByAlias($alias)->id;
         $car_details = json_encode($step2);
-        $saved = $_entity->saveEntityDataRemotely($customer_id, $entity_id, $car_details, null, $product_id);
+        $saved = $_entity->saveEntityDataRemotely($customer_id, $entity_id, $car_details, $product_id);
         $ids['customer_id'] = $customer_id;
         $ids['product_id'] = $product_id;
         $entities = $this->checkForOtherCovers($element, $customer_id, $product_id);
@@ -1549,7 +1901,7 @@ Class QuotesController extends Controller
         for ($i = 1; $i <= $count; $i++) {
             $got = $this->__buildStack($i);
             $entity_id = $_entity->getEntityIdByAlias($alias)->id;
-            $saved[] = $_entity->saveEntityDataRemotely($cust_id, $entity_id, json_encode($got), null, $product);
+            $saved[] = $_entity->saveEntityDataRemotely($cust_id, $entity_id, json_encode($got), $product);
         }
         return $saved;
     }
@@ -1557,6 +1909,7 @@ Class QuotesController extends Controller
     /**
      * Preview an internal quote
      * @param int $quote
+     * @todo Remove Hardcoding of names
      */
     public function internalQuoteView($quote)
     {
@@ -1566,9 +1919,28 @@ Class QuotesController extends Controller
             Redirect::to('/admin/quotes/add')->withNotice('Quote does not exist', 'danger');
             exit;
         }
-        $jubilee = (new JubileeQuotes($the_quote))->calculate();
-        $aig = (new AIGQuotes($the_quote))->calculate();
-        $this->view->quotePreview([$jubilee, $aig]);
+        $quotes = $this->getQuotations($quote, $company = null);
+        $this->view->quotePreview($quotes);
+    }
+
+    /**
+     * Get insurance quotes
+     * @param int $company
+     * @return array
+     */
+    public function getQuotations($quote, $company = null)
+    {
+        $_insurers = Elements::call('Insurers/InsurersController');
+        $the_quote = $this->getQuoteById($quote);
+        $companies = $_insurers->getInsurer();
+        $values = [];
+        foreach ($companies as $insures) {
+            $alias = $insures->alias;
+            $name = "Jenga\MyProject\Quotes\Library\Companies\\" . $alias; //get class reflection
+            $r = new $name($the_quote);
+            $values[] = $r->calculate();
+        }
+        return $values;
     }
 
     private function __buildStack($index)
@@ -1587,9 +1959,7 @@ Class QuotesController extends Controller
         $this->setData();
 
         $customer = $this->customerCtrl->model->getCustomerById(Session::get('customer_id'));
-
         $dbquotes = $this->model->where('customers_id', $customer->id)->get();
-
         $quotes = $this->_processQuotes($dbquotes);
         $this->view->set('count', count($quotes));
         $this->view->set('source', $quotes);
@@ -1606,5 +1976,10 @@ Class QuotesController extends Controller
     public function myDashQuotes()
     {
         $this->myQuotes(true);
+    }
+
+    public function sendQuoteNotification()
+    {
+
     }
 }

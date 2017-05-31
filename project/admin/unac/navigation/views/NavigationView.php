@@ -462,4 +462,16 @@ class NavigationView extends View {
         $this->set('editform',$editform);
         $this->setViewPanel('navigation'. DS .'menuitem-edit');
     }
+
+    public function showFrontMenu($menu_items = array()){
+        $li = '';
+
+        if(count($menu_items)){
+            foreach ($menu_items as $item){
+                $li .= '<li><a href="'. $this->processHref($item->href) .'">'. $item->linkname .'</a></li>';
+            }
+        }
+
+        return $li;
+    }
 }

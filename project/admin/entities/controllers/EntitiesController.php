@@ -1,4 +1,5 @@
 <?php
+
 namespace Jenga\MyProject\Entities\Controllers;
 
 use Jenga\App\Core\App;
@@ -12,7 +13,15 @@ use Jenga\App\Views\Notifications;
 use Jenga\App\Controllers\Controller;
 
 use Jenga\MyProject\Elements;
+use Jenga\MyProject\Entities\Models\EntitiesModel;
+use Jenga\MyProject\Entities\Views\EntitiesView;
 
+/**
+ * Class EntitiesController
+ * @property-read EntitiesView $view
+ * @property-read EntitiesModel $model;
+ * @package Jenga\MyProject\Entities\Controllers
+ */
 class EntitiesController extends Controller
 {
 
@@ -421,20 +430,23 @@ class EntitiesController extends Controller
      * @param type $customerid
      * @param type $entityid
      * @param type $data
-     *
+     * @see Specify product id before cdata id
      * @return object $results
      */
 
-    public function saveEntityDataRemotely($customerid, $entityid, $data, $cdataid = null, $product_id)
+    public function saveEntityDataRemotely($customerid, $entityid, $data, $product_id, $cdataid = null)
     {
         $entity = $this->model->customerEntityData($cdataid);
+
         $entity->customers_id = $customerid;
         $entity->entities_id = $entityid;
         $entity->entity_values = $data;
         $entity->product_id = $product_id;
         $entity->save();
 
-        return $entity->last_altered_row;
+//        dump($entity);exit;
+        if ($entity->hasNoErrors())
+            return $entity->last_altered_row;
     }
 
     /**
@@ -442,6 +454,7 @@ class EntitiesController extends Controller
      *
      * @param type $pid product id
      * @param type $cid customer data id
+     * @return string
      */
     public function selectFormFromProductId($pid = null, $cid = null)
     {
@@ -486,7 +499,8 @@ class EntitiesController extends Controller
     /**
      * Generates full entity form from form id sent from quotes element
      */
-    public function getFullEntityForm($formid = null, $wrap = 'table')
+    public
+    function getFullEntityForm($formid = null, $wrap = 'table')
     {
 
         $this->view->disable();
@@ -503,7 +517,8 @@ class EntitiesController extends Controller
      * Returns a rendered table and hidden input field showing the entity id type and values
      * @param type $ids
      */
-    public function returnEntityEntries($ids = null)
+    public
+    function returnEntityEntries($ids = null)
     {
 
         $this->view->disable();
@@ -522,14 +537,16 @@ class EntitiesController extends Controller
         }
     }
 
-    public function getEntityIdByAlias($alias)
+    public
+    function getEntityIdByAlias($alias)
     {
         return $this->model->find([
             'alias' => $alias
         ]);
     }
 
-    public function getEntityDataByCustomerAndEntityId($customer_id, $entity_id, $product_id)
+    public
+    function getEntityDataByCustomerAndEntityId($customer_id, $entity_id, $product_id)
     {
         return $this->model->customerEntityData()
             ->where('customers_id', $customer_id)
@@ -538,7 +555,8 @@ class EntitiesController extends Controller
             ->show();
     }
 
-    public function getEntityDataByfinder($finder)
+    public
+    function getEntityDataByfinder($finder)
     {
         return $this->model->customerEntityData($finder);
     }

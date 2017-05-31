@@ -5,6 +5,7 @@
 <div class="row">
     <div class="form-group">
         <?php
+        echo $label_customer_name . $customer_name;
         echo $label_customer_id . $customer_id
         ?>
     </div>

@@ -1,6 +1,7 @@
 <?php
 use Jenga\App\Project\Core\Project;
 use Jenga\App\Project\Routing\Route;
+
 Route::any('/quotes/mypreviewquote/{id}', 'QuotesController@previewQuote')
     ->attachTemplate('preview')
     ->assignPanels(['_ajax' => TRUE]);
@@ -12,12 +13,23 @@ Route::any('/quotes/previewquote/{id}/{view}', 'QuotesController@previewQuote')
     ->assignPanels([
         'logout' => 'UsersController@logout:logout'
     ]);
+Route::any('/customer/quote/pdfquote', 'QuotesController@frontQuote')
+    ->attachTemplate('preview')
+    ->assignPanels(['_ajax' => TRUE]);
+Route::any('/customer/quote/emailquote', 'QuotesController@frontEmailQuote')
+    ->attachTemplate('preview')
+    ->assignPanels(['_ajax' => TRUE]);
+Route::any('/customer/quote/sendemail', 'QuotesController@sendEmail')
+    ->attachTemplate('preview');
+Route::any('/customer/quote/createAttachment', 'QuotesController@customerEmailAttachment')
+    ->attachTemplate('preview')
+    ->assignPanels(['_ajax' => TRUE]);
 
 Route::group(['before' => 'auth.check'], function () {
     Route::get('/customer/my-quotes', 'QuotesController@myQuotes')
         ->attachTemplate('admin')
         ->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ]);
@@ -36,7 +48,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::any('/admin/quotes/{action}/{id}', 'QuotesController@index')
         ->attachTemplate('admin')
         ->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ])
@@ -57,7 +69,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/quotes/addquote/{id}', 'QuotesController@add')
         ->attachTemplate('admin')
         ->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ])
@@ -70,14 +82,14 @@ Route::group(['before' => 'auth.check'], function () {
         ]);
     Route::post('/admin/quotes/{action}', 'QuotesController@index')
         ->attachTemplate('admin')->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ]);
     Route::post('/admin/myquote/new/{element}', 'QuotesController@internalQuote')
         ->attachTemplate('admin')
         ->assignPanels([
-            'top' => 'UsersController@index:login',
+            'top' => 'NotificationsController@load:notices',
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ]);

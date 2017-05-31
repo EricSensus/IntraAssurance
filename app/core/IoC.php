@@ -4,6 +4,8 @@ namespace Jenga\App\Core;
 use DI\ContainerBuilder;
 use Jenga\MyProject\Config;
 
+use Jenga\App\Helpers\Help;
+
 /**
  * This is a facade for PHP-DI to allow for proper integration into the Jenga Framework
  */
@@ -40,9 +42,8 @@ class IoC extends ContainerBuilder {
             
             $handle = str_replace(' ', '', strtolower($handle));
             
-            if(!is_array($service)){
-                
-                $this->definitions[$handle] = \DI\object($service);
+            if(!is_array($service)){                
+                $this->definitions[$handle] = $service;
             }
             else{
                 
@@ -71,7 +72,7 @@ class IoC extends ContainerBuilder {
                     }
                 }
             }
-                    }
+        }
         
         //register database entries
         if(!is_null($this->_config))

@@ -6,9 +6,9 @@ class Config
 {
     /*     * *** Project settings *********************** */
 
-    public $project = 'Esurance 365 Portal';
-    public $mailfrom = 'noreply@esurance365.com';
-    public $mailadmin = 'info@esurance365.com';
+    public $project = 'Intraasurance Portal';
+    public $mailfrom = 'noreply@intraasurance.com';
+    public $mailadmin = 'info@intraasurance.com';
 
     /*     * **** Database Settings ************** */
     public $db = 'intraasurance_db';

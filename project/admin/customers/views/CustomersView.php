@@ -358,7 +358,7 @@ class CustomersView extends View
             $table->printOutput();
         } else {
 
-            $customertable['tools'] = $table->buildTools($tools, TRUE); //->assignPanel('search');
+            $customertable['tools'] = $table->buildTools($tools, TRUE);
             $customertable['table'] = $table->render(TRUE);
 
             return $customertable;

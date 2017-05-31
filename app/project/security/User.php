@@ -143,8 +143,8 @@ class User {
      * @param type $element
      * @return type
      */
-    public function can($action, $element){        
-        return $this->role->permissions->can($action, $element);
+    public function can($action, $element, $ctrl = 'primary', $debug = TRUE){        
+        return $this->role->permissions->can($action, $element, $ctrl, $debug);
     }
     
     /**
@@ -163,7 +163,7 @@ class User {
      * @param type $element
      * @return type
      */
-    public function canExecute($element, $controller, $method = 'index'){        
+    public function canExecute($element, $controller, $method = 'index'){ 
         return $this->role->permissions->canExecute($element, $controller, $method);
     }
     

@@ -35,6 +35,9 @@ class Session {
      */
     public static function start() {
         
+        //configure the core session settings
+        self::configure(App::get('_config'));
+        
         if(App::get('_config')->session_storage_type == 'database'){
             
             //replace the native Symfony handler with the custom Jenga Handler
@@ -54,6 +57,39 @@ class Session {
         
         self::$_symsession = $symsession;
         self::$_flash = self::$_symsession->getFlashBag();
+    }
+    
+    /**
+     * Initializes the core session functions
+     */
+    public static function configure($config){
+        
+        //assign the settings fron the config class
+        $session_lifetime = $config->session_lifetime; 
+        $gc_probability = $config->gc_probability; 
+        $gc_divisor = $config->gc_divisor; 
+        
+        // make sure session cookies never expire so that session lifetime
+        // will depend only on the value of $session_lifetime
+        ini_set('session.cookie_lifetime', 0);
+
+        // if $session_lifetime is specified and is an integer number
+        if ($session_lifetime != '' && is_integer($session_lifetime))
+
+            // set the new value
+            ini_set('session.gc_maxlifetime', (int)$session_lifetime);
+
+        // if $gc_probability is specified and is an integer number
+        if ($gc_probability != '' && is_integer($gc_probability))
+
+            // set the new value
+            ini_set('session.gc_probability', $gc_probability);
+
+        // if $gc_divisor is specified and is an integer number
+        if ($gc_divisor != '' && is_integer($gc_divisor))
+
+            // set the new value
+            ini_set('session.gc_divisor', $gc_divisor);
     }
     
     private static function _put($key, $value){        

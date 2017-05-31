@@ -12,8 +12,7 @@ class File{
          * @param type $filename
          * @return type
          */
-        public static function exists($filename){
-            
+        public static function exists($filename){            
             return file_exists($filename);
         }
         
@@ -23,8 +22,7 @@ class File{
          * @param type $filename
          * @return type
          */
-        public static function get($filename){
-            
+        public static function get($filename){            
             return file_get_contents($filename);
         } 
         
@@ -32,12 +30,24 @@ class File{
          * Puts the sent data into the assigned file
          * 
          * @param type $filename
+         * @param type $data
+         * @param type $recursive if true it will create the necessary folders before the file
+         * @param type $mode
+         * @param type $put_attributes
          * @return type
          */
-        public static function put($filename, $data, $recursive = false, $mode = 0755){     
+        public static function put($filename, $data, $recursive = false, $mode = 0755, $put_attributes = []){     
             
+            //if true it will create the necessary folders before the file
             if($recursive){
                 mkdir (dirname ($filename), $mode, TRUE);
+            }
+            
+            //process put attributes and flags
+            if(count($put_attributes) > 0){
+                
+                extract($put_attributes, EXTR_SKIP);
+                file_put_contents($filename, $data, $flags, $context);
             }
             
             return file_put_contents($filename, $data);

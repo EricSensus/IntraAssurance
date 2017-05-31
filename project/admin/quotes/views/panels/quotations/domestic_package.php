@@ -6,14 +6,17 @@
         $count = 0;
         $quote_id = $data->quote->id;
         ?>
-        <div class="col-md-5 col-md-offset-1">
+        <div class="col-md-12">
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Name: <?= $quotation->customer->name ?></h3>
+                    <h3 class="panel-title"><?= $data->insurer->name ?></h3>
                 </div>
                 <div class="panel-body">
                     <table class="table table-striped table-condensed">
+                        <tr>
+                            <td>Name</td>
+                            <td><?= $quotation->customer->name ?></td>
+                        </tr>
                         <tr>
                             <td>Section A: Buildings (Kshs <?= number_format($quotation->tsi_a) ?>)</td>
                             <td>Ksh <?= number_format($quotation->section_a, 2) ?></td>

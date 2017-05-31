@@ -1,22 +1,23 @@
 <?php
 use Jenga\App\Request\Url;
 
-echo '<div class="row">'
-. '<div class="col-md-12">
+if(!$this->user()->is('customer')) {
+    echo '<div class="row">'
+        . '<div class="col-md-12">
     <div class="dash-head clearfix mt15 mb20 shadow">
             <div class="left">
                 <h4 class="mb5 text-light">Edit Insurance Policy</h4>
                 <p class="small"><strong>Edit</strong> Policy</p>
             </div>
             <div class="right">
-                <a href="'.Url::link('/admin/policies').'" class="btn btn-default"><i class="fa fa-close"></i> Cancel</a>
+                <a href="' . Url::link('/admin/policies') . '" class="btn btn-default"><i class="fa fa-close"></i> Cancel</a>
                 <button class="btn btn-primary" id="save_edits"><i class="fa fa-save"></i> Save Edits</button>
             </div>
             ';
-echo '</div>
+    echo '</div>
 </div>
 </div>';
-
+}
 ?>
 <!--Tabs-->
 <div class="tabs row-padding">
@@ -127,6 +128,9 @@ echo '</div>
                 <div role="tabpanel" class="tab-pane" id="linked-documents">
                     <div class="panel-heading">
                         <h4 class="mb5 text-light" style="width: auto; float:left">Linked Documents</h4>
+                        <?php
+                            if(!$this->user()->is('customer')){
+                        ?>
                         <div class="toolicon" style="width: auto; float:right" >
                             <?php
                             $url = Url::route('/admin/documents/upload/{element}/{action}/{id}/{folder}',
@@ -136,6 +140,7 @@ echo '</div>
                                 <img src="<?=RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/add_icon.png'; ?>">
                             </a>
                         </div>
+                        <?php } ?>
                     </div>
                     <?=$linked_docs; ?>
                 </div>

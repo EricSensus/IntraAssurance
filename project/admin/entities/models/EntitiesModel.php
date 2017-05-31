@@ -1,4 +1,5 @@
 <?php
+
 namespace Jenga\MyProject\Entities\Models;
 
 use Jenga\App\Models\ORM;
@@ -39,7 +40,7 @@ class EntitiesModel extends ORM
         if (empty($id))
             return $this->table('customer_entity_data');
         else
-            return $this->table('customer_entity_data', 'NATIVE')->where('id',$id)->first();
+            return $this->table('customer_entity_data')->where('id', $id)->first();
     }
 
     /**

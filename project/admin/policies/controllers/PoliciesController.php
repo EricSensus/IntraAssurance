@@ -2,6 +2,8 @@
 
 namespace Jenga\MyProject\Policies\Controllers;
 
+use Carbon\Carbon;
+use Jenga\App\Core\App;
 use Jenga\App\Helpers\Help;
 use Jenga\App\Html\Excel;
 use Jenga\App\Project\Security\User;
@@ -14,8 +16,10 @@ use Jenga\App\Helpers\FileUpload;
 use Jenga\App\Views\Notifications;
 use Jenga\App\Controllers\Controller;
 use Jenga\App\Request\Facade\Sanitize;
+use Jenga\MyProject\Agents\Controllers\AgentsController;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
+use Jenga\MyProject\Notifications\Controllers\NotificationsController;
 use Jenga\MyProject\Policies\Models\PoliciesModel;
 use Jenga\MyProject\Policies\Views\PoliciesView;
 use Jenga\MyProject\Quotes\Controllers\QuotesController;
@@ -38,6 +42,15 @@ class PoliciesController extends Controller
      * @var CustomersController
      */
     private $customerCtrl;
+    /**
+     * @var AgentsController
+     */
+    private $agentCtrl;
+    /**
+     * @var NotificationsController
+     */
+    private $notice;
+    protected $own_company;
 
     public function index()
     {
@@ -53,13 +66,22 @@ class PoliciesController extends Controller
             elseif (!is_null(Input::post('action')))
                 $action = Input::post('action');
         }
-
+        //method is referenced using alias
+//        if($this->user()->can('edit','policies')){
         $this->$action();
+//        }
+    }
+
+    public function initData()
+    {
+        $this->own_company = Elements::call('Companies/CompaniesController')->ownCompany(true);
+        $this->notice = App::get('notice');
+        $this->customerCtrl = Elements::call('Customers/CustomersController');
+        $this->userCtrl = Elements::call('Users/UsersController');
     }
 
     private function _translatePolicies($rawpolicies, $use = 'internal', $mypolicy = false)
     {
-
         if (is_array($rawpolicies)) {
 
             foreach ($rawpolicies as $policy) {
@@ -98,28 +120,7 @@ class PoliciesController extends Controller
                         . '<img ' . Notifications::tooltip('Click to issue policy') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/issue_policy_icon.png" width="20" />'
                         . '</a>';
                 }
-                $newpolicy->actions = '<div class="row">'
-                    . '<div class="col-md-1">'
-                    . '<a target="_blank" href="' . SITE_PATH . '/policies/previewpolicy/' . $policy->id . '" >
-                        <i class="fa fa-eye fa-lg" '. Notifications::tooltip('Preview Policy') .'></i>'
-                    . '</a>'
-                    . '</div>'
-                    . '<div class="col-md-1">'
-                    . '<a data-toggle="modal" data-target="#emailmodal" href="' . SITE_PATH . '/ajax/admin/policies/emailpolicy/' . $policy->id . '" >
-                        <i class="fa fa-envelope fa-lg" '. Notifications::tooltip('Email Policy') .'></i>'
-                    . '</a>'
-                    . '</div>'
-                    . '<div class="col-md-1">'
-                    . '<a target="_blank" href="' . SITE_PATH . '/ajax/admin/policies/pdfpolicy/' . $policy->id . '" >
-                        <i class="fa fa-file-pdf-o fa-lg" '. Notifications::tooltip('Create PDF') .'></i>'
-                    . '</a>'
-                    . '</div>';
-
-                $newpolicy->actions .= '<div class="col-md-1">'
-                . '<a data-toggle="modal" data-target="#download-docs" href="' . Url::link('/admin/policies/downloaddocs/'.$policy->id) . '" >
-                    <i class="fa fa-download fa-lg" '. Notifications::tooltip('Download related documents') .'></i> </a>'
-                . '</div>'
-                . '</div>';
+                $newpolicy->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
 
                 $policies[] = $newpolicy;
             }
@@ -163,12 +164,14 @@ class PoliciesController extends Controller
     {
 
         if (is_null($search)) {
-            $rawpolicies = $this->model;
-
-            // filter by the logged in agent
-
-
-            $rawpolicies = $rawpolicies->show();
+            if($this->user()->is('agent')){
+                $rawpolicies = $this->model->select(TABLE_PREFIX . 'policies.*, '. TABLE_PREFIX . 'customers.insurer_agents_id')
+                    ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "policies.customers_id", 'LEFT')
+                    ->where('insurer_agents_id', $this->user()->insurer_agents_id)
+                    ->get();
+            } else {
+                $rawpolicies = $this->model->show();
+            }
         } else {
             $results = $this->model->search($search);
 
@@ -187,8 +190,15 @@ class PoliciesController extends Controller
 
     public function getUnprocessedPolicies()
     {
-
-        $dbpolicies = $this->model->where('status', '')->show();
+        if($this->user()->is('agent')){
+            $dbpolicies = $this->model->select(TABLE_PREFIX . 'policies.*, '. TABLE_PREFIX . 'customers.insurer_agents_id')
+                ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "policies.customers_id", 'LEFT')
+                ->where('insurer_agents_id', $this->user()->insurer_agents_id)
+                ->where('status', '')
+                ->get();
+        } else {
+            $dbpolicies = $this->model->where('status', '')->show();
+        }
 
         $policies = $this->_translatePolicies($dbpolicies);
 
@@ -204,7 +214,16 @@ class PoliciesController extends Controller
 
         $now = time();
         $later = strtotime("+30 days");
-        $dbpolicies = $this->model->where('end_date', 'BETWEEN', [$now, $later])->show();
+
+        if($this->user()->is('agent')) {
+            $dbpolicies = $this->model->select(TABLE_PREFIX . 'policies.*, '. TABLE_PREFIX . 'customers.insurer_agents_id')
+                ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "policies.customers_id")
+                ->where('insurer_agents_id', $this->user()->insurer_agents_id)
+                ->where('end_date', 'BETWEEN', [$now, $later])
+                ->get();
+        } else {
+            $dbpolicies = $this->model->where('end_date', 'BETWEEN', [$now, $later])->show();
+        }
 
         $policies = $this->_translatePolicies($dbpolicies);
 
@@ -215,8 +234,8 @@ class PoliciesController extends Controller
         $this->view->generateMiniTable('expiring');
     }
 
-    public function add(){
-
+    public function add()
+    {
         if (!is_null(Input::get('id'))) {
 
             $customer = Elements::call('Customers/CustomersController')->getCustomerById(Input::get('id'), 'raw');
@@ -253,6 +272,7 @@ class PoliciesController extends Controller
 
         $this->view->addPolicyForm($customer);
     }
+
     public function getOldCustomer()
     {
         $this->view->disable();
@@ -566,7 +586,7 @@ class PoliciesController extends Controller
         $id = Input::request('id');
         $quotes = $this->model->table('customer_quotes')
             ->where('customers_id', '=', $id)
-            ->where('status', 'IN', ['new', 'pending','Accepted'])
+            ->where('status', 'IN', ['new', 'pending', 'Accepted'])
             ->show();
 
         //get product
@@ -579,6 +599,14 @@ class PoliciesController extends Controller
             foreach ($quotes as $quote) {
 
                 $amounts = json_decode($quote->amount);
+                $amounts = json_decode($quote->amount);
+                $use_amount = null;
+                foreach ($amounts as $struct) {
+                    if ($struct->chosen) {
+                        $use_amount = $struct;
+                        break;
+                    }
+                }
 //
 //                foreach($amounts as $insurerid => $price){
 //
@@ -590,8 +618,8 @@ class PoliciesController extends Controller
                 $list[] = [
                     'id' => $quote->id,
                     'datetime' => $quote->datetime,
-                    'amount' => $amounts->basic_premium,
-                    'insurer' => $insurer->getInsurer($amounts->insurer_id)['name']
+                    'amount' => $use_amount->total,
+                    'insurer' => $insurer->getInsurer($use_amount->insurer_id)['name']
                 ];
 //                }
             }
@@ -630,9 +658,13 @@ class PoliciesController extends Controller
         echo json_encode($return);
     }
 
-    public function createPolicy($offer = null)
+    /**
+     * @acl\role admin
+     * @param null $offer
+     * @param null $id
+     */
+    public function createPolicy($offer = null, $id = null)
     {
-
         if (!is_null(Input::get('id'))) {
             $quoteid = Input::get('id');
         } elseif (!is_null($offer)) {
@@ -643,22 +675,27 @@ class PoliciesController extends Controller
             $insurerid = $quoteinfo[1];
             $price = $quoteinfo[2];
         } else {
-            $quoteid = Input::post('quotes');
+            $quoteid = (empty($id)) ? Input::post('quotes') : $id;
         }
-
         $data = $this->model->getDataFromQuote($quoteid);
         $policy = $this->model->createEmpty();
 
         if (!is_null($offer)) {
             $policy->offer = $offer;
         }
-
-        $quote_amounts = json_decode($data->amount);
+        $amounts = json_decode($data->amount);
+        $use_amount = null;
+        foreach ($amounts as $struct) {
+            if ($struct->chosen) {
+                $use_amount = $struct;
+                break;
+            }
+        }
         if (!isset($price))
-            $price = $quote_amounts->basic_premium;
+            $price = $use_amount->total;
 
         if (!isset($insurerid))
-            $insurerid = $quote_amounts->insurer_id;
+            $insurerid = $use_amount->insurer_id;
 
         //get the customer details from the Customers element
         $policy->customer = Elements::load('Customers/CustomersController@find', ['id' => $data->customers_id]);
@@ -690,9 +727,8 @@ class PoliciesController extends Controller
         $policy->coverage = [
             'product' => $data->product_info,
             'entity' => $entity,
-            'amounts' => $data->amount
+            'amounts' => $use_amount
         ];
-
         $policy->currency_code = 'ksh';
         $policy->amount = $price;
         $policy->premium = 'ksh ' . number_format($price, 2);
@@ -700,9 +736,51 @@ class PoliciesController extends Controller
         $this->view->addPolicy($policy);
     }
 
-    public function savePolicy()
+    /**
+     * Save a policy from quote
+     * @param \stdClass $quote
+     * @return bool
+     */
+    public function saveAcceptedQuotePolicy($quote)
     {
 
+        $this->view->disable();
+        $policy = $this->model;
+        $policy->policy_number = '--not issued--';
+        $policy->customers_id = $quote->customers_id;
+        $policy->issue_date = null;
+        $policy->start_date = time();
+        $policy->end_date = strtotime('+1 year', $policy->start_date);
+        $policy->datetime = time();
+        $amounts = json_decode($quote->amount);
+        $use_amount = null;
+        foreach ($amounts as $struct) {
+            if ($struct->chosen) {
+                $use_amount = $struct;
+                break;
+            }
+        }
+        $policy->insurers_id = $use_amount->insurer_id;
+        $policy->products_id = $quote->products_id;
+        $policy->customer_quotes_id = $quote->id;
+
+        $statuslist = Elements::call('Quotes/QuotesController')->statuslist;
+
+        $policy->status = $statuslist['policy_unprocessed'];
+        $policy->currency_code = 'Ksh';
+        $policy->amount = $use_amount->total;
+        //update quote status
+      //  Elements::call('Quotes/QuotesController')->saveStatus($policy->customer_quotes_id, null, 'policy_unprocessed');
+        $policy->save();
+//        exit;
+        if ($policy->hasNoErrors()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function savePolicy()
+    {
         $this->view->disable();
         $policy = $this->model;
 
@@ -718,7 +796,9 @@ class PoliciesController extends Controller
         $policy->products_id = Input::post('products_id');
         $policy->customer_quotes_id = Input::post('customer_quotes_id');
 
-        $policy->status = Input::post('status');
+        $statuslist = Elements::call('Quotes/QuotesController')->statuslist;
+
+        $policy->status = $statuslist['policy_pending'];
         $policy->currency_code = Input::post('code');
         $policy->amount = Input::post('amount');
 
@@ -727,6 +807,7 @@ class PoliciesController extends Controller
 
         $policy->save();
 
+//        dump($this->model->errors());exit;
         if ($policy->hasNoErrors()) {
             Redirect::withNotice('The policy has been saved')
                 ->to(Url::base() . '/admin/policies/uploaddocs/' . $policy->last_altered_row);
@@ -734,6 +815,49 @@ class PoliciesController extends Controller
         }
     }
 
+    /**
+     * Start the policy creation for a recently accepted quote
+     */
+
+    public function startPolicyForAcceptedQuote()
+    {
+        $this->view->disable();
+        $policy = $this->model;
+
+        $policy->policy_number = '--not-is';
+        $policy->customers_id = Input::post('customers_id');
+
+        $policy->issue_date = 0;
+        $policy->start_date = strtotime(Input::post('startdate'));
+        $policy->end_date = strtotime(Input::post('enddate'));
+        $policy->datetime = time();
+
+        $policy->insurers_id = Input::post('insurers_id');
+        $policy->products_id = Input::post('products_id');
+        $policy->customer_quotes_id = Input::post('customer_quotes_id');
+
+        $statuslist = Elements::call('Quotes/QuotesController')->statuslist;
+
+        $policy->status = $statuslist['policy_pending'];
+        $policy->currency_code = Input::post('code');
+        $policy->amount = Input::post('amount');
+
+        //update quote status
+        Elements::call('Quotes/QuotesController')->saveStatus($policy->customer_quotes_id, Input::post('offer'), 'policy_created');
+
+        $policy->save();
+
+//        dump($this->model->errors());exit;
+        if ($policy->hasNoErrors()) {
+            Redirect::withNotice('The policy has been saved')
+                ->to(Url::base() . '/admin/policies/uploaddocs/' . $policy->last_altered_row);
+//                    ->to(Url::base().'/admin/policies/issuepolicy/'.$policy->last_altered_row);
+        }
+    }
+
+    /**
+     * Upload related policy documents
+     */
     public function uploadDocs()
     {
         $policy_docs = $this->model->getPolicyDocs(Input::get('id'));
@@ -789,42 +913,62 @@ class PoliciesController extends Controller
     public function saveIssue()
     {
         $this->view->disable();
-
-        $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'policies']);
+        $this->initData();
 
         $policy = $this->model->find(Input::post('policyid'));
-
         if (array_key_exists('btnsubmit', Input::post())) {
             if (Input::post('sendemail') == 'yes')
                 $this->sendMailNotification(Input::post('policyid'));
 
-
             $policy->policy_number = Input::post('policynumber');
             $policy->issue_date = strtotime(Input::post('issuedate'));
             $policy->status = 'issued';
-
             $policy->save();
 
-            if (Input::post('ajax') != 'yes') {
-                Redirect::withNotice('The policy details have been saved', 'success')
-                    ->to($url);
-            } else {
+            if ($policy->hasNoErrors()) {
+                // get the customer attached
+                $customer = $this->customerCtrl->getCustomerById($policy->customers_id, 'null');
 
-                $msg = new Notifications();
-                $msg->setMessage('success', 'The policy details have been saved');
+                // get the user attached
+                $user = $this->userCtrl->getUserByCustomerId($customer->id);
 
-                Notifications::Alert('The policy details have been saved', 'success');
+                // message
+                $content = '<p>Dear <b>' . $customer->name . '</b></p>';
+                $content .= '<p>The policy with Policy<b># ' . $policy->policy_number . '</b> has been issued.</p>';
+
+                // subject
+                $subject = 'Policy No: ' . $policy->policy_number . ' has been issued';
+
+                // for every issued policy, inform the respective customer
+                $this->notice->sendAsEmail([$customer->email_address => $customer->name], $content, $subject, [
+                    $this->own_company->email_address => $this->own_company->name
+                ]);
+
+                // add notification
+                $message = 'A policy with policy# ' . $policy->policy_number . ' has been issued.';
+                $this->notice->add($message, 'customer', $user->id, 'policies');
+                $this->notice->add($message, 'admin', $user->id, 'policies');
+
+                if (Input::post('ajax') != 'yes') {
+                    Redirect::withNotice('The policy details have been saved', 'success')
+                        ->to('/admin/policies');
+                } else {
+
+                    $msg = new Notifications();
+                    $msg->setMessage('success', 'The policy details have been saved');
+
+                    Notifications::Alert('The policy details have been saved', 'success');
+                }
             }
         } else {
 
             Redirect::withNotice('The policy to be processed later', 'notice')
-                ->to($url);
+                ->to('/admin/policies');
         }
     }
 
     public function issueBatch()
     {
-
         $ids = Input::post('ids');
 
         foreach ($ids as $id) {
@@ -835,19 +979,69 @@ class PoliciesController extends Controller
         $this->view->batchPolicy($policies);
     }
 
+    /**
+     * Deletes one or more selected policies(Batch deletion)
+     */
     public function delete()
     {
-
         $ids = Input::post('ids');
 
         foreach ($ids as $id) {
+            // get the policy data
+            $policy = $this->model->getPolicy($id);
 
+            // send delete notification
+            $this->deleteNotification($policy);
+
+            // delete from db
             $this->model->where('id', '=', $id)->delete();
         }
 
         $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'policies']);
         Redirect::withNotice('The policies have been deleted ', 'success')
             ->to($url);
+    }
+
+    /**
+     * Delete a single policy
+     * @return void
+     */
+    public function deleteSingle(){
+        // set the necessary data to be used
+        $this->initData();
+        $policy_id = Input::post('id');
+
+        // send delete notification
+        $this->deleteNotification($this->model->find($policy_id));
+
+        $this->model->where('id', $policy_id)->delete();
+        $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'policies']);
+        Redirect::withNotice('The policy has been deleted ', 'success')
+            ->to($url);
+    }
+
+    public function deleteNotification($policy){
+        // get the customer attached
+        $customer = $this->customerCtrl->getCustomerById($policy->customers_id, 'null');
+
+        // get the user attached
+        $user = $this->userCtrl->getUserByCustomerId($customer->id);
+
+        // message
+        $content = '<p>Dear <b>' . $customer->name . '</b></p>';
+        $content .= '<p>The policy with Policy<b># ' . $policy->policy_number . '</b> has been deleted.</p>';
+
+        // subject
+        $subject = 'Policy No: ' . $policy->policy_number . ' has been deleted';
+
+        // for every deleted policy, inform the respective customer (email)
+        $this->notice->sendAsEmail([$customer->email_address => $customer->name], $content, $subject, [
+            $this->own_company->email_address => $this->own_company->name
+        ]);
+
+        // add notification
+        $message = 'A policy with policy# ' . $policy->policy_number . ' has been deleted.';
+        $this->notice->add($message, 'admin|agent', $user->id, 'policies');
     }
 
     private function _searchform()
@@ -1024,12 +1218,17 @@ class PoliciesController extends Controller
 
     public function renewBatch()
     {
+        // set the necessary data to be used
+        $this->initData();
+
         $ids = Input::post('ids');
         $return = [];
 
         if (count($ids)) {
             foreach ($ids as $id) {
                 $policy = $this->model->getPolicy($id);
+
+                $this->sendRenewalNotice($policy);
 
                 $return[] = [
                     'policy_id' => $policy->id,
@@ -1066,10 +1265,10 @@ class PoliciesController extends Controller
     {
         $this->view->disable();
 
-        $this->generatePDFPolicy(Input::get('id'));
+        $this->generatePDFPolicy(Input::get('id'), true, false, true);
     }
 
-    public function generatePDFPolicy($id, $savedoc = true, $return = false)
+    public function generatePDFPolicy($id, $savedoc = true, $return = false, $exit = false)
     {
         //get policy
         $policy = $this->model->find($id);
@@ -1121,7 +1320,10 @@ class PoliciesController extends Controller
             $this->model->saveQuoteDocuments($policy->id, $newid);
         }
 
-        return $qname;
+        if(!$exit)
+            return $qname;
+        else
+            echo $qname;exit;
     }
 
     public function emailPolicy()
@@ -1249,7 +1451,12 @@ class PoliciesController extends Controller
             ->getCustomerById($customer_id, 'array');
     }
 
-    public function myPolicies($dash = false){
+    /**
+     * Get the logged in customer's policies
+     * @param bool $dash
+     */
+    public function myPolicies($dash = false)
+    {
         $this->setData();
 
         // get customer id from username
@@ -1267,12 +1474,148 @@ class PoliciesController extends Controller
         $this->view->generateTable(true, $dash);
     }
 
-    public function setData(){
+    public function setData()
+    {
         $this->userCtrl = Elements::call('Users/UsersController');
         $this->customerCtrl = Elements::call('Customers/CustomersController');
+        $this->agentCtrl = Elements::call('Agents/AgentsController');
     }
 
-    public function myDashPolicies(){
+    public function myDashPolicies()
+    {
         $this->myPolicies(true);
+    }
+
+    /**
+     * run by a cronjob
+     * checks for policies which are within a month of expiry
+     */
+    public function checkForExpiredPolicies()
+    {
+        $this->setData();
+        $current_date = Carbon::parse(date('Y-m-d'));
+
+        // get all available policies
+        $policies = $this->model->where('end_date', '>=', strtotime($current_date))->get();
+
+        if (count($policies)) {
+            foreach ($policies as $policy) {
+                // get the start date
+                $start_date = Carbon::parse(date('Y-m-d', $policy->start_date));
+
+                // get the end date
+                $end = Carbon::parse(date('Y-m-d', $policy->end_date));
+
+                // get the difference in days
+                $diff_in_days = $end->diffInDays($current_date);
+
+                // start notice
+                $notice = App::get('notice');
+
+                $subject = 'Policy Expiry (Policy#' . $policy->policy_number . ')';
+
+                // get the insurer details
+                $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
+
+                $message = 'The policy with policy#: <b>' . $policy->policy_number . ' </b> is almost expired';
+                if ($diff_in_days <= 31) {
+                    // get attached customer
+                    $customer = $this->customerCtrl->getCustomerById($policy->customers_id, 'null');
+
+                    if (!empty($customer->insurer_agents_id)) {
+                        // get agent details
+                        $agent = $this->agentCtrl->retrieveAgents($customer->insurer_agents_id);
+
+                        $content = '<p>Dear <b>' . $agent->names . '</b>,';
+                        $content .= '<p>The policy with policy#: <b>' . $policy->policy_number . '</b> is almost expired.</p>';
+
+                        // notify agent of the expiry
+                        $notice->sendAsEmail([$agent->email_address => $agent->names], $content, $subject, [
+                            $own->email_address => $own->name
+                        ]);
+
+                        // get agent user id
+                        $user = $this->userCtrl->model->where('insurer_agents_id', $customer->insurer_agents_id)
+                            ->first();
+                        $user_id = (!empty($user->id)) ? $user->id : 0;
+                        $notice->add($message, 'admin|agent', $user_id, 'policies');
+                    } else {
+                        $content = '<p>Dear <b>' . $agent->names . '</b>,';
+                        $content .= '<p>The policy with policy#: <b>' . $policy->policy_number . '</b> is almost expired.</p>';
+
+                        // notify own
+                        $notice->sendAsEmail([$own->email_address => $own->name], $content, $subject, [
+                            $own->email_address => $own->name
+                        ]);
+                        $notice->add($message, 'admin|agent', 0, 'policies');
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the selected policy details and loads a modal
+     * @param $id
+     */
+    public function showRenewPolicy($id)
+    {
+        $policy = $this->model->where('id', $id)->first();
+
+        $policy->end_date = date('Y-m-d', $policy->end_date);
+
+        $this->view->showRenewalModal($policy);
+    }
+
+    /**
+     * Renew a single policy
+     */
+    public function renewPolicy()
+    {
+        $end_date = Input::post('end_date');
+        $period = Input::post('period');
+
+        $new_end_date = strtotime($end_date . " +$period");
+
+        $policy = $this->model->find(Input::post('id'));
+        $policy->start_date = strtotime($end_date);
+        $policy->end_date = $new_end_date;
+        $policy->save();
+
+        if ($policy->hasNoErrors()) {
+            $this->initData();
+            $this->sendRenewalNotice($policy);
+
+            Redirect::withNotice('The policy has been renewed', 'success')
+                ->to(Url::route('/admin/policies'));
+        }
+    }
+
+    /**
+     * Renewal Notice
+     */
+    public function sendRenewalNotice($policy)
+    {
+        // get the customer attached
+        $customer = $this->customerCtrl->getCustomerById($policy->customers_id, 'null');
+
+        // get the user attached
+        $user = $this->userCtrl->getUserByCustomerId($customer->id);
+
+        // message
+        $content = '<p>Dear <b>' . $customer->name . '</b></p>';
+        $content .= '<p>The policy with Policy<b># ' . $policy->policy_number . '</b> has been renewed.</p>';
+
+        // subject
+        $subject = 'Policy No: ' . $policy->policy_number . ' has been renewed';
+
+        // for every deleted policy, inform the respective customer
+        $this->notice->sendAsEmail([$customer->email_address => $customer->name], $content, $subject, [
+            $this->own_company->email_address => $this->own_company->name
+        ]);
+
+        // add notification
+        $message = 'A policy with policy# ' . $policy->policy_number . ' has been renewed.';
+        $this->notice->add($message, 'admin|agent', $user->id, 'policies');
     }
 }

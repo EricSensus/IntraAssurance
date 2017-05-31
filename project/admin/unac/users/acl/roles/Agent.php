@@ -44,7 +44,6 @@ class Agent extends Project {
      * @param type $method
      */
     public function onDenied($element, $controller, $method){
-        
         Log::Alert('The current user is denied access to '
                         .ucfirst($element).'/'.end($controller).'@'.$method);
     }

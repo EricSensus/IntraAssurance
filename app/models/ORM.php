@@ -408,13 +408,16 @@ class ORM { //extends Mysqli\Database
      */
     function _checkTable($table){
         
-        $this->dbobject->rawQuery("SHOW TABLES LIKE '".  $this->dbobject->prefix.$table."'");
-        
-        if($this->dbobject->count >= 1){
-            return TRUE;
-        }
-        else{
-            return FALSE;
+        if(!is_null($table)){
+            
+            $this->dbobject->rawQuery("SHOW TABLES LIKE '".  $this->dbobject->prefix.$table."'");
+
+            if($this->dbobject->count >= 1){
+                return TRUE;
+            }
+            else{
+                return FALSE;
+            }
         }
     }
     

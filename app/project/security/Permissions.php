@@ -39,27 +39,156 @@ class Permissions {
      * 
      * @param type $action
      * @param type $element
+     * @param type $ctrl this is whether the ACL should evaluate the primary controller or another controller emebedded in the element. If its a separate controller just insert the Controller class to be evaluated
      * @param type $debug set to TRUE if you want to see error generated
      * @example $this->user()->can('edit','customers');
      * 
      * @return boolean TRUE allowed or FALSE nor allowed
      */
-    public function can($action, $element, $debug = false){
+    public function can($action, $element, $ctrl = 'primary',$debug = TRUE){
         
-        $perm = $this->getPermissionsFromActions($action, $element);
+        //$perm = $this->getPermissionsFromActions($action, $element);
+        $elements = Project::elements();
         
-        if(gettype($perm) == 'boolean'){
-            return $perm;
+        $gateway = App::get('gateway');
+        $user = $gateway->user();
+        
+        //check for the element
+        if(array_key_exists($element, $elements)){
+            
+            //get all the controllers
+            $controllers = $elements[$element]['controllers'];
+            
+            //if its the primary controller
+            if($ctrl == 'primary'){                
+                $controller = ucfirst($element).'Controller';
+            }
+            else{
+                $controller = $ctrl;
+            }
+            
+            if(array_key_exists($controller, $controllers)){
+                
+                $ctrlclass = Project::generateNamespacedClass($controller, 'controllers');
+                
+                //check if the method has been set as the action
+                if(method_exists($ctrlclass, $action)){
+                    
+                    //get the reader
+                    $reader = new Reader($ctrlclass, $action);
+                    $annotations = $reader->getParameters();
+                    
+                    $ar = $this->_getActionAndRole($annotations);
+                    
+                    if(!is_null($ar) && array_key_exists('role', $ar)){
+                        
+                        $role = $ar['role'];
+                        $eval = $this->_evaluate($role);
+                        
+                        if($eval){
+                            
+                            //on Allowed
+                            $user->role->onAllowed($element, $controller, $action);
+                            return TRUE;
+                        }
+                        else{
+                            
+                            //on Allowed
+                            $user->role->onDenied($element, $controller, $action);
+                            return FALSE;
+                        }
+                    }
+                    else{
+                        $error_message = 'ROLE_NOT_DEFINED';
+                    }
+                }
+                else{
+                    //check if action is annoted
+                    $methods = get_class_methods($ctrlclass);
+                    
+                    //loop through the class methods
+                    foreach($methods as $method){
+                        
+                        //get the reader
+                        $reader = new Reader($ctrlclass, $method);
+                        $annotations = $reader->getParameters();
+                        
+                        if(count($annotations) > 0){
+                            
+                            $ar = $this->_getActionAndRole($annotations);
+                            
+                            if(!is_null($ar['action'])){
+                                
+                                if($ar['action'] == $action){
+                                    
+                                    if(array_key_exists('role', $ar)){
+                        
+                                        $role = $ar['role'];
+                                        $eval = $this->_evaluate($role);
+                        
+                                        if($eval){
+
+                                            //on Allowed
+                                            $user->role->onAllowed($element, $controller, $action);
+                                            return TRUE;
+                                        }
+                                        else{
+
+                                            //on Allowed
+                                            $user->role->onDenied($element, $controller, $action);
+                                            return FALSE;
+                                        }
+                                    }
+                                    else{
+                                        $error_message = 'ROLE_NOT_DEFINED';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    
+                }
+            }
         }
         else{
-            
-            if($debug == FALSE){
-                return FALSE;
-            }
-            else {
-                return $perm;
-            }
+            $error_message = 'ELEMENT_NOT_REGISTRED';
         }
+        
+        if($error_message != ''){
+            
+            //on Denied
+            $user->role->onDenied($element, $controller, $action);
+        }
+        
+        //return error message or not    
+        if($debug){
+            App::warning($error_message);
+        }
+    }
+    
+    /**
+     * Returns the annoted action and role
+     * 
+     * @param type $annotations
+     * @return type
+     */
+    private function _getActionAndRole($annotations){
+        
+        //get the annoted role
+        if(array_key_exists('acl\role', $annotations)){
+            $attr['role'] = $annotations['acl\role'];
+        }
+
+        //get the annoted action
+        if(array_key_exists('acl\action', $annotations)){
+            $attr['action'] = $annotations['acl\action'];
+        }
+        elseif(array_key_exists('acl\alias', $annotations)){
+            $attr['action'] = $annotations['acl\alias'];
+        }
+        
+        return $attr;
     }
     
     /**
@@ -123,10 +252,34 @@ class Permissions {
                     }
                 }
             }
+            
+            return TRUE;
         }
         else{
             //if the acl annotations arent set allow access
             return TRUE;
+        }
+    }
+    
+    /**
+     * Check role against alias
+     * 
+     * @param type $rolevalue
+     * @return boolean
+     */
+    private function _evaluate($rolevalue){
+        
+        $gateway = App::get('gateway');
+        $role = $gateway->getRoleByAlias($rolevalue);
+
+        $userlevel = $gateway->user()->role->level;
+        $rolelevel = $role->level;
+
+        if($userlevel >= $rolelevel){
+            return TRUE;
+        }
+        else{
+            return FALSE;
         }
     }
     

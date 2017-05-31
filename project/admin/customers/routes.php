@@ -13,7 +13,7 @@ Route::group(['before' => 'auth.check'], function () {
 
     Route::post('/admin/customers/{action}/{id}', 'CustomersController@index')
             ->attachTemplate('admin')->assignPanels([
-        'top' => 'UsersController@index:login',
+        'top' => 'NotificationsController@load:notices',
         'navigation' => 'NavigationController@display:menus',
         'logout' => 'UsersController@logout:logout'
     ]);
@@ -27,7 +27,7 @@ Route::group(['before' => 'auth.check'], function () {
 
     Route::get('/admin/customers/{action}/{id}', 'CustomersController@index')
             ->attachTemplate('admin')->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
             ]);

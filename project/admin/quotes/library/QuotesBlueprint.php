@@ -62,6 +62,14 @@ abstract class QuotesBlueprint
      * @var object
      */
     public $insurer, $customer, $main_entity, $other_entities, $product, $quote_product_info;
+    /**
+     * The field of interest for an entity that can distinguish it
+     */
+    private $entity_index = 'id';
+    /**
+     * @var \Jenga\MyProject\Quotes\Models\QuotesModel
+     */
+    protected $_model;
 
     /**
      * RatesBlueprint constructor.
@@ -75,6 +83,7 @@ abstract class QuotesBlueprint
         $this->_rates = Elements::call('Rates/RatesController');
         $this->_products = Elements::call('Products/ProductsController');
         $this->_insurer = Elements::call('Insurers/InsurersController');
+        $this->_model = $this->_quotes->model;
         $this->_pricing_model = App::get(PersonalCoverPricing::class);
         $this->saved_quote = $quote;
         $this->setUpExtraValues();
@@ -89,18 +98,22 @@ abstract class QuotesBlueprint
     {
         switch ($this->product->alias) {
             case 'motor_insurance':
+                $this->entity_index = 'regno';
                 $this->getMotorQuote();
                 break;
             case 'personal_accident':
+                $this->entity_index = 'name';
                 $this->getAccidentQuote();
                 break;
             case 'travel_insurance':
                 $this->getTravelQuote();
                 break;
             case 'domestic_package':
+                $this->entity_index = 'plotno';
                 $this->getDomesticQuote();
                 break;
             case 'medical_insurance':
+                $this->entity_index = 'name';
                 $this->getMedicalQuote();
                 break;
         }
@@ -108,21 +121,125 @@ abstract class QuotesBlueprint
         return $this;
     }
 
-
+    /**
+     * Set the amount in database
+     */
     private function updateQuote()
     {
         $available = get_object_vars($this);
         $to_save = array_only($available, $this->quoteFields());
         $others = [];
-        foreach ($this->cars as $en) {
-            $others[$en->reg] = array_only(get_object_vars($en), $this->quoteFields());
+        foreach ($this->other_entities as $en) {
+            $others[$en->{$this->entity_index}] = array_only(get_object_vars($en), $this->quoteFields());
         }
         $mine = $this->_quotes->model->find($this->saved_quote->id);
+        $amount_exist = !empty($mine->amount);
         $to_save = array_prepend($to_save, $others, 'other_covers');
         $to_save = array_prepend($to_save, $this->insurer_id, 'insurer_id');
-        $total = json_encode($to_save);
+        $to_save['chosen'] = ($this->insurer_id == "14"); //@todo Make this nice
+
+        if (!$amount_exist) {
+            $save = [$this->insurer_id => $to_save];
+        } else {
+            $save = get_object_vars(json_decode($mine->amount));
+            $save[$this->insurer_id] = $to_save;
+        }
+        $total = json_encode($save);
         $mine->amount = $total;
         $mine->save();
+    }
+
+    /**
+     * Determines the optional benefits for medical
+     * @param $selected_plan
+     * @param $core_optional_benefits
+     * @return int
+     */
+    public function getOptionalBenefitsTotal($selected_plan, $core_optional_benefits)
+    {
+        $optional_total = 0;
+        // get core optional benefits
+        $core_optional_benefits = $this->_model->table('medical_pricing')
+            ->where('agerange_benefits', 'IN', $core_optional_benefits)
+            ->get();
+
+        if (count($core_optional_benefits)) {
+            foreach ($core_optional_benefits as $benefit) {
+                $benefit_amount = $benefit->$selected_plan;
+                $optional_total += $benefit_amount;
+            }
+        }
+        return $optional_total;
+    }
+
+    /**
+     * Get cover
+     * @param $plan
+     * @return string
+     */
+    protected function getCoverForTravel($plan)
+    {
+        if ($plan == 'europe_plus_plan')
+            return 'Europe Plus Plan';
+        else if ($plan == 'africa_basic_plan')
+            return 'Africa Basic Plan';
+        else if ($plan == 'europe_plus_plan')
+            return 'Europe Plus Plan';
+        else if ($plan == 'world_wide_basic_plan')
+            return 'Worldwide Basic Plan';
+        else if ($plan == 'world_wide_plus_plan')
+            return 'Worldwide Plus Plan';
+        else if ($plan == 'world_wide_extra')
+            return 'Worldwide Extra';
+        else if ($plan == 'haj_and_umra_basic_plan')
+            return 'Haj and Umrah Plan Basic';
+        else if ($plan == 'haj_and_umra_plus_plan')
+            return 'Haj and Umrah Plan Plus';
+        else if ($plan == 'haj_and_umra_extra_plan')
+            return 'Haj and Umrah Plan Extra';
+    }
+
+    /**
+     * Determine the rate based on selected plan and days
+     * @param $plan
+     * @param $days
+     * @return mixed
+     */
+    protected function getRateForTravel($plan, $days)
+    {
+        $premium_rate = null;
+        $plan_id = $this->_model->table('travel_pricing')->find([
+            'plan' => $plan
+        ])->id;
+
+        if (($plan != "Haj and Umrah Plan Basic") && ($plan != "Haj and Umrah Plan Plus") && ($plan != "Haj and Umrah Plan Extra")) {
+            $rate = $this->_model->table('travel_pricing')
+                ->join("travel_plan_details tpd", TABLE_PREFIX . "travel_pricing.id = tpd.plan_id", "LEFT")
+                ->where('days', '=', $days)
+                ->where('plan_id', '=', $plan_id)
+                ->get();
+            $premium_rate = $rate[0]->premium;
+        } else {
+            $rates = $this->_model->table('travel_pricing')
+                ->join("travel_plan_details tpd", TABLE_PREFIX . "travel_pricing.id = tpd.plan_id")
+                ->where('plan_id', '=', $plan_id)
+                ->get();
+
+            if (count($rates)) {
+                foreach ($rates as $rate) {
+                    $range = $rate->days;
+                    $range = explode("-", $range);
+
+                    if (($days >= $range[0]) && ($days <= $range[1])) {
+                        $premium_rate = $rate->premium;
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+            }
+        }
+        return $premium_rate;
     }
 
     /**
@@ -143,6 +260,20 @@ abstract class QuotesBlueprint
         $this->product = $this->_products->getProductById($this->saved_quote->products_id);
         $this->quote_product_info = json_decode($this->saved_quote->product_info);
         $this->insurer = (object)$this->_insurer->getInsurer($this->insurer_id);
+    }
+
+    /**
+     * Override some values in the above statements
+     */
+    protected function setupTravelValues()
+    {
+        $__id = json_decode($this->saved_quote->customer_entity_data_id);
+        $this->main_entity = $this->customer;
+        $all = [];
+        foreach ($__id as $_id) {
+            $all[] = $this->getFullEntityDetails($_id);
+        }
+        $this->other_entities = $all;
     }
 
     /**
@@ -204,6 +335,11 @@ abstract class QuotesBlueprint
         return null;
     }
 
+    /**
+     * System representation for age bracket
+     * @param $range
+     * @return string
+     */
     protected function formatAgeBracket($range)
     {
         switch ($range) {
@@ -230,6 +366,77 @@ abstract class QuotesBlueprint
         return $age_bracket;
     }
 
+    protected function getTheOptionalBenefits($step_data, $priority, $dependants_no = null)
+    {
+        foreach ($step_data as $key => $value) {
+            $step2[$key] = $value;
+        }
+
+        switch ($priority) {
+            case 'core':
+                $optionals = [];
+                for ($l = 'a'; $l <= 'd'; $l++) {
+                    for ($i = 1; $i <= 4; $i++) {
+                        $index = 'b' . $l . $i;
+
+                        if (!empty($step2[$index]))
+                            $optionals[$index] = $step2[$index];
+                    }
+                }
+
+                return self::getOptionalLIst($optionals);
+                break;
+
+            case 'dependants':
+//                print_r($step_data);exit;
+                $dep_optionals = [];
+                for ($dep = 1; $dep <= $dependants_no; $dep++) {
+                    for ($l = 'a'; $l <= 'd'; $l++) {
+                        for ($i = 1; $i <= 4; $i++) {
+                            $index = 'b' . $l . $i . '_' . $dep;
+
+                            if (!empty($step2[$index]) && isset($step2[$index])) {
+                                $dep_optionals[$index] = $step2[$index];
+                            }
+                        }
+                    }
+                }
+
+                return self::getOptionalLIst($dep_optionals);
+                break;
+        }
+    }
+
+    public function determinePlan($plan)
+    {
+        if ($plan == 'premier')
+            $plan = 'P1';
+        else if ($plan == 'advanced')
+            $plan = 'P2';
+        else if ($plan == 'executive')
+            $plan = 'P3';
+        else
+            $plan = 'P4';
+        return $plan;
+    }
+
+    public static function getOptionalList($optionals)
+    {
+        $optional_list = [];
+        if (count($optionals)) {
+            foreach ($optionals as $optional) {
+                $optional_list[] = $optional;
+            }
+        }
+        return $optional_list;
+    }
+
+    /**
+     * Get System representation for age bracket
+     * @param $agebracket
+     * @param $gender
+     * @return string
+     */
     protected function determineAgeBracket($agebracket, $gender)
     {
 //        dd($gender);
@@ -280,68 +487,6 @@ abstract class QuotesBlueprint
         }
     }
 
-    protected function getTheOptionalBenefits($step_data, $priority, $dependants_no = null)
-    {
-        foreach ($step_data as $key => $value) {
-            $step2[$key] = $value;
-        }
-        switch ($priority) {
-            case 'core':
-                $optionals = [];
-                for ($l = 'a'; $l <= 'd'; $l++) {
-                    for ($i = 1; $i <= 4; $i++) {
-                        $index = 'b' . $l . $i;
-
-                        if (!empty($step2[$index]))
-                            $optionals[$index] = $step2[$index];
-                    }
-                }
-
-                return $this->getOptionalList($optionals);
-                break;
-            case 'dependants':
-//                print_r($step_data);exit;
-                $dep_optionals = [];
-                for ($dep = 1; $dep <= $dependants_no; $dep++) {
-                    for ($l = 'a'; $l <= 'd'; $l++) {
-                        for ($i = 1; $i <= 4; $i++) {
-                            $index = 'b' . $l . $i . '_' . $dep;
-
-                            if (!empty($step2[$index]) && isset($step2[$index])) {
-                                $dep_optionals[$index] = $step2[$index];
-                            }
-                        }
-                    }
-                }
-
-                return $this->getOptionalList($dep_optionals);
-                break;
-        }
-    }
-
-    protected function determinePlan($plan)
-    {
-        if ($plan == 'premier')
-            $plan = 'P1';
-        else if ($plan == 'advanced')
-            $plan = 'P2';
-        else if ($plan == 'executive')
-            $plan = 'P3';
-        else
-            $plan = 'P4';
-        return $plan;
-    }
-
-    protected function getOptionalList($optionals)
-    {
-        $optional_list = [];
-        if (count($optionals)) {
-            foreach ($optionals as $optional) {
-                $optional_list[] = $optional;
-            }
-        }
-        return $optional_list;
-    }
 
     /**
      * Get the quotes field

@@ -170,18 +170,16 @@ class Database //directly builds from Config
         if ($this->isSubQuery)
             return;
 
-        $this->_mysqli = new mysqli (
-                $this->config->host, 
-                $this->config->username, 
-                $this->config->password, 
-                $this->config->db, 
-                $this->config->port)
-        or App::critical_error('There was a problem connecting to the database');
-        
+        //create databse connectio
+        $this->_mysqli = new \mysqli ($this->config->host,$this->config->username,$this->config->password);
         $this->_mysqli->set_charset ('utf8');
         
+        //select databse connection
+        if(!$this->_mysqli->select_db($this->config->db)){
+            App::critical_error('No Database name "'.$this->config->db.'" found.');
+        }
+        
         if($this->_mysqli->connect_error){
-            
             $this->_connected = TRUE;
             return $this->_mysqli;
         }
@@ -895,8 +893,13 @@ class Database //directly builds from Config
      */
     protected function _prepareQuery(){
         
-        if (!$stmt = $this->_mysqli->prepare($this->_query)){
-            trigger_error("<div class='message error'>Problem preparing query ($this->_query) " . $this->_mysqli->error."</div>", E_USER_ERROR);
+        $stmt = $this->_mysqli->prepare($this->_query);
+        
+        if (FALSE === $stmt){            
+            App::critical_error("Problem preparing query ($this->_query) " . $this->_mysqli->error);
+        }
+        elseif(is_null($stmt)){
+            App::critical_error("Return null mysqli query to ($this->_query) " . $this->_mysqli->connect_error);
         }
         
         return $stmt;

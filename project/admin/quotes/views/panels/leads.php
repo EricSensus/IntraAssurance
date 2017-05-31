@@ -15,7 +15,7 @@ $url = Elements::load('Navigation/NavigationController@getUrl', ['alias'=>'quote
 ?>
 <div class="mini-panel">
     <div class="float-left">
-        <h4 class="mb5 text-light">Customer Leads (<?=$count; ?>)</h4>
+        <h4 class="mb5 text-light">New Customer Leads (<?=$count; ?>)</h4>
     </div>
     <div class="float-right">
         <div class="toolbar leads">
@@ -50,8 +50,8 @@ $url = Elements::load('Navigation/NavigationController@getUrl', ['alias'=>'quote
         </div>
     </div>
 </div>
-<div class="leads_panel">
-    <?=$leads; ?>
+<div class="leads_panel"> 
+    <?= $leads ?>
 </div>
 <div class="dataTables_wrapper panel-footer">
     <div class="float-left">

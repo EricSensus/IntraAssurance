@@ -53,6 +53,6 @@ class Admin extends Project {
      * @param type $controller
      * @param type $method
      */
-    public function onAllowed($element, $controller, $method) {        
+    public function onAllowed($element, $controller, $method) {
     }
 }

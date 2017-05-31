@@ -49,10 +49,6 @@ class Controller extends Project {
                 $this->view->configurePanelView($element, $panel, $_ajax);
             }
         }
-        else{
-            //set the default panel
-            $this->view->setViewPanel($element);
-        }
         
         $this->_execute($method, $panelargs);
     }
@@ -66,66 +62,11 @@ class Controller extends Project {
         
         //called by primary controller and any call from the Elements class
         if(!is_null($this->method) && $method == '' && $this->method != 'none'){
-            
-            /**
-             * This canExecute function counterchecks with the assigned credentials 
-             * to ensure the user can execute the sent method
-             */
-            if($this->user()->canExecute(
-                        App::get('primaryelement'), 
-                        App::get('controller'),
-                        $this->method)
-                    ){
-                
-                $this->{$this->method}($this->params);
-                
-                //call the onAllowed() function
-                $controller = explode('\\',App::get('controller'));
-                $this->user()->role->onAllowed(App::get('primaryelement'), $controller, $this->method);
-                
-                return TRUE;
-            }
-            else{
-                
-                $controller = explode('\\',App::get('controller'));
-                
-                //disable the view set before the main method is executed
-                $this->view->disable();
-                
-                //call the onDenial() function
-                $this->user()->role->onDenied(App::get('primaryelement'), $controller, $this->method);
-                
-                return FALSE;
-            }
+            $this->{$this->method}($this->params);
         }
         //called by secondary controller
-        elseif($method != ''){
-            
-            if($this->user()->canExecute(
-                        App::get('secondaryelement')['name'],
-                        App::get('controller'),
-                        $method
-                    )){
-                
-                //call the onAllowed() function
-                $controller = explode('\\',App::get('controller'));
-                $this->user()->role->onAllowed(App::get('secondaryelement')['name'], $controller, $method);
-                
-                call_user_func_array([$this, $method], $panelargs);
-                return TRUE;
-            }
-            else{
-                
-                $controller = explode('\\',App::get('controller'));
-                
-                //disable the view set before the main method is executed
-                $this->view->disable();
-                
-                //call the onDenied() function
-                $this->user()->role->onDenied(App::get('secondaryelement')['name'], $controller, $method);
-                
-                return FALSE;
-            }
+        elseif($method != ''){                
+            call_user_func_array([$this, $method], $panelargs);            
         }
     }
     
@@ -135,8 +76,7 @@ class Controller extends Project {
      * @param type $name
      * @param type $value
      */
-    public function set($name,$value) {
-        
+    public function set($name,$value) {        
         $this->view->set($name,$value);
     }
     

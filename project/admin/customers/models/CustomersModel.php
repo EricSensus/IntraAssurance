@@ -130,9 +130,11 @@ class CustomersModel extends ORM {
     }
     
     public function getCustomers(){
-        if(Session::has('agentsid'))
+        
+        if(Session::has('agentsid')){
             $this->where('insurer_agents_id', Session::get('agentsid'));
-
+        }
+        
         if(!is_null(Input::post('search'))){  
 
             //add the name section
@@ -155,7 +157,8 @@ class CustomersModel extends ORM {
             $this->store();
             
             $customers['terms'] = $params;
-        } else if (!is_null(Input::post('export')) || !is_null(Input::post('printer'))){
+        } 
+        else if (!is_null(Input::post('export')) || !is_null(Input::post('printer'))){
             
             if(Input::post('pages') == 'all_pages'){
                 $users = $this->show();

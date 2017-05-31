@@ -115,4 +115,8 @@ $(function () {
         }
     };
     Claim.initCustomerSelect();
+    if ($('input[name=customer_id]').val()) {
+        customer = $('input[name=customer_id]').val();
+        Claim.selectCustomer(customer);
+    }
 });

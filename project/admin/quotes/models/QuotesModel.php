@@ -11,11 +11,13 @@ use Jenga\App\Request\Url;
 use Jenga\App\Views\Notifications;
 use Jenga\MyProject\Elements;
 
-class QuotesModel extends ORM {
+class QuotesModel extends ORM
+{
 
     public $table = 'customer_quotes';
     public $data;
     public $quotetypes = [];
+
     public $columns = [
         'id' => 'Quote No',
         'datetime' => 'Date Generated',
@@ -34,7 +36,12 @@ class QuotesModel extends ORM {
         'rejected' => 'Rejected'
     ];
 
-    public function returnColumns($return_values = FALSE) {
+    /**
+     * @param bool $return_values
+     * @return array
+     */
+    public function returnColumns($return_values = FALSE)
+    {
 
         if ($return_values == FALSE) {
             return $this->columns;
@@ -47,8 +54,11 @@ class QuotesModel extends ORM {
 
     /**
      * Get the quotes from table
+     * @param bool $show_archived
+     * @return
      */
-    public function getQuotes($showarchived = false) {
+    public function getQuotes($show_archived = false)
+    {
         // the main query
         $this->select(TABLE_PREFIX . 'customer_quotes.*, '
             . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents, '
@@ -56,9 +66,9 @@ class QuotesModel extends ORM {
 
         $this->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id");
 
-        // filter by logged in customer
-        if(Session::has('agentsid'))
-            $this->where('insurer_agents_id', Session::get('agentsid'));
+        // filter by logged in agent
+//        if($this->user()->is('agent'))
+//            $this->where('insurer_agents_id', $this->user()->insurer_agents_id);
 
         if (!is_null(Input::post('search'))) {
 
@@ -117,11 +127,10 @@ class QuotesModel extends ORM {
                 $data = $this->orderBy($tablecol, $order)->show([$start, $length]);
             }
         } else {
-
-            if ($showarchived == FALSE) {
-                $this->where('status', '!=', 'policy_created')->where('status', '!=', 'rejected');
-            } elseif ($showarchived == TRUE) {
-                $this->where('status', 'policy_created')->orWhere('status', 'rejected');
+            if ($show_archived) {
+                $this->where('status', 'archived');//->orWhere('status', 'rejected');
+            } else {
+                $this->where('status', '!=', 'archived');
             }
 
             $data = $this->orderBy('id', 'DESC')->show();
@@ -130,17 +139,27 @@ class QuotesModel extends ORM {
         return $data;
     }
 
-    public function getArchivedQuotes() {
+    /**
+     * @return mixed
+     */
+    public function getArchivedQuotes()
+    {
 
         return $this->getQuotes(TRUE);
     }
 
-    public function saveQuoteDocuments($quoteid, $docid) {
+    /**
+     * @param $quoteid
+     * @param $docid
+     * @return bool
+     */
+    public function saveQuoteDocuments($quoteid, $docid)
+    {
 
         $doctable = $this->table('quotes_documents', 'NATIVE');
         $docs = $doctable->where('customer_quotes_id', $quoteid)
-                ->where('documents_id', $docid)
-                ->first();
+            ->where('documents_id', $docid)
+            ->first();
 
         if (is_null($docs) || count($docs) == 0) {
 
@@ -160,21 +179,28 @@ class QuotesModel extends ORM {
     /**
      * Get documents linked to quote
      */
-    public function getQuoteDocuments($quoteid) {
+    public function getQuoteDocuments($quoteid)
+    {
 
         $docs = $this->table('quotes_documents')
-                ->where('customer_quotes_id', $quoteid)
-                ->orderBy('id', 'DESC')
-                ->show();
+            ->where('customer_quotes_id', $quoteid)
+            ->orderBy('id', 'DESC')
+            ->show();
         return $docs;
     }
 
-    public function deleteQuoteDocuments($quoteid, $docid) {
+    /**
+     * @param $quoteid
+     * @param $docid
+     * @return mixed
+     */
+    public function deleteQuoteDocuments($quoteid, $docid)
+    {
 
         $delete = $this->table('quotes_documents')
-                ->where('customer_quotes_id', $quoteid)
-                ->where('documents_id', $docid)
-                ->delete();
+            ->where('customer_quotes_id', $quoteid)
+            ->where('documents_id', $docid)
+            ->delete();
 
         return $delete;
     }
@@ -182,29 +208,31 @@ class QuotesModel extends ORM {
     /**
      * Joins the payment_confirmations table to the main quotes table
      */
-    public function connectPayments() {
+    public function connectPayments()
+    {
 
         $this->associate('payment_confirmation')
-                ->using([
-                    'type' => 'one-to-many',
-                    'local' => 'id',
-                    'foreign' => 'customer_quotes_id',
-                    'on_update' => 'NO',
-                    'on_delete' => 'delete'
-        ]);
+            ->using([
+                'type' => 'one-to-many',
+                'local' => 'id',
+                'foreign' => 'customer_quotes_id',
+                'on_update' => 'NO',
+                'on_delete' => 'delete'
+            ]);
     }
 
     /**
      * Joins the customers table to the main quotes table
      */
-    private function _connectCustomerProfiles() {
+    private function _connectCustomerProfiles()
+    {
 
         $this->associate('customers')
-                ->using([
-                    'type' => 'one-to-one',
-                    'local' => 'customers_id',
-                    'foreign' => 'id'
-        ]);
+            ->using([
+                'type' => 'one-to-one',
+                'local' => 'customers_id',
+                'foreign' => 'id'
+            ]);
     }
 
     /**
@@ -212,7 +240,8 @@ class QuotesModel extends ORM {
      *
      * @return type
      */
-    public function getProductAnalysis() {
+    public function getProductAnalysis()
+    {
 
         $data = $this->getQuotes();
 
@@ -238,7 +267,8 @@ class QuotesModel extends ORM {
     /**
      * Returns quote numbers by month
      */
-    public function getQuotesByMonth() {
+    public function getQuotesByMonth()
+    {
 
         $monthdata = [];
 
@@ -248,9 +278,9 @@ class QuotesModel extends ORM {
             $end = mktime(23, 59, 0, $month, date('t', $start), date("Y", strtotime('-1 year')));
 
             $this->select('id')
-                    ->where('datetime', '>=', $start)
-                    ->where('datetime', '<=', $end)
-                    ->show();
+                ->where('datetime', '>=', $start)
+                ->where('datetime', '<=', $end)
+                ->show();
 
             $quotecount = $this->count();
 
@@ -268,7 +298,11 @@ class QuotesModel extends ORM {
         return $monthdata;
     }
 
-    public function getUnpaid() {
+    /**
+     * @return array
+     */
+    public function getUnpaid()
+    {
 
         $this->getQuotes();
         $this->connectPayments();
@@ -302,13 +336,17 @@ class QuotesModel extends ORM {
         return $unpaid;
     }
 
-    public function getIncomplete() {
+    /**
+     * @return mixed
+     */
+    public function getIncomplete()
+    {
 
         //set the table to customer_data
         $results = $this->table('customer_data')
-                ->where('step2data', '=', '')
-                ->orWhere('step3data', '=', '')
-                ->show();
+            ->where('step2data', '=', '')
+            ->orWhere('step3data', '=', '')
+            ->show();
 
         //$incomplete['count'] = $this->count();
         $incomplete['count'] = count($results);
@@ -334,7 +372,12 @@ class QuotesModel extends ORM {
         return $incomplete;
     }
 
-    private function _getUser($customers_id) {
+    /**
+     * @param $customers_id
+     * @return mixed
+     */
+    private function _getUser($customers_id)
+    {
 
         //connect to User Profiles
         $this->_connectCustomerProfiles();
@@ -343,7 +386,11 @@ class QuotesModel extends ORM {
         return $user;
     }
 
-    public function getPolicies() {
+    /**
+     * @return array
+     */
+    public function getPolicies()
+    {
 
         //get quotes
         $this->getQuotes();
@@ -366,7 +413,7 @@ class QuotesModel extends ORM {
             $data->names = is_null($user->name) || $user->name == '' ? 'Not Specified' : $user->name;
             $data->customers_id = $quote->customers_id;
             $data->quotetype = ucfirst($quote->quotetype);
-            $data->amount = 'ksh ' . number_format((float) $quote->amount, 2);
+            $data->amount = 'ksh ' . number_format((float)$quote->amount, 2);
 
             $policies[] = $data;
         }
@@ -374,7 +421,13 @@ class QuotesModel extends ORM {
         return $policies;
     }
 
-    public function changeQuoteStatus($quote_no) {
+    /**
+     * @param $quote_no
+     * @return bool
+     */
+
+    public function changeQuoteStatus($quote_no)
+    {
         $this->find($quote_no);
         $this->status = 'agent_attached';
         $this->save();

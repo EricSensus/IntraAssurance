@@ -1,3 +1,9 @@
+<?php
+use Jenga\App\Request\Url;
+
+$url = Url::route('/admin/claims/upload/{id}',
+    ['id' => $id]);
+?>
 <table width="100%" class="policy table-striped">
     <tr>
         <td class="heading" colspan="2">
@@ -17,6 +23,12 @@
         <td>
             Message <?= $message ?>
         </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><a data-target="#adddocument" href="<?= $url; ?>" data-backdrop="static" data-toggle="modal"
+               class="btn btn-info">
+                <i class="fa fa-file-o"></i> Upload Document</a></td>
     </tr>
     <tr>
         <td colspan="2">

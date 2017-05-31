@@ -93,6 +93,8 @@ $(function () {
             }
         }
     };
-    Customer.initCustomer();
+    if (!$select_elem.val()) {
+        Customer.initCustomer();
+    }
     Product.initListener();
 });

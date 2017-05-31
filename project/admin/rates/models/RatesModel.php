@@ -47,18 +47,20 @@ class RatesModel extends ORM
         return $this->find($id);
     }
 
-    public function updateRate($insurer)
+    /**
+     * Update rates from post
+     * @return bool
+     */
+    public function updateRate()
     {
         $rate = $this->find(Input::post('edit'));
         $rate->rate_name = Input::post('rate_name');
         $rate->rate_value = Input::post('rate_value');
         $rate->rate_type = Input::post('rate_type');
         $rate->rate_category = Input::post('rate_category');
-        $rate->insurer_id = $insurer->id;
+        $rate->insurer_id = Input::post('insurer_id');
         $rate->save();
 
-        if ($this->hasNoErrors())
-            return true;
-        return false;
+        return $this->hasNoErrors();
     }
 }

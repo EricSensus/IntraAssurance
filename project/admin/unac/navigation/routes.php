@@ -12,7 +12,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/navigation/access/policies/{alias}', 'AccessController@policies')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
             ])
@@ -58,7 +58,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/navigation/{action}/{id}', 'NavigationController@index')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
     ]);
@@ -68,7 +68,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/navigation/access/{action}/{id}', 'AccessController@index')
             ->attachTemplate('admin')
             ->assignPanels([
-                'top' => 'UsersController@index:login',
+                'top' => 'NotificationsController@load:notices',
                 'navigation' => 'NavigationController@display:menus',
                 'logout' => 'UsersController@logout:logout'
     ]);

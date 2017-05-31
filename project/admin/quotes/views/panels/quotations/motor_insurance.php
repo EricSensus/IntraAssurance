@@ -6,7 +6,7 @@
         $count = 0;
         $quote_id = $data->quote->id;
         ?>
-        <div class="col-md-5 col-md-offset-1">
+        <div class="col-md-12">
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title"><?= $data->insurer->name ?></h3>

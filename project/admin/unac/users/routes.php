@@ -17,4 +17,7 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/logout/{sessid}', 'UsersController@logout:logout')
             //->at('before')->fire('log.check')
             ->attachTemplate('admin')->assignPanels(['_ajax' => TRUE]);
+    
+    Route::get('/admin/user/profile/{acl}/{id}', 'UsersController@addedit');
+    Route::get('/admin/user/savefullprofile', 'UsersController@saveFullProfile');
 });
