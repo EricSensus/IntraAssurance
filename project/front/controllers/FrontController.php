@@ -20,24 +20,24 @@ class FrontController extends Controller {
 
     //this is the default function
     public function index(){
+
     }
-    
+
     /**
      * @acl\role guest
      */
     public function loadNavigation(){
     }
-    
+
     public function showBanner(){
-        
+
     }
-    
+
     public function showProducts(){
 
     }
 
     public function signIn(){
-        
         $this->setData();
 
         $loggedIn = $this->userCtrl->isCustomerloggedIn();
