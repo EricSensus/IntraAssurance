@@ -46,20 +46,22 @@ use Jenga\App\Request\Url;
             $quote_id = $data->quote->id;
             $data = $data->payments[0];
             ?>
+            <div class="well">
+                <dl class="dl-horizontal">
+                    <dt>Product</dt>
+                    <dd><?= $data->product->name ?>
+                    </dd>
+                    <dt>Car</dt>
+                    <dd><?= $data->main_entity->regno ?></dd>
+                </dl>
+            </div>
             <div class="col-md-12">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <h3 class="panel-title"><?= $data->insurer->name ?></h3>
                     </div>
                     <div class="panel-body">
-                        <div class="well">
-                            <dl class="dl-horizontal">
-                                <dt>Product</dt>
-                                <dd><?= $data->product->name?>
-                                </dd><dt>Car</dt>
-                                <dd><?= $data->main_entity->regno?></dd>
-                            </dl>
-                        </div>
+
                         <table class="table table-striped table-condensed">
                             <thead>
                             <tr>

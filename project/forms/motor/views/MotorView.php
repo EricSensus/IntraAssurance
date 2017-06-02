@@ -372,5 +372,69 @@ to the terms, exceptions and conditions prescribed by the company</p>'],
         $this->data->mapper = $my_map;
         return $my_push;
     }
+    /**
+     * Generate human-readable indices for the display
+     * @return array
+     */
+    public function motorIndices()
+    {
+        $indices = [
+            // step two
+            'regno' => 'Registration no/mark',
+            'chassisno' => 'Chassis No',
+            'engineno' => 'Engine No',
+            'makes' => 'Make',
+            'model' => 'Model',
+            'bodytype' => 'Type of body',
+            'seatingcapacity' => 'Seating Capacity *',
+            'dlyear' => 'Year of Manufacture',
+            'valueestimate' => 'Estimated Value including accessories and parts in Kshs <span style="font-size: 11px;">(*will be subject to valuation by the insurer)</span>',
+            'antitheft' => 'Is the vehicle fitted with any anti theft device',
+            'antitheftdetails' => 'If Yes, please give particulars below',
+            'daytimeparking' => 'Where is this car normally parked during daytime?',
+            'daytimeparkingdetails' => 'Tell us the town, estate or road',
+            'nightparking' => 'Where is this car normally parked at night ?',
+            'nighparkingdetails' => 'Tell us the town, estate or road',
+            'carusage' => 'How do you use this vehicle?',
+            'somecovers' => 'Do you want to add another car?',
+            'othercovers' => 'How many additional cars? Choose  number',
 
+            // step three
+            'coverstart' => 'Cover start date',
+            'coverend' => 'Cover End',
+            'covertype' => 'Type of cover',
+            'riotes' => 'Riots & Strikes?',
+            'windscreen' => 'Windscreen?',
+            'audio' => 'Audio System?',
+            'passenger' => 'Passenger Liability',
+            'terrorism' => 'Terrorism',
+            'ncd_percent' => 'What is your No Claim Discount entitlement (NCD)(%)? (*Proof letter will be required)',
+            'previousdeclines' => 'Have you, or anyone else who will drive this vehicle, had any insurance declined, voided or special terms imposed and regardless of blame',
+            'previousaccidents' => 'Have you, or anyone else who will drive this vehicle (s), had any motor related accidents or losses, whether there was a claim or not and regardless of blame',
+            "claim_no_yr1" => "Year 1: Claim No",
+            "claim_amount_yr1" => "Year 1: Claim Amount",
+            "insurer_yr1" => "Year 1: Insurer",
+            "claim_details_yr1" => "Year 1: Claim Details",
+            "claim_no_yr2" => "Year 2: Claim No",
+            "claim_amount_yr2" => "Year 2: Claim Amount",
+            "insurer_yr2" => "Year 2: Insurer",
+            "claim_details_yr2" => "Year 2: Claim Details",
+            "claim_no_yr3" => "Year 3: Claim No",
+            "claim_amount_yr3" => "Year 3: Claim Amount",
+            "insurer_yr3" => ['text', "insurer_yr3", '', ['class' => 'form-control',]],
+            "claim_details_yr3" => "Year 3: Claim Details",
+            "claim_no_yr4" => "Year 4: Claim No",
+            "claim_amount_yr4" => "Year 4: Claim Amount",
+            "insurer_yr4" => "Year 4: Insurer",
+            "claim_details_yr4" => "Year 4: Claim Details",
+            "claim_no_yr5" => "Year 5: Claim No",
+            "claim_amount_yr5" => "Year 5: Claim Amount",
+            "insurer_yr5" => "Year 5: Insurer",
+            "claim_details_yr5" => "Year 5: Claim Details",
+            'pickat' => 'Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)',
+            'acceptterms' => 'I hereby agree to all the above terms and conditions'
+        ];
+
+        return $indices;
+    }
 }
