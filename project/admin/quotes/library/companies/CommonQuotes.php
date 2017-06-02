@@ -63,61 +63,95 @@ class CommonQuotes extends QuotesBlueprint
 
         switch ($this->cover_type) {
             case 'Comprehensive';
+                if ($this->main_entity->type == 'private') {
+                    $this->basic_premium = $this->getRates($tsi, 'comprehensive-private', 'Motor', 'percentage');
+                } elseif ($this->main_entity->type == 'commercial') {
+                    $this->basic_premium = $this->getRates($tsi, 'comprehensive-commercial', 'Motor', 'percentage');
+                }
                 //$basic_premium = (($tsi*7.75)/100);
-                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive', 'Motor', 'percentage');
+//                $car->basic_premium = $this->getRates($car->tsi, 'Comprehensive', 'Motor', 'percentage');
                 $car->cover_type = 'Comprehensive';
                 break;
-            case 'Third Party Fire and Theft';
-                //$basic_premium = (($tsi*4.5)/100);
-                $car->basic_premium = $this->getRates($car->tsi, 'Third Party Fire and Theft', 'Motor', 'percentage');
-                $car->cover_type = 'Third Party Fire and Theft';
-                break;
+
             case 'Third Party Only':
-                //$basic_premium = 12500;
+
+                if ($this->main_entity->type == 'private') {
+                    $this->basic_premium = $this->getRates($tsi, 'Third Party Only', 'Motor', 'fixed');
+                } elseif ($this->main_entity->type == 'commercial') {
+                    $this->basic_premium = $this->getRates($tsi, $this->main_entity->tonnage, 'Motor', 'fixed');
+                }
+
+                $this->cover_type = 'Third Party Only';
+                break;
                 $car->basic_premium = $this->getRates($car->tsi, 'Third Party Only', 'Motor', 'fixed');
                 $car->cover_type = 'Third Party Fire and Theft';
                 break;
         }
-        //calculate riot and strikes value
-        switch ($_car->riotes) {
+        //calculate srcc
+        switch ($_car->srcc) {
             case 'yes':
-                $car->riotes = $this->getRates($car->tsi, 'Riots and Strikes', 'Motor', 'percentage');
+                $car->riotes = $this->getRates($tsi, 'srcc', 'Motor', 'percentage');
                 break;
-            default :
-                $car->riotes = null;
+            default:
+                $car->riotes = 0;
                 break;
         }
-        //if riots is set, put zero
-        if (($car->cover_type == 'Third Party Only') && ($car->riotes == 'yes')) {
-            $car->riotes = null;
-        }
-        //calculate terrorism value
-        switch ($_car->terrorism) {
+
+        //calculate political violence
+        switch ($_car->political_violence) {
             case 'yes':
-                $car->terrorism = $this->getRates($car->tsi, 'Terrorism', 'Motor', 'percentage');
+                if ($this->cover_type != 'Third Party Only') {
+                    $car->terrorism = $this->getRates($tsi, 'political-violence', 'Motor', 'percentage');
+                }
+
                 break;
-            default :
-                $car->terrorism = null;
+            default:
+                $car->terrorism = 0;
                 break;
         }
+
         //$windscreen = 0; Calculate Windscreen
         switch ($_car->windscreen) {
             case 'yes':
-                $car->windscreen = $this->getRates($car->tsi, 'Windscreen', 'Motor', 'percentage');
+                $car->windscreen = $this->getRates($tsi, 'Windscreen', 'Motor', 'percentage', $_car);
                 break;
-            default :
-                $car->windscreen = null;
+            default:
+                $car->windscreen = 0;
                 break;
         }
-        //$radio_cassette = 0;
-        switch ($_car->audio) {
+
+        //$entertainment = 0;
+        switch ($_car->entertainment_equipment) {
             case 'yes':
-                $car->audio = $this->getRates($car->tsi, 'Audio System', 'Motor', 'percentage');
+                $car->audio = $this->getRates($tsi, 'entertainment', 'Motor', 'percentage');
                 break;
-            default :
-                $car->audio = null;
+            default:
+                $car->audio = 0;
                 break;
         }
+
+        //$excess_protector = 0;
+        switch ($_car->excess_protector) {
+            case 'yes':
+                $car->excess_protector = $this->getRates($tsi, 'excess-protector', 'Motor', 'percentage');
+                break;
+            default:
+                $car->excess_protector = 0;
+                break;
+
+        }
+
+        //$loss_of_use = 0;
+        switch ($_car->loss_of_use) {
+            case 'yes':
+                $car->loss_of_use = $this->getRates($tsi, 'loss-of-use', 'Motor', 'percentage');
+                break;
+            default:
+                $car->loss_of_use = 0;
+                break;
+        }
+
+
         //$passenger_legal = 0;
         switch ($_car->passenger) {
             case 'yes':
@@ -128,43 +162,18 @@ class CommonQuotes extends QuotesBlueprint
                 break;
         }
 
-        //set the NDC amount
-        if (!empty($_car->ncd_percent)) {
-            $car->ncd_percent = $_car->ncd_percent;
-            $car->ncd_amount = $car->basic_premium * ($car->ncd_percent / 100);
-            //if Third Party Only is set, put zero
-            if ($car->cover_type == 'Third Party Only') {
-                $car->ncd_amount = null;
-            }
-            $car->basic_premium2 = $car->basic_premium - $car->ncd_amount;
-        } else {
-            $car->basic_premium2 = $car->basic_premium;
-        }
-
-        //check if amount is
-        if ($car->basic_premium2 < 12500) {
-            switch ($car->cover_type) {
-                case 'Comprehensive';
-                    //$basic_premium = (($tsi*7.75)/100);
-                    $car->basic_premium2 = 15000;
-                    break;
-
-                case 'Third Party Fire and Theft';
-                    //$basic_premium = (($tsi*4.5)/100);
-                    $car->basic_premium2 = 12500;
-                    break;
-
-                case 'Third Party Only':
-                    //$basic_premium = 12500;
-                    $car->basic_premium2 = 12500;
-                    break;
-            }
-
-            $car->minimum2 = $car->basic_premium2;
-        }
 
         //calculate the net premium
-        $car->net_premium = ($car->basic_premium2 + $car->riotes + $car->windscreen + $car->audio + $car->passenger + $car->terrorism);
+        //  $car->net_premium = ($car->basic_premium2 + $car->riotes + $car->windscreen + $car->audio + $car->passenger + $car->terrorism);
+        //calculate the net premium
+        $car->net_premium = $car->basic_premium
+            + $car->riotes
+            + $car->windscreen
+            + $car->audio
+            + $car->passenger
+            + $car->terrorism
+            + $car->excess_protector
+            + $car->loss_of_use;
         if ($is_main) {
             $this->basic_premium = $car->net_premium;
         }

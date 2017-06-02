@@ -147,7 +147,7 @@ class MotorView extends View
             'map' => $map,
             'controls' => [
                 '{type}' => ['hidden', 'type', 'private'],
-                'Registration no*' => ['text', 'RegNo', '', ['class' => 'form-control', 'required' => '']],
+                'Registration no*' => ['text', 'regno', '', ['class' => 'form-control', 'required' => '']],
                 'Vehicle Color*' => ['text', 'vehicle_color', '', ['class' => 'form-control', 'required' => '']],
                 'Chassis No' => ['text', 'ChassisNo', '', ['class' => 'form-control']],
                 'Engine No' => ['text', 'EngineNo', '', ['class' => 'form-control']],

@@ -52,6 +52,14 @@ use Jenga\App\Request\Url;
                         <h3 class="panel-title"><?= $data->insurer->name ?></h3>
                     </div>
                     <div class="panel-body">
+                        <div class="well">
+                            <dl class="dl-horizontal">
+                                <dt>Product</dt>
+                                <dd><?= $data->product->name?>
+                                </dd><dt>Car</dt>
+                                <dd><?= $data->main_entity->regno?></dd>
+                            </dl>
+                        </div>
                         <table class="table table-striped table-condensed">
                             <thead>
                             <tr>
@@ -69,39 +77,34 @@ use Jenga\App\Request\Url;
                             <tr>
                                 <td><?= (isset($data->main->minimum) ? 'Minimum' : 'Basic') ?> premium</td>
                                 <td>
-                                    Ksh <?= number_format((isset($data->main->minimum) ? $data->main->minimum : $data->main->basic_premium), 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>NCD Amount</td>
-                                <td>
-                                    Ksh <?= empty($data->main->minimum) ? number_format($data->main->ncd_amount, 2) : '' ?></td>
-                            </tr>
-                            <tr>
-                                <td>Premium less NCD</td>
-                                <td>Ksh <?= number_format($data->main->basic_premium2, 2) ?></td>
+                                    Ksh <?= number_format((isset($data->main->minimum) ? $data->main->minimum : $data->basic_premium), 2) ?></td>
                             </tr>
                             <tr>
                                 <th colspan="2">Additional Covers</th>
                             </tr>
                             <tr>
-                                <td>Riots and Strikes</td>
-                                <td>Ksh <?= number_format($data->main->riotes, 2) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Windscreen</td>
+                                <td>Windscreen (upto ksh 30000)</td>
                                 <td>Ksh <?= number_format($data->main->windscreen, 2) ?></td>
                             </tr>
                             <tr>
-                                <td>Audio System</td>
+                                <td>Entertainment System (upto ksh 30000)</td>
                                 <td>Ksh <?= number_format($data->main->audio, 2) ?></td>
                             </tr>
                             <tr>
-                                <td>Passenger Liability</td>
-                                <td>Ksh <?= number_format($data->main->passenger, 2) ?></td>
+                                <td>Political Violence</td>
+                                <td>Ksh <?= number_format($data->main->terrorism, 2) ?></td>
                             </tr>
                             <tr>
-                                <td>Terrorism</td>
-                                <td>Ksh <?= number_format($data->main->terrorism, 2) ?></td>
+                                <td>SRCC (Strikes, Riotes and Civil Commotion)</td>
+                                <td>Ksh <?= number_format($data->main->riotes, 2) ?></td>
+                            </tr>
+                            <tr>
+                                <td>Excess Protector</td>
+                                <td>Ksh <?= number_format($data->main->excess_protector, 2) ?></td>
+                            </tr>
+                            <tr>
+                                <td>Loss of Use</td>
+                                <td>Ksh <?= number_format($data->main->loss_of_use, 2) ?></td>
                             </tr>
                             <tr>
                                 <td>Net Premium</td>
