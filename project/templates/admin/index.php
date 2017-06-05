@@ -1,5 +1,6 @@
 <?php
 use Jenga\App\Views\HTML;
+use Jenga\MyProject\Elements;
 
 HTML::start();
 ?>
@@ -16,7 +17,7 @@ HTML::start();
     HTML::head();
     HTML::css('admin/css/admin_css.css');
 ?>
-<link href="<?php echo TEMPLATE_URL ?>frontend/images/favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+<link href="<?php echo TEMPLATE_URL ?>frontend/images/favicon.png" rel="shsuortcut icon" type="image/vnd.microsoft.icon" />
 </head>
 
 <body>
@@ -32,9 +33,12 @@ HTML::start();
   </div>
 </div>
 <div id="navigation">
-<?php
-    $this->loadPanel('navigation',['name'=>'admin-menu,super-admin','template' => 'admin']);
-?>
+    <?php
+    $nav = Elements::call('Navigation/NavigationController');
+    $menuname = $nav->getMenusFromAccesslevel();
+
+    $this->loadPanel('navigation', ['name' => $menuname, 'template' => 'admin']);
+    ?>
 </div>
 <div class="content-container">
     <div id="breadcrumbs">
