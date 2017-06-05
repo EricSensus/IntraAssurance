@@ -79,7 +79,6 @@ class MotorController extends Controller
 //                exit;
 //            }
 //        }
-
         $this->setEntities();
         $this->loadData($step);
         $this->view->wizard($this->data);

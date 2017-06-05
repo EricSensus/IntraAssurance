@@ -345,6 +345,7 @@ class UsersController extends Controller
             $user->acl = 'agent';
             $user->enabled = (Input::post('enabled') != 'yes' ? 'no' : 'yes');
             $user->insurer_agents_id = $agent->id;
+
             $save = $user->save();
 
             if ($user->hasNoError()) {
