@@ -1,6 +1,7 @@
 <?php
 
 use Jenga\App\Request\Url;
+use Jenga\App\Views\Overlays;
 
 ?>
 <div class="insuranceheader row">
@@ -8,7 +9,7 @@ use Jenga\App\Request\Url;
         <h2>Motor Insurance</h2>
     </div>
 </div>
-<table class="wizard-heading row">
+<table class="wizard-heading row hidden-print">
     <tbody>
     <tr>
         <th class="heading col-md-3 col-sm-12 col-xs-12">
@@ -36,6 +37,20 @@ use Jenga\App\Request\Url;
     </tr>
     </tbody>
 </table>
+
+<?=Overlays::Modal(['id' => 'emailmodal']); ?>
+<div class="btn-group btn-group-xs hidden-print">
+    <a href="<?=Url::link('/ajax/customer/quote/emailquote'); ?>" class="btn btn-info" id="email-frontquote"
+       data-toggle="modal" data-target="#emailmodal" title="Email Quote">
+        <i class="fa fa-envelope fa-3x"> Email Quote</i>
+    </a>
+    <a href="<?=Url::link('/ajax/customer/quote/pdfquote'); ?>" class="btn btn-info" id="gen-pdf" data-toggle="tooltip" title="Save as PDF" data-placement="bottom">
+        <i class="fa fa-file-pdf-o fa-3x"> Pdf</i>
+    </a>
+    <a class="btn btn-info" onclick="print();" data-toggle="tooltip" title="Print Quote" data-placement="bottom">
+        <i class="fa fa-print fa-3x"> Print</i>
+    </a>
+</div>
 <div class="formheading row">
     <div class="formheadingcaption col-md-12 col-sm-12 col-xs-12">
         <p>Below are your quotation details</p>
