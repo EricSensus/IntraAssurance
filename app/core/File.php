@@ -40,7 +40,9 @@ class File{
             
             //if true it will create the necessary folders before the file
             if($recursive){
-                mkdir (dirname ($filename), $mode, TRUE);
+                
+                if(!self::exists($filename))
+                    mkdir (dirname ($filename), $mode, TRUE);
             }
             
             //process put attributes and flags

@@ -42,6 +42,8 @@ Route::group(['before' => 'auth.check'], function () {
     Route::get('/admin/policies/renewpolicy/{id}', 'PoliciesController@showRenewPolicy')
             ->attachTemplate('admin')
             ->assignPanels(['_ajax' => TRUE]);
+    
+    Route::get('/admin/policies/renewpolicyrequest/{id}', 'PoliciesController@showRenewRequestForm');
 
     Route::get('/admin/policies/{action}/{id}', 'PoliciesController@index', ['action' => 'show'])
             ->attachTemplate('admin')

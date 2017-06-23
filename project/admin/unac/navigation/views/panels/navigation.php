@@ -1,5 +1,6 @@
 <?php
 use Jenga\App\Views\HTML;
+use Jenga\App\Views\Overlays;
 
 HTML::script('$(document).ready( function () {
     
@@ -43,3 +44,4 @@ echo '<div class="dataTables_wrapper panel-footer">'
 
 echo '</div>'
 . '</div>';
+echo Overlays::confirm();

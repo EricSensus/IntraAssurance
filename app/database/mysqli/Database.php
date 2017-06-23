@@ -262,7 +262,7 @@ class Database //directly builds from Config
                 $params[0] .= $this->_determineType($val);
                 array_push($params, $bindParams[$prop]);
             }
-
+            
             call_user_func_array(array($stmt, 'bind_param'), $this->refValues($params));
 
         }
@@ -826,6 +826,11 @@ class Database //directly builds from Config
                     }
                     $this->_query .= rtrim($comparison, ',').' ) ';
                     break;
+                case 'is null':        
+                    
+                    $comparison = ' ' . $key . ' ';
+                    $this->_query .= $comparison;
+                    break;
                 case 'not between':
                 case 'between':
                     $this->_query .= " $key ? AND ? ";
@@ -957,6 +962,11 @@ class Database //directly builds from Config
                 }
                 $newStr .= substr ($str, 0, $lpos) . $val;
                 $str = substr ($str, $lpos + 1);
+            }
+            
+            //added this to include is null and is not null keywords
+            if(!empty(trim($str))){
+                $newStr .= $str;
             }
         }
         else{

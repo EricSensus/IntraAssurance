@@ -45,17 +45,18 @@ use Jenga\MyProject\Services\Charts;
  * @property-read CustomersModel $model
  * @package Jenga\MyProject\Customers\Controllers
  */
-class CustomersController extends Controller{
+class CustomersController extends Controller
+{
 
     /**
      * @acl\role customer
      */
-    public function index(){
+    public function index()
+    {
 
         if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
             $action = 'show';
-        } 
-        else {
+        } else {
 
             if (!is_null(Input::get('action')))
                 $action = Input::get('action');
@@ -63,7 +64,7 @@ class CustomersController extends Controller{
                 $action = Input::post('action');
         }
 
-        if($this->user()->can($action, 'customers')){
+        if ($this->user()->can($action, 'customers')) {
             $this->$action();
         }
     }
@@ -238,27 +239,22 @@ class CustomersController extends Controller{
     /**
      * @acl\role customer
      */
-    public function show()
-    {
+    public function show(){
+
         if (is_null(Input::get('id'))) {
-            
+
             $dbcustomers = $this->model->getCustomers();
 
             if (count($dbcustomers)) {
 
                 foreach ($dbcustomers as $customer) {
 
-
                     if (is_object($customer)) {
 
-
                         $policies = Elements::call('Policies/PoliciesController')->getPoliciesByCustomer($customer->id);
-
                         $customer->policies = count($policies);
 
-
                         //customer quotes section
-
                         $quotes = Elements::call('Quotes/QuotesController')->getQuotesByCustomer($customer->id);
 
                         $customer->qcount = count($quotes);
@@ -266,13 +262,10 @@ class CustomersController extends Controller{
                         //customers controller
                         $claims = Elements::call('Claims/ClaimsController')->getClaimsByCustomer($customer->id);
                         $customer->claims = count($claims);
-                        $customer->actions = '<a class="fa fa-lock" data-toggle="modal" data-target="#credetialsModal" href="' . SITE_PATH . '/ajax/admin/customers/loginmodal/' . $customer->id . '">Send login Credentials</a>';
+                        $customer->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
                         $customers[] = $customer;
-
                     }
-
                 }
-
             }
 
             $this->view->set('count', count($customers));
@@ -287,50 +280,43 @@ class CustomersController extends Controller{
         } else {
 
             $id = Input::get('id');
-
             $this->getCustomerProfile($id);
-
         }
-
     }
 
+    /**
+     * Gets the specifc customer's full profile
+     * @param type $id
+     */
     public function getCustomerProfile($id){
-        $customer = $this->model->findCustomer($id);
 
+        $customer = $this->model->findCustomer($id);
         $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'customers']);
 
-
-        if (!is_null($customer)) {
-            if($this->user()->is('customer'))
-                unset($customer->additional_info);
+        if (!is_null($customer)){
 
             //personal details section
+            $additionalinfo = $customer->additional_info;
+            unset($customer->additional_info);
+
+            $this->_filterAdditionalInfo($additionalinfo);
 
             $this->view->set('customer_name', ucfirst($customer->name));
-
             $this->view->set('customer', $customer);
 
             $this->view->set('personalmodal', ['id' => 'editmodal']);
 
-
             //linked agent section
-
             $agent = Elements::call('Agents/AgentsController')->getAgentById($customer->insurer_agents_id);
 
-
             $this->view->set('agent', $agent);
-
             $this->view->set('agentmodal', ['id' => 'agentmodal']);
 
-
             //customer polices section
-
             $policies = Elements::call('Policies/PoliciesController')->getPoliciesByCustomer($id);
 
             $this->view->set('policycount', count($policies));
-
             $this->view->set('policies', $policies);
-
             $this->view->generatePolicies();
 
             //customer claims
@@ -338,39 +324,27 @@ class CustomersController extends Controller{
             $this->view->set('claims_count', count($claims));
             $this->view->set('claims', $claims);
             $this->view->generateClaims();
-            //customer quotes section
 
+            //customer quotes section
             $customerquotes = Elements::call('Quotes/QuotesController')->getQuotesByCustomer($id);
 
-
             $this->view->set('quote_count', count($customerquotes));
-
             $this->view->set('quotes', $customerquotes);
-
-
             $this->view->generateQuotesTable();
 
-
             //customer entities section
-
             $dbentities = Elements::call('Entities/EntitiesController')->getCustomerEntity($id, 'customers_id');
 
 
             if (!is_null($dbentities)) {
 
-
                 foreach ($dbentities as $entity) {
-
 
                     $entityobj = $this->model->createEmpty();
 
-
                     $entityobj->id = $entity['id'];
-
                     $entityobj->type = $entity['type'];
-
                     $entityobj->customerid = $id;
-
 
                     $entkeys = array_keys($entity['entity']);
 
@@ -380,18 +354,13 @@ class CustomersController extends Controller{
 
 
                     $entitylist[] = $entityobj;
-
                 }
-
             }
 
-
             //get generic entities list
-
             $entities = Elements::call('Entities/EntitiesController')->model->show();
 
             $genericlist = '<ul style=\"margin: 0px; padding: 0px; margin-left: 5px; list-style: none\">';
-
 
             foreach ($entities as $entity) {
 
@@ -421,62 +390,83 @@ class CustomersController extends Controller{
             $addnewentity = Overlays::Modal(['id' => 'addnewentity']);
 
             $this->set('addnewentity', $addnewentity);
-
-
             $this->view->set('generic_entity_links', $genericlist);
-
             $this->view->set('entitycount', count($entitylist));
-
-
+            
             $this->view->generateEntitiesTable($entitylist);
 
-
             //customer tasks section
-
             $returnurl = $url . '/show/' . $id . '#tasks';
-
             $tasks = Elements::call('Tasks/TasksController')->getTasksByCustomer($id, true, ['url' => $returnurl, 'disable_edit' => true]);
-
 
             if (is_null($tasks)) {
 
-
                 $tasks['count'] = 0;
-
                 $tasks['html'] = Notifications::Alert('No tasks linked to this customer', 'info', true);
-
             }
 
 
             $this->view->set('taskcount', $tasks['count']);
-
             $this->view->set('tasks', $tasks['html']);
 
-
             //add the delete confirm modal
-
             $deletemodal = Overlays::confirm();
-
             $this->set('deletemodal', $deletemodal);
 
-//            if($this->user()->is('customer')){
-//                $profile_data = get_defined_vars();
-//                Elements::call('Profile/ProfileController')->view->myProfile($profile_data);
-//            } else {
-                $this->view->setViewPanel('customer-details');
-//            }
+            $this->view->setViewPanel('customer-details');
 
-        } else {
-
-
+        } 
+        else {
             Redirect::withNotice('Customer has not been found', 'error')
                 ->to($url);
-
         }
+    }
+
+    /**
+     * Remove additional info
+     *
+     * @param type $info
+     */
+    private function _filterAdditionalInfo($info)
+    {
+
+        $info_obj = json_decode($info);
+
+        $addobject = $this->model->createEmpty();
+
+        foreach ($info_obj as $product => $infovalues) {
+
+            switch ($product) {
+
+                case 'motor':
+                case 'domestic':
+                case 'accident':
+                    //unset 
+                    unset($infovalues->btnsubmit);
+                    break;
+
+                case 'medical':
+                case 'travel':
+                    //unset 
+                    unset($infovalues->form_step,
+                        $infovalues->name_step_one,
+                        $infovalues->step_one,
+                        $infovalues->zebra_honeypot_step_one,
+                        $infovalues->zebra_csrf_token_step_one,
+                        $infovalues->btnsubmit,
+                        $infovalues->step);
+                    break;
+            }
+
+            $addobject->$product = $infovalues;
+        }
+
+        $this->set('info', $addobject);
     }
 
     public function loginmodal()
     {
+
         $customer = $this->model->where('id', Input::get('id'))->first();
         $this->view->getLoginModal($customer);
     }
@@ -621,113 +611,67 @@ class CustomersController extends Controller{
     }
 
     /**
-     * @acl\role editor
-     * @acl\alias "Add New Agent"
+     * @acl\role agent
+     * @acl\alias "Add Agent"
      */
     public function addAgent()
     {
-
 
         $customer = $this->model->find(Input::get('id'));
 
 
         //create the return url from the Navigation element
-
         $url = Elements::call('Navigation/NavigationController')->getUrl('customers');
-
         $url = $url . '/show/' . Input::get('id');
 
-
         //get the Agents element
-
         $agents = Elements::call('Agents/AgentsController')->retrieveAgents();
 
-
         foreach ($agents as $agent) {
-
             $agentslist[$agent->id] = $agent->names;
-
         }
 
-
         $schematic = [
-
             'preventjQuery' => TRUE,
-
             'method' => 'POST',
-
             'action' => '/admin/customers/agentsave/' . $customer->id,
-
             'controls' => [
-
                 'id' => ['hidden', 'id', $customer->id],
-
                 'destination' => ['hidden', 'destination', $url],
-
                 'Linked Agent' => ['select', 'agent', $customer->insurer_agents_id, $agentslist]
-
             ],
-
             'validation' => [
-
                 'agent' => [
-
                     'required' => 'Please enter the linked agent'
-
                 ]
-
             ]
-
         ];
-
 
         $modal_settings = [
-
             'id' => 'customermodal',
-
             'formid' => 'customereditform',
-
             'role' => 'dialog',
-
             'title' => 'Linked Agent Details',
-
             'buttons' => [
-
                 'Cancel' => [
-
                     'class' => 'btn btn-default',
-
                     'data-dismiss' => 'modal'
-
                 ],
-
-                'Save Edits' => [
-
+                'Save Agent' => [
                     'type' => 'submit',
-
                     'class' => 'btn btn-primary',
-
                     'id' => 'savebutton'
-
                 ]
-
             ]
-
         ];
-
 
         $form = Generate::Form('customereditform', $schematic);
 
         $eform = $form->render('horizontal', TRUE);
-
-
         $editform = Overlays::ModalDialog($modal_settings, $eform);
 
-
         $this->view->set('editform', $editform);
-
         $this->view->setViewPanel('customer-edit');
-
     }
 
 
@@ -1370,7 +1314,13 @@ class CustomersController extends Controller{
         return (object)$this->getCustomerDataArray($user->customers_id);
     }
 
-    private function getCustomerDataArray($customer_id = null)
+    /**
+     * Get all possible details for customer
+     * @param null $customer_id
+     * @param bool $filter
+     * @return array
+     */
+    public function getCustomerDataArray($customer_id = null, $filter = false)
     {
         if (empty($customer_id)) {
             if (empty($customer_id = Input::post('customer'))) {
@@ -1378,8 +1328,11 @@ class CustomersController extends Controller{
             }
         }
         $_customer = $this->getCustomerById($customer_id, false);
+        if (empty($_customer)) {
+            return null;
+        }
         $info = get_object_vars($_customer);
-        $product_datas = json_decode($info['additional_info']);
+        $product_data = json_decode($info['additional_info']);
         unset($info['additional_info']);
         $info['dob'] = date('Y-m-d', $info['date_of_birth']);
         $info['mobile'] = $info['mobile_no'];
@@ -1389,9 +1342,11 @@ class CustomersController extends Controller{
         $info['names'] = substr($info['name'], 1 + strpos($info['name'], ' '));
         $info['id_passport_no'] = $info['id_passport_number'] = $_customer->id_number;
         $the_arrays = $info;
-        if (count($product_datas)) {
-            foreach ($product_datas as $for_product) {
-                $the_arrays = array_merge($the_arrays, get_object_vars($for_product));
+        if (!$filter) {
+            if (count($product_data)) {
+                foreach ($product_data as $for_product) {
+                    $the_arrays = array_merge($the_arrays, get_object_vars($for_product));
+                }
             }
         }
         return $the_arrays;
@@ -1702,7 +1657,7 @@ class CustomersController extends Controller{
     public function attachAgentToCustomer($customer_id, $agent_id)
     {
 
-        if($this->model->attachAgentToCustomer($customer_id, $agent_id)){
+        if ($this->model->attachAgentToCustomer($customer_id, $agent_id)) {
             $agent = Elements::call('Agents/AgentsController')->getAgentById($agent_id);
             $own_company = Elements::call('Companies/CompaniesController')->ownCompany(true);
             $user = Elements::call('Users/UsersController')->getUserByAgentId($agent->id);

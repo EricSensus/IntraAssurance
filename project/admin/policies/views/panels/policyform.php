@@ -97,3 +97,16 @@ else{
         echo $btnsubmit
     ?>
 </div>
+
+<script>
+    $(function(){
+        $(document).on('change', '#quotes', function(){
+            var option = $(this).val();
+            var customer_id = $(this).find(':selected').attr('cust_id');
+
+            if(option == 'new_quote'){
+                window.location.href = '<?=SITE_PATH . '/admin/quotes/add?policy=true&id='; ?>' + customer_id;
+            }
+        });
+    });
+</script>

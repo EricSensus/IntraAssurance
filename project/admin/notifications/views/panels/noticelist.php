@@ -1,4 +1,5 @@
 <?php
+use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
 
 //get names
@@ -11,13 +12,21 @@ elseif($this->user()->acl == 'customer'){
 ?>
 <script>
     $(function(){
-        var setAsViewed = function(id){
+        
+        var preloader = '<?= HTML::AddPreloader('center', '45px', '45px', FALSE); ?>';
+        var setAsViewed = function(id, element){
+            
             
             $.ajax({
                 url: "<?= Url::link('/ajax/notices/setview/') ?>"+id,
-                success: function(response){                    
+                beforeSend: function(){
+                    $('div#list-item-'+id).html(preloader);
+                },
+                success: function(response){      
+                    console.log(element);
                     //add disabled class
                     $('a#list-item-'+id).addClass('disabled');
+                    $('div#list-item-'+id).html(element);
                     return true;
                 },
                 error: function(response){
@@ -31,6 +40,9 @@ elseif($this->user()->acl == 'customer'){
             
             $.ajax({
                 url: "<?= Url::link('/ajax/notices/deletenotice/') ?>"+id,
+                beforeSend: function(){
+                    $('div#list-item-'+id).html(preloader);
+                },
                 success: function(response){                    
                     //remove item listing
                     $('div#list-item-'+id).remove();
@@ -55,21 +67,25 @@ elseif($this->user()->acl == 'customer'){
         $('#noticeslist span.mark-item').on('click',function(){
             var linkid = $(this).attr('id');
             var id = linkid.split('-')[2];
+            var element = $('div#list-item-'+id).html();
             
             //send ajax request
-            setAsViewed(id);
+            setAsViewed(id, element);
         });
         
         //set as view when link is clicked
-        $('#noticeslist a.noticelink').on('click',function(){
+        $('#noticeslist a.noticelink').on('click',function(e){
+            
+            e.preventDefault();
             
             var linkid = $(this).attr('id');
             var id = linkid.split('-')[2];
             
-            var href = $(this).attr('data-system-location');
+            var href = $(this).attr('href');
             
             //send ajax request
             setAsViewed(id);
+            $('#profilemodal').modal('hide');
             
             //redirect link
             window.location.href = href;

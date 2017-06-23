@@ -44,6 +44,10 @@ echo '<div class="dataTables_wrapper panel-footer">'
 echo '</div>'
     . '</div>';
 
-echo Overlays::Modal(['id' => 'emailmodal']); ?>
-<?= Overlays::Modal(['id' => 'confirmquotemodal', 'title' => 'Mark Customer Response']); ?>
+echo Overlays::Modal(['id' => 'emailmodal']);
+echo Overlays::Modal(['id'=>'quotemodal','size'=>'large']);
+echo Overlays::Modal(['id' => 'confirmquotemodal', 'title' => 'Mark Customer Response']); 
+
+echo Overlays::confirm();
+?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.5.6/tinymce.min.js"></script>

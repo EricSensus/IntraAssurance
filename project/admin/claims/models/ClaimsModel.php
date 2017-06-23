@@ -3,6 +3,7 @@
 namespace Jenga\MyProject\Claims\Models;
 
 use Jenga\App\Models\ORM;
+use Jenga\App\Request\Input;
 
 class ClaimsModel extends ORM
 {
@@ -66,4 +67,22 @@ class ClaimsModel extends ORM
         ];
     }
 
+    /**
+     * Get Quotes by Agent
+     * @param $agent_id
+     * @return \Jenga\App\Database\Mysqli\Database
+     */
+    public function getClaimsByAgent($agent_id, $conditions = array()){
+
+        $agent_quotes = $this->where('agent_id', $agent_id)
+            ->where('created_at', '>=', Input::post('from_date'))
+            ->where('created_at', '<=', Input::post('to_date'));
+
+        if(count($conditions)){
+            foreach ($conditions as $key => $value){
+                $agent_quotes->where($key, $value);
+            }
+        }
+        return $agent_quotes;
+    }
 }

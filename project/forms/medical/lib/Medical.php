@@ -12,7 +12,7 @@ namespace Jenga\MyProject\Medical\Lib;
 class Medical
 {
     public static function determineAgeBracket($agebracket, $gender){
-//        dd($agebracket);
+//        dd($gender);
         switch ($agebracket) {
             case '1-18':
                 return $agebracket = 'Ac';
@@ -28,7 +28,7 @@ class Medical
 
             case '31-40':
                 if($gender=='Male')
-                    $agebracket = 'A2';
+                    return $agebracket = 'A2';
                 else
                     $agebracket = 'A2';
                 return $agebracket;

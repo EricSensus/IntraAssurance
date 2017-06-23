@@ -5,6 +5,7 @@ namespace Jenga\MyProject\Claims\Controllers;
 use Jenga\App\Controllers\Controller;
 use Jenga\App\Core\App;
 use Jenga\App\Helpers\FileUpload;
+use Jenga\App\Html\Excel;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
 use Jenga\App\Request\Url;
@@ -12,8 +13,10 @@ use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Claims\Models\ClaimsModel;
 use Jenga\MyProject\Claims\Views\ClaimsView;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
+use Jenga\MyProject\Documents\Controllers\DocumentsController;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Users\Controllers\UsersController;
+use Svg\Document;
 
 /**
  * Class ClaimsController
@@ -32,6 +35,10 @@ class ClaimsController extends Controller
      */
     private $customerCtrl;
     /**
+     * @var DocumentsController
+     */
+    private $docCtrl;
+    /**
      * @var string
      */
     protected $upload_dir = PROJECT_PATH . DS . 'uploads/';
@@ -44,7 +51,6 @@ class ClaimsController extends Controller
         if (is_null(Input::get('action')) && is_null(Input::post('action'))) {
             $action = 'show';
         } else {
-
             if (!is_null(Input::get('action')))
                 $action = Input::get('action');
 
@@ -85,7 +91,7 @@ class ClaimsController extends Controller
      * @param $policy_id
      * @return \stdClass
      */
-    private function getPolicyDetails($policy_id)
+    public function getPolicyDetails($policy_id)
     {
         $data = new \stdClass();
         $data->policy = $policy = $this->model->findFromTable($policy_id, 'policies');
@@ -99,6 +105,21 @@ class ClaimsController extends Controller
         $data->insurer = (object)Elements::call('Insurers/InsurersController')->getInsurer($insurer_id);
         $data->entities = Elements::call('Entities/EntitiesController')->getCustomerEntity($quote->customer_entity_data_id);
         return $data;
+    }
+
+    /**
+     * @param $id
+     * @return object
+     */
+    public function getClaimData($id)
+    {
+        $claim = $this->model->where('id', $id)->first();
+        $claim->policy = Elements::call('Policies/PoliciesController')
+            ->getPolicyData($claim->policy_id);
+        $claim->quote = $claim->policy->quote;
+        $claim->customer = $claim->policy->customer_info;
+        unset($claim->description, $claim->policy->quote, $claim->policy->customer_info);
+        return $claim;
     }
 
     /**
@@ -133,6 +154,7 @@ class ClaimsController extends Controller
      */
     private function getProcessDetails($processes)
     {
+//        dump($processes);exit;
         if (empty($processes))
             return [];
         $list = [];
@@ -144,7 +166,7 @@ class ClaimsController extends Controller
                 $process->file = $document;
 
             }
-            $process->user = Elements::call('Users/UsersController')->getUser($process->user_id);
+            $process->user = Elements::call('Users/UsersController')->model->where('id', $process->user_id)->first();
             $list[] = $process;
         }
         return $list;
@@ -171,9 +193,13 @@ class ClaimsController extends Controller
     {
         $own = Elements::call('Companies/CompaniesController')->ownCompany(true);
         $data = $this->getPolicyDetails($claim->policy_id);
-        $content = '<p>Hello, ' . $data->customer->name . '</p>';
-        $content .= '<p>Your client ' . $data->product->name . ' has filled a new claim</p>
-     <p>Please log into the portal to view all the details. Click the link below.</p>
+
+        // get agent name
+        $agent = Elements::Call('Agents/AgentsController')->getAgentById($data->agent->id);
+
+        $content = '<p>Hello, ' . $agent->names . '</p>';
+        $content .= '<p>Your client ' . $data->customer->name . ' has filed a new claim.</p>
+                <p>Please log into the portal to view all the details. Click the link below.</p>
                  <p><a href="' . SITE_PATH . '/login" target="_blank">' . SITE_PATH . '/login</a></p>
                  <p>Thanks</p>
                  <p><strong>' . $data->insurer->name . ' Insurance Portal</strong></p>';
@@ -184,7 +210,7 @@ class ClaimsController extends Controller
 
         $notice = App::get('notice');
         $notice->add($message, 'agent', $data->agent->id, 'claims');
-        $notice->add($subject, 'customer', $_cust->id, 'claims');
+//        $notice->add($subject, 'customer', $_cust->id, 'claims');
         $notice->sendAsEmail([$data->agent->username => $data->agent->username], $content, 'New claim for your client ' . $data->customer->name, [$own->email_address => $own->name]);
     }
 
@@ -193,6 +219,8 @@ class ClaimsController extends Controller
      */
     public function saveclaim()
     {
+        $this->docCtrl = Elements::call('Documents/DocumentsController');
+
         $policy_id = Input::post('policy_id');
         $policy = $this->getPolicyDetails($policy_id);
         $this->view->disable();
@@ -202,14 +230,17 @@ class ClaimsController extends Controller
         $claim->policy_id = $policy_id;
         $claim->agent_id = $policy->customer->insurer_agents_id;
         $claim->customer_id = $policy->customer->id;
-        $claim->created_at = time();
+//        $claim->created_at = time();
         $claim->status = 'New';
-
-        $this->notificationForNewClaim($claim);
         $claim->save();
-
+        $this->notificationForNewClaim($claim);
         $this->updateTimeline($claim->last_altered_row, "Started filing a claim : Status -> Processing");
+
         if ($claim->hasNoErrors()) {
+
+//             loop and upload the attached files
+            $this->docCtrl->uploadMultipleFiles('attached_files', $claim->last_altered_row);
+
             Redirect::withNotice('The claim has been saved')
                 ->to(Url::base() . '/admin/claims/edit/' . $claim->last_altered_row);
         }
@@ -230,7 +261,7 @@ class ClaimsController extends Controller
                    <p>Thanks</p>
                    <p><strong>' . $data->insurer->name . ' Insurance Portal</strong></p>';
 
-        $subject = 'You have updated claim #' . $claim->id . '  Description:' . $desc;
+        $subject = 'You have updated claim #' . $claim->id . '  Statement:' . $desc;
         $message = 'Your claim #' . $claim->id . ' for product "' . $data->product->name . ' was updated . ' . $desc;
         $_cust = Elements::call('Users/UsersController')->getCustomerUserInfo($data->customer->id);
 
@@ -361,7 +392,7 @@ class ClaimsController extends Controller
      * @param $description
      * @param null $file
      */
-    private function updateTimeline($claim, $description, $file = null)
+    public function updateTimeline($claim, $description, $file = null)
     {
         $process = $this->model->getProcessModel();
         $process->claim_id = $claim;
@@ -378,13 +409,35 @@ class ClaimsController extends Controller
      */
     public function delete()
     {
-        $this->view->disable();
-        $id = Input::get('id');
-        $this->model->where('id', '=', $id)->delete();
+//            dump(Input::get('id'));exit;
+        if(Input::has('id')) {
+            $this->view->disable();
+            $claim_id = Input::get('id');
+            $this->model->where('id', $claim_id)->delete();
 
-        $url = Url::route('/admin/claims/');
-        Redirect::withNotice('The claim has been deleted', 'success')
-            ->to($url);
+            $url = Url::route('/admin/claims/');
+            Redirect::withNotice('The claim has been deleted', 'success')
+                ->to($url);
+        }
+
+        if(Input::has('ids')){
+            $ids = Input::post('ids');
+
+            foreach ($ids as $id) {
+//                // get the policy data
+//                $policy = $this->model->getPolicy($id);
+//
+//                // send delete notification
+//                $this->deleteNotification($policy);
+
+                // delete from db
+                $this->model->where('id', '=', $id)->delete();
+            }
+
+            $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'claims']);
+            Redirect::withNotice('The claim(s) have been deleted ', 'success')
+                ->to($url);
+        }
     }
 
     /**
@@ -396,7 +449,8 @@ class ClaimsController extends Controller
         $process = $this->model->getProcess($claim->id);
         $meta = $this->getPolicyDetails($claim->policy_id);
         $this->view->set('meta', $meta);
-        $this->view->set('timeline', $this->getProcessDetails($process['process']));
+        $process_details = $this->getProcessDetails($process['process']);
+        $this->view->set('timeline', $process_details);
         $this->view->editClaim($claim, $meta);
     }
 
@@ -486,8 +540,8 @@ class ClaimsController extends Controller
     /**
      * @param null $search
      */
-    public function show($search = NULL)
-    {
+    public function show($search = NULL){
+        
         if (is_null($search)) {
             if ($this->user()->is('agent')) {
                 $rawClaims = $this->model->select(TABLE_PREFIX . 'claims.*')
@@ -534,6 +588,13 @@ class ClaimsController extends Controller
             $new_claim->product = $meta->product->name;
             $new_claim->customer_id = $meta->customer->id;
             $new_claim->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
+
+            // more fields
+            $new_claim->subject = $claim->subject;
+            $new_claim->description = $claim->description;
+            $new_claim->closed = $claim->closed;
+            $new_claim->agent_name = Elements::call('Agents/AgentsController')
+                ->getAgentById($claim->agent_id)->names;
             $__stash[] = $new_claim;
         }
         return $__stash;
@@ -610,5 +671,222 @@ class ClaimsController extends Controller
     public function myDashClaims()
     {
         $this->myClaims(true);
+    }
+
+    public function export()
+    {
+        $dbclaims = $this->model->all();
+        $claims = $this->_mapClaimsFields($dbclaims);
+//        dump($claims);exit
+        $columns = [
+            'customer' => 'Customer',
+            'policy' => 'Policy No',
+            'created' => 'Date Created',
+            'status' => 'Status',
+            'subject' => 'Subject',
+            'description' => 'Description',
+            'closed' => 'Closed',
+            'agent_name' => 'Agent'
+        ];
+
+        $company = $this->model->table('own_company')->first();
+        $doc = new Excel($company->name . ' Claims Listing', Input::post('filename'));
+
+        $doc->generateDoc($columns, $claims, Input::post('format'));
+    }
+
+    public function import()
+    {
+        $uploadfolder = Input::post('upload_folder');
+        $handler = new FileUpload('file_import');
+
+        if ($handler->handleUpload($uploadfolder)) {
+
+            $this->view->enable();
+            $filename = ABSOLUTE_PATH . DS . 'tmp' . DS . $_FILES['file_import']['name'];
+
+            $excel = new Excel();
+            $doc = $excel->importDoc($filename);
+
+            $doc->worksheet->name = $_FILES['file_import']['name'];
+            $doc->worksheet->filename = $filename;
+
+            $this->view->matchImportColumns($doc);
+        }
+    }
+
+    public function integrateImport()
+    {
+        $this->view->disable();
+
+        $columns = Input::post('columns');
+        $db = $this->model;
+
+        //reimport document
+        $excel = new Excel();
+        $doc = $excel->importDoc(Input::post('filepath'));
+
+        //starts at 2 to jump column titles row
+        $errorlog = [];
+//        dump($doc->worksheet->rows);exit;
+        for ($r = 2; $r <= $doc->worksheet->rowcount; $r++) {
+
+            for ($c = 1; $c <= count($columns); $c++) {
+
+                $colcount = ($c - 1);
+                $coldata = explode(',', $columns[$colcount]);
+                $colid = $coldata[0];
+                $dbcol = $coldata[1];
+
+                //get columns that havent been skipped
+                if (!is_null(Input::post('importselect_' . $colid)) && Input::post('importselect_' . $colid) != '') {
+
+                    $pickedcol = Input::post('importselect_' . $colid);
+
+                    switch ($dbcol) {
+
+                        case 'customer':
+                            //process customer name
+                            $customername = $doc->worksheet->rows[$pickedcol . ',' . $r];
+
+                            $customerelm = Elements::call('Customers/CustomersController');
+                            $customer = $customerelm->getCustomerByName($customername, 'raw');
+
+                            if (count($customer) == 0) {
+
+                                //if the customer doesn't exist create new record
+                                $customermdl = $customer->model;
+
+                                $customermdl->name = $customername;
+                                $customermdl->regdate = time();
+                                $customermdl->insurer_agents_id = 0;
+
+                                //save the customer
+                                $save = $customermdl->save();
+
+                                $customer_record_id = $save['last_altered_row'];
+                            } else {
+
+                                //get the customer record
+                                $customer_record_id = $customer[0]->id;
+                            }
+                            $db->customer_id = $customer_record_id;
+                            break;
+
+                        case 'policy':
+
+                            $policy_number = $doc->worksheet->rows[$pickedcol . ',' . $r];
+
+                            //get the products_id
+                            $policy_elm = Elements::call('Policies/PoliciesController');
+                            $policies = $policy_elm->model->where('policy_number', $policy_number)->show();
+
+                            if (count($policies) >= 1) {
+                                $db->policy_id = $policies[0]->id;
+                            } else {
+                                $errorlog['policy'][$pickedcol . ',' . $r] = 'Skipped! Policy number (' . $policy_number . ') does not exists!';
+                            }
+                            break;
+
+                        case 'agent_name':
+                            $agent_name = $doc->worksheet->rows[$pickedcol . ',' . $r];
+
+                            // find the agent by name
+                            $agent_ctrl = Elements::call('Agents/AgentsController');
+                            $agent = $agent_ctrl->model->where('names', $agent_name)->show();
+
+                            if (count($agent) == 0) {
+                                $errorlog['agent_name'][$pickedcol . ',' . $r] = 'Skipped! Agent ( ' . $agent_name . ' ) does not exist!';
+                            } else {
+                                $agent_id = $agent[0]->id;
+                            }
+
+                            $db->agent_id = $agent_id;
+                            break;
+
+                        default:
+                            //create the insert row
+                            $db->{$dbcol} = $doc->worksheet->rows[$pickedcol . ',' . $r];
+                            break;
+                    }
+                }
+
+                $db->created_at = date('Y-m-d H:i:s');
+            }
+
+            $save = $db->save();
+
+//            dump($this->model->errors());exit;
+            if (array_key_exists('ERROR', $save)) {
+                $errorlog['database'][$pickedcol . ',' . $r] = $save['ERROR'];
+            }
+        }
+
+        if (count($errorlog) == 0) {
+
+            Redirect::withNotice('The claims records have been imported.', 'success')
+                ->to(Url::route('/admin/claims'));
+        } else {
+
+            $this->view->showImportErrors($errorlog);
+        }
+    }
+
+    /**
+     * /**
+     * Prepare the quotes to be exported
+     */
+    public function getProcessedClaims()
+    {
+        $agents = Elements::call('Agents/AgentsController')->getAllAgents();
+        $quote_data = [];
+
+
+        // format the quotes
+        if (count($agents)) {
+            foreach ($agents as $agent) {
+                // get quotes by agent
+                $agent_claims = $this->model->getClaimsByAgent($agent->id)->get();
+
+                // get pending quotes
+                $open_claims = $this->model->getClaimsByAgent($agent->id, ['status' => 'Open'])->get();
+
+                // get rejected quotes
+                $closed_claims = $this->model->getClaimsByAgent($agent->id, ['status' => 'Closed'])->get();
+
+                // get accepted quotes
+                $new_claims = $this->model->getClaimsByAgent($agent->id, ['status' => 'New'])->get();
+                $processing = $this->model->getClaimsByAgent($agent->id, ['status' => 'Processing'])->get();
+
+                $quote_data[] = (object)[
+                    'agent_name' => $agent->names,
+                    'total_quotes' => count($agent_claims),
+                    'open_claims' => count($open_claims),
+                    'closed_claims' => count($closed_claims),
+                    'new_claims' => count($new_claims),
+                    'processing' => count($processing)
+                ];
+            }
+        }
+
+        return $quote_data;
+    }
+
+    public function getActiveClaims(){
+        if ($this->user()->is('agent')) {
+            $rawClaims = $this->model->select(TABLE_PREFIX . 'claims.*')
+                ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "claims.customer_id", 'LEFT')
+                ->where('insurer_agents_id', $this->user()->insurer_agents_id)
+                ->where('status', 'New')
+                ->get();
+        } else {
+            $rawClaims = $this->model->where('status', 'New')->get();
+        }
+        $claims = $this->_mapClaimsFields($rawClaims);
+
+        $this->set('count',count($rawClaims));
+        $this->set('source', $claims);
+        $this->set('search', $this->_seekForm());
+        $this->view->generateTable();
     }
 }

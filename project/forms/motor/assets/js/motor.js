@@ -1,4 +1,20 @@
 $(function () {
+    var Loader = {
+        autoFill: function () {
+            $.each(customer_data, function (index, value) {
+                var input = $('[name=' + index + ']');
+                if (input.is(':radio')) {
+                    $('[name=' + index + "][value=" + value + "]").attr('checked', 'checked');
+                } else if (input.is(':checkbox')) {
+                    $('[name=' + index + "][value=" + value + "]").prop('checked', true);
+                } else if (input.is('select')) {
+                    input.val(value);//.trigger('change');
+                } else {
+                    input.val(value);
+                }
+            });
+        }
+    };
     if ($("#motor_car_details").length) {
         var can_display = false;
         var counter = $('select[name=othercovers]');
@@ -28,6 +44,11 @@ $(function () {
             }
         });
     }
-    $('head').append('<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.structure.min.css">');
-    $('head').append('<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">');
+    if ($('#motor_personal_details').length) {
+        try {
+            Loader.autoFill();
+        } catch (e) {
+        }
+    }
+
 });

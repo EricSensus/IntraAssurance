@@ -51,10 +51,5 @@ echo $renewal_container;
 echo Overlays::Modal([
     'id' => 'download-docs'
 ]);
-?>
 
-<script>
-    var deletePolicy = function(){
-        $('#del_policy').submit();
-    }
-</script>
+echo Overlays::confirm();

@@ -32,7 +32,8 @@
                 <div class="panel-heading">
                     <h4 class="mb5 text-light" style="width: auto; float:left">Linked Documents</h4>
                     <div class="toolicon" style="width: auto; float:right" >
-                        <a data-target="#adddocument" href="<?=$url; ?>" data-backdrop="static" data-toggle="modal" class="new-entity add toolsbutton">
+                        <a data-target="#adddocument" href="<?=$url; ?>" data-backdrop="static" data-toggle="modal"
+                           class="new-entity add toolsbutton">
                             <img src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/add_icon.png">
                         </a>
                     </div>

@@ -116,7 +116,7 @@ class FinancialsView extends View {
                         ],
                         'delete' => [
                             'path' => '/admin/financials/delete',
-                            'using' => ['{id}'=>'{refno},{trackingid}']
+                            'using' => ['{id}'=>'{refno};{trackingid}']
                         ]
                 ]
         ];

@@ -7,7 +7,7 @@
  * Events Format - array( 'event_name' => array( 'event object, closure or value', 'priority', 'cycle_hook_point' ) );
  */
 use Jenga\App\Views\Redirect;
-use Jenga\MyProject\Users\Handlers\Gateway;
+use Jenga\MyProject\Users\Acl\Gateway;
 
 return [
     'auth.check' =>

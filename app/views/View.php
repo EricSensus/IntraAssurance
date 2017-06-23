@@ -5,6 +5,7 @@ use Jenga\App\Core\App;
 use Jenga\App\Project\Core\Project;
 use Jenga\App\Project\Core\Resources;
 
+use Detection\MobileDetect;
 use Symfony\Component\HttpFoundation\Response;
 
 class View extends Project {
@@ -31,6 +32,8 @@ class View extends Project {
     public $tplengine;
     public $response;
     
+    public $viewpoint;
+    
     private $_templates;
     private $_templatefolder;
     private $_settings;
@@ -44,6 +47,10 @@ class View extends Project {
         $this->tplengine = $layout;
         $this->_templates = Project::getTemplates();   
         $this->response = new Response();
+        
+        //initialize MobileDetect class
+        $this->viewpoint = new MobileDetect();
+        App::set('viewpoint', $this->viewpoint);
         
         if($layout != null){
             

@@ -75,7 +75,7 @@ class QuotesView extends View
         $count = $this->get('count');
         $source = $this->get('source');
 
-        $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
+        //$quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
 
         $columns = ['No', 'Actions', 'Lead Details', '', ''];
         $rows = [
@@ -86,7 +86,7 @@ class QuotesView extends View
                             {cname} got a <strong>{products_id}</strong> quote on <strong>{datetime}</strong>
                         </div>
                     }}',
-            '{{<a class="btn btn-default btn-sm" href="' . $quoteurl . '/edit/{quote_no}">View</a>}}',
+            '{{<a class="btn btn-default btn-sm" data-toggle="modal" data-target="#quotemodal" href="' . Url::link('/ajax/quotes/previewquote/') . '{encryptedno}/' . Help::encrypt('internal') . '">View</a>}}',
             '{{<a data-toggle="modal" data-target="#confirmquotemodal" class="btn btn-default btn-sm" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/{quote_no}">'
             . 'Confirm Quote'
             . '</a>}}'
@@ -114,8 +114,7 @@ class QuotesView extends View
             ]
         ];
 
-        echo $assign = Overlays::Modal($modal_settings);
-        echo Overlays::Modal(['id' => 'confirmquotemodal', 'size' => 'large']);
+        echo Overlays::Modal($modal_settings);
     }
 
     /**
@@ -197,18 +196,21 @@ class QuotesView extends View
                 }
             },
             '<li class="divider"></li>',
+
             function ($quote_no) {
-                $quoteurl = Elements::call('Navigation/NavigationController')->getUrl('quotes');
-                return '<li><a class="dropdown-item" href="' . $quoteurl . '/edit/' . $quote_no . '"><i class="fa fa-eye"></i> View Quote</a></li>';
+                return '<li><a class="dropdown-item" data-toggle="modal" data-target="#quotemodal" href="' . Url::link('/ajax/quotes/previewquote/') . Help::encrypt($quote_no) . '/' . Help::encrypt('internal') . '"><i class="fa fa-eye"></i> View Quote</a></li>';
             },
-            '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . '{quote_no}">'
-            . '<i class="fa fa-check-square-o"></i> Confirm Quote'
-            . '</a></li>',
+
+            '<li>
+                <a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . '{quote_no}">
+                    <i class="fa fa-check-square-o"></i> Confirm Quote
+                </a>
+            </li>',
             '<li class="divider"></li>',
-            //TODO Add Delete functionality
-            '<li><a class="dropdown-item" title="Mark Customer Response" href="#">'
-            . '<i class="fa fa-check-square-o"></i> Delete Quote'
-            . '</a></li>'
+            function ($quote_no) {
+                return '<li><a class="dropdown-item text-danger" data-confirm="Quote No.' . $quote_no . ' will be deleted. Are you sure?" title="Delete Quote" href="' . SITE_PATH . '/ajax/admin/quotes/delete/' . $quote_no . '">'
+                    . '<i class="fa fa-trash-o"></i> Delete Quote</a></li>';
+            }
         ]);
 
         $minitable = $table->render(TRUE);
@@ -261,7 +263,6 @@ class QuotesView extends View
             'Full Names',
             'Insured Entity',
             'Product',
-            'Linked Agent',
             'Status',
             'Premium'
             //'Source',
@@ -274,11 +275,9 @@ class QuotesView extends View
             . '{id}'
             . '</div></a>}}',
             '{date}',
-            //'{{<a href="'.Url::route('/admin/customers/{action}/{id}', ['action'=>'show']).'/{customers_id}">{customer}</a>}}',
-            '{customer}',
+            '{{<a href="' . Url::link('/admin/customers/show') . '/{customers_id}">{customer}</a>}}',
             '{entity}',
             '{product}',
-            '{agent}',
             '{status}',
             '{{<div style="text-align:right">{premium}</div>}}',
             //'{source}'
@@ -286,7 +285,7 @@ class QuotesView extends View
 
         if ($dash) {
             $columns = $this->removeValue('Full Names', $columns);
-            $rows = $this->removeValue('{customer}', $rows);
+            $rows = $this->removeValue('{{<a href="' . Url::link('/admin/customers/show') . '/{customers_id}">{customer}</a>}}', $rows);
         }
 
         $dom = '<"top">rt<"bottom"p><"clear">';
@@ -434,6 +433,15 @@ class QuotesView extends View
 
         $table = Generate::Table($name, $schematic);
 
+        $products = $this->get('products');
+        $statuslist = [
+            'new' => 'New',
+            'pending' => 'Response Pending',
+            'policy_pending' => 'Policy Pending',
+            'policy_created' => 'Complete',
+            'rejected' => 'Rejected'
+        ];
+
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
             'tools' => [
@@ -448,21 +456,8 @@ class QuotesView extends View
                         'action' => '/admin/quotes/search',
                         'controls' => [
                             'Full Name' => ['text', 'name', ''],
-                            'Product Type' => ['select', 'qtype', '', [
-                                '' => 'Select Product Type',
-                                'motor' => 'Motor',
-                                'medical' => 'Medical',
-                                'travel' => 'Travel',
-                                'domestic_package' => 'Domestic Package'
-                            ]],
-                            'Quote Status' => ['select', 'status', '', [
-                                '' => 'Select Quote Status',
-                                'new' => 'New',
-                                'pending' => 'Response Pending',
-                                'policy_pending' => 'Policy Pending',
-                                'policy_created' => 'Complete',
-                                'rejected' => 'Rejected'
-                            ]]
+                            'Product Type' => ['select', 'qtype', '', []],
+                            'Quote Status' => ['select', 'status', '', $statuslist]
                         ],
                         'map' => [2, 1]
                     ]
@@ -481,7 +476,7 @@ class QuotesView extends View
                 ],
                 'delete' => [
                     'path' => '/admin/quotes/delete',
-                    'using' => ['{id}' => '{customer}']
+                    'using' => ['{id}' => '{customer},{product},{premium}']
                 ]
             ]
         ];
@@ -496,13 +491,29 @@ class QuotesView extends View
 
             $table->buildShortcutMenu('{actions}', 'mouseover', [
                 function ($id) {
+
+                    return '<li><a class="dropdown-item" data-toggle="modal" data-target="#quotemodal" href="' . Url::link('/ajax/quotes/previewquote/') . Help::encrypt($id) . '/' . Help::encrypt('internal') . '">'
+                        . '<i class="fa fa-file-text-o"></i> Open Quote</a></li>'
+                        . '<li class="divider"></li>'
+                        . '<li><a class="dropdown-item" title="Edit Quote" href="' . SITE_PATH . '/admin/quotes/edit/' . $id . '">'
+                        . '<i class="fa fa-edit"></i> Edit Quote</a></li>';
+                },
+                '<li class="divider"></li>',
+                function ($id) {
                     return '<li><a target="_blank" class="dropdown-item" title="Preview Quote" href="' . SITE_PATH . '/quotes/previewquote/' . Help::encrypt($id) . '/' . Help::encrypt('internal') . '">'
-                        . '<i class="fa fa-eye"></i> Preview Quote</a></li>';
+                        . '<i class="fa fa-eye"></i> Open Quote in Preview</a></li>';
                 },
                 function ($status, $id) {
                     if ($status != 'Accepted') {
+
+                        if ($this->user()->is('customer')) {
+                            $response = 'Respond to this Quote';
+                        } else {
+                            $response = 'Mark Customer Response';
+                        }
+
                         return '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . $id . '">'
-                            . '<i class="fa fa-check-square-o"></i> Mark Customer Response</a></li>';
+                            . '<i class="fa fa-check-square-o"></i> ' . $response . '</a></li>';
                     }
                     return null;
                 },
@@ -519,12 +530,16 @@ class QuotesView extends View
                     return '<li><a  class="dropdown-item" title="Archive Quote" href="' . SITE_PATH . '/admin/quotes/archiveQuote/' . $id . '">'
                         . '<i class="fa fa-archive"></i> Archive Quote</a></li>';
                 },
-                '<li class="divider"></li>',
-                function ($id) {
-                    return '<li><a class="dropdown-item btn-danger" title="Delete Quote" href="' . SITE_PATH . '/ajax/admin/quotes/pdfquote/' . $id . '">'
-                        . '<i class="fa fa-trash-o"></i> Delete Quote</a></li>';
+                function ($id, $status) {
+
+                    if ($status != 'Accepted') {
+                        return '<li class="divider"></li>'
+                            . '<li><a class="dropdown-item text-danger" data-confirm="Quote No.' . $id . ' will be deleted. Are you sure?" title="Delete Quote" href="' . SITE_PATH . '/ajax/admin/quotes/delete/' . $id . '">'
+                            . '<i class="fa fa-trash-o"></i> Delete Quote</a></li>';
+                    }
                 },
             ]);
+
             $maintable = $table->render(TRUE);
 
             return $maintable;
@@ -1047,9 +1062,11 @@ class QuotesView extends View
     public function createQuotePreview($data, $confirm = false)
     {
         $object = (object)$data;
+
         $this->set('info', $data);
         $this->set('confirm', $confirm);
         $this->set('additional_covers', $this->covers($object->product));
+
         $this->setViewPanel('previews/' . $object->product_info->alias);
     }
 
@@ -1171,7 +1188,6 @@ class QuotesView extends View
         $controls = [];
         $maps = [];
         $count = 1;
-        //print_r($schematic['controls']);exit;
         foreach ($schematic as $schema) {
             if (empty($controls)) {
                 $controls = [
@@ -1186,9 +1202,7 @@ class QuotesView extends View
             $maps = array_merge($maps, $schema['map']);
             $count++;
         }
-        $controls['{submit}'] = ['button', 'btnSubmit', "Save Quote", 'button', ['class' => 'btn btn-success']];
-        array_push($maps, 1);
-        return $schemas = [
+        return [
             'preventjQuery' => true,
             'engine' => 'bootstrap',
             'validator' => 'parsley',

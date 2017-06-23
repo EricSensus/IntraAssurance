@@ -14,7 +14,8 @@ Route::get('/test-cron', 'UsersController@testCron');
 Route::post('/profile/save-password', 'UsersController@saveNewPassword');
 
 Route::group(['before' => 'auth.check'], function () {
-    // the customer routes
+    
+    //the customer routes
     Route::get('/profile/dashboard', 'admin' . DS . 'profile' . DS . 'views' . DS . 'panels' . DS . 'profile.php')
         ->assignPanels('admin', [
             'top' => 'NotificationsController@load:notices',

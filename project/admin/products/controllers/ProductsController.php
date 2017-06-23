@@ -10,9 +10,20 @@ use Jenga\App\Request\Input;
 use Jenga\App\Views\Notifications;
 use Jenga\App\Views\Redirect;
 use Jenga\MyProject\Elements;
+use Jenga\MyProject\Products\Models\ProductsModel;
+use Jenga\MyProject\Products\Views\ProductsView;
 
+/**
+ * Class ProductsController
+ * @property-read ProductsModel $model
+ * @property-read ProductsView $view
+ * @package Jenga\MyProject\Products\Controllers
+ */
 class ProductsController extends Controller
 {
+    /**
+     *
+     */
     public function index()
     {
 
@@ -31,6 +42,11 @@ class ProductsController extends Controller
         $this->$action();
     }
 
+    /**
+     * @param null $id
+     * @param string $return
+     * @return mixed
+     */
     public function getProduct($id = NULL, $return = 'array')
     {
         if (!is_null($id)) {
@@ -40,6 +56,9 @@ class ProductsController extends Controller
         }
     }
 
+    /**
+     *
+     */
     public function getProducts()
     {
 
@@ -55,6 +74,9 @@ class ProductsController extends Controller
         $this->view->productsDisplay($products);
     }
 
+    /**
+     *
+     */
     public function addedit()
     {
 
@@ -72,6 +94,9 @@ class ProductsController extends Controller
         return $fields;
     }
 
+    /**
+     *
+     */
     public function add()
     {
 
@@ -390,5 +415,18 @@ class ProductsController extends Controller
     public function getProductById($product_id)
     {
         return $this->model->where('id', $product_id)->first();
+    }
+
+    public function getProductsArr(){
+        $pdts = $this->model->all();
+
+        $products = [];
+        if(count($pdts)){
+            foreach ($pdts as $pdt) {
+                $products[$pdt->id] = $pdt->name;
+            }
+        }
+
+        return $products;
     }
 }

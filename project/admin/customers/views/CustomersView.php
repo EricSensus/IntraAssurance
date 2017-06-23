@@ -14,31 +14,32 @@ use Jenga\MyProject\Elements;
 class CustomersView extends View
 {
 
-    public function generateTable()
-    {
+    public function generateTable() {
 
         $count = $this->get('count');
         $source = $this->get('source');
         $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'customers']);
 
-        $columns = ['Full Name',
+        $columns = [
+            'Actions',
+            'Full Name',
             'Email Address',
             'Phone',
             'Policies',
             'Quotes',
             'Claims',
-            'Date of Registration',
-            'Actions'
+            'Date of Registration'            
         ];
 
-        $rows = ['{{<a href="' . $url . '/show/{id}">{name}</a>}}',
+        $rows = ['{actions}',
+            '{{<a href="' . $url . '/show/{id}">{name}</a>}}',
             '{email}',
             '{phone}',
             '{policies}',
             '{qcount}',
             '{claims}',
-            '{regdate}',
-            '{actions}'];
+            '{regdate}'
+            ];
 
         $dom = '<"top">rt<"bottom"p><"clear">';
 
@@ -63,7 +64,7 @@ class CustomersView extends View
                 'New Password' => ['password', 'new_password', null, ['class' => 'modal_required form-control']],
                 'Confirm Password' => ['password', 'confirm_password', null, ['class' => 'modal_required form-control']],
                 'Enabled' => ['radios', 'enabled', ['yes' => 'Yes', 'no' => 'No'], 'yes'],
-                'Send credentials to user' => ['checkbox', 'send_email', 'yes'],
+                'Send credentials to '.$customer->name => ['checkbox', 'send_email', 'yes'],
             ]
         ];
         $emailform = Generate::Form('credentialsform', $email_schema)->render('vertical', TRUE);
@@ -124,12 +125,16 @@ class CustomersView extends View
             ]
         ];
 
-        $claims_table = $this->_minitable('claimstable', $count, $columns, $rows, $source, $dom, $tools);
+        $minitable = $this->_minitable('claimstable', $count, $columns, $rows, $source, $dom, $tools);
+        
+        if (!is_null($tools))
+            $minitable->buildTools($tools);
+
+        $claims_table = $minitable->render(TRUE);        
         $this->set('claimstable', $claims_table);
     }
 
-    public function generatePolicies()
-    {
+    public function generatePolicies(){
 
         $count = $this->get('policycount');
         $source = $this->get('policies');
@@ -137,14 +142,21 @@ class CustomersView extends View
 
         $policyurl = Elements::call('Navigation/NavigationController')->getUrl('policies');
 
-        $columns = ['Policy No.', 'Validity', 'Issue Date', 'Product', 'Status', 'Issue'];
-        $rows = ['{{<a href="' . SITE_PATH . $policyurl . '/edit/{id}">{policyno}</a>}}',
+        $columns = ['Actions', 'Created', 'Policy No', 'Validity', 'Issue Date', 'Customer', 'Product', 'Premium',
+//            'Issue', 'Renew'
+        ];
+
+        $rows = [
+            '{actions}',
+            '{created}',
+            '{{<a href="' . $polurl . '/edit/{id}">{policyno}</a>}}',
             '{validity}',
             '{issuedate}',
+            '{{<a href="' . $suburl . '/show/{customers_id}">{customer}</a>}}',
             '{product}',
-            '{status}',
-            '{{<a href="' . SITE_PATH . '/admin/policies/processissue/{id}" ><img src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/issue_policy_icon.png" width="20" /></a>}}'];
-
+            '{premium}'
+        ];
+        
         $dom = '<"top"f>rt<"bottom"p><"clear">';
 
         $tools = ['images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small',
@@ -164,7 +176,69 @@ class CustomersView extends View
             ]
         ];
 
-        $policiestable = $this->_minitable('policiestable', $count, $columns, $rows, $source, $dom, $tools);
+        $minitable = $this->_minitable('policiestable', $count, $columns, $rows, $source, $dom, $tools);
+        
+        $minitable->buildShortcutMenu('{actions}', 'mouseover', [
+            function ($id) {
+                return '<li><a href="' . Url::link('/admin/policies/edit/' . $id) . '"><i class="fa fa-edit"></i> Open Policy</a></li>';
+            },
+            '<li class="divider"></li>',
+            function ($id) {
+                
+                if(!$this->user()->is('customer')){
+                    
+                    $list = '<li>'
+                            . '<a href="' . Url::link('/admin/policies/processissue/' . $id) . '"><i class="fa fa-check-square"></i> Issue Policy</a>'
+                            . '</li>';
+
+                    $list .= '<li>
+                                <a href="' . Url::link('/ajax/admin/policies/renewpolicy/' . $id) . '"
+                                    data-target="#renewal_modal" data-toggle="modal">
+                                <i class="fa fa-refresh"></i> Renew Policy</a>
+                              </li>';
+                }
+                elseif($this->user()->is('customer')){
+                    
+                    $list .= '<li>
+                                <a href="' . Url::link('/ajax/admin/policies/renewpolicyrequest/' . $id) . '"
+                                    data-target="#renewal_modal" data-toggle="modal">
+                                <i class="fa fa-refresh"></i> Send Renewal Request</a>
+                              </li>';
+                }
+                
+                $list .= '<li>
+                        <a href="' . Url::link('/admin/policies/downloaddocs/' . $id) . '" data-toggle="modal" data-target="#download-docs">
+                            <i class="fa fa-download"></i> Download Related Docs </a>
+                    </li>';
+                
+                return $list;
+            },
+            '<li class="divider"></li>',
+            function ($id) {
+                return '<li><a target="_blank" href="' . Url::link('/admin/policies/previewpolicy/' . $id) . '"><i class="fa fa-eye"></i> Preview Policy</a></li>' .
+                    '<li>
+                        <a href="' . Url::link('/ajax/admin/policies/emailpolicy/' . $id) . '" 
+                            data-toggle="modal" data-target="#emailmodal">
+                                <i class="fa fa-envelope"></i> Email Policy</a></li>' .
+                    '<li><a target="_blank" href="' . Url::link('/ajax/admin/policies/pdfpolicy/' . $id) . '"><i class="fa fa-file-pdf-o"></i> Generate PDF</a></li>';
+            },
+            function ($id) {
+                if (!$this->user()->is('customer')) {
+                    return '<li class="divider"></li>'
+                        . '<li>'
+                            . '<a data-confirm="Policy No.'.$id.' will be deleted. Are you sure?" title="Delete Policy" href="' . Url::link('/ajax/admin/policies/deletesingle/' . $id) . '">'
+                                . '<i class="fa fa-check-square-o"></i> Delete Policy'
+                            . '</a>'
+                        . '</li>';
+                }
+            }
+        ]);
+        
+        if (!is_null($tools))
+            $minitable->buildTools($tools);
+
+        $policiestable = $minitable->render(TRUE);
+        
         $this->set('policiestable', $policiestable);
     }
 
@@ -212,7 +286,13 @@ class CustomersView extends View
             ]
         ];
 
-        $subquotes = $this->_minitable('quotestable', $count, $columns, $rows, $source, $dom, $tools);
+        $minitable = $this->_minitable('quotestable', $count, $columns, $rows, $source, $dom, $tools);
+        
+        if (!is_null($tools))
+            $minitable->buildTools($tools);
+
+        $subquotes = $minitable->render(TRUE);
+        
         $this->set('quotes', $subquotes);
 
         $modal_settings = [
@@ -231,8 +311,11 @@ class CustomersView extends View
         $this->set('quoteModal', Overlays::Modal($modal_settings));
     }
 
-    public function generateEntitiesTable($entities)
-    {
+    /**
+     * Generate the customer's entities table
+     * @param type $entities
+     */
+    public function generateEntitiesTable($entities) {
 
         $count = $this->get('entitycount');
         $customerurl = Elements::call('Navigation/NavigationController')->getUrl('customers', TRUE, TRUE);
@@ -250,7 +333,9 @@ class CustomersView extends View
 
         $dom = '<"top"f>rt<"bottom"p><"clear">';
 
-        $entitiestable = $this->_minitable('entitiestable', $count, $columns, $rows, $entities, $dom);
+        $table = $this->_minitable('entitiestable', $count, $columns, $rows, $entities, $dom);
+
+        $entitiestable = $table->render(TRUE);
         $this->set('entitiestable', $entitiestable);
     }
 
@@ -359,6 +444,29 @@ class CustomersView extends View
         } else {
 
             $customertable['tools'] = $table->buildTools($tools, TRUE);
+            
+            //build context menu
+            $table->buildShortcutMenu('{actions}', 'mouseover', [
+                
+                function($id, $name, $policies, $qcount, $claims){
+                
+                    $name_split = explode(' ', $name);
+                    
+                    return '<li><a class="dropdown-item" href="' . Url::link('/admin/customers/show/' . $id.'/personal-details') . '">'
+                                . '<i class="fa fa-user-o"></i> Open '.$name.'</a></li>'
+                            . '<li class="divider"></li>'
+                            . '<li><a class="dropdown-item" href="' . Url::link('/admin/customers/show/' . $id) . '/policies">'
+                                . '<i class="fa fa-id-card-o"></i> View '.$name_split[0].'\'s Policies ('.$policies.')</a></li>'
+                            . '<li><a class="dropdown-item" href="' . Url::link('/admin/customers/show/' . $id) . '/generated-quotes">'
+                                . '<i class="fa fa-file-text-o"></i> View '.$name_split[0].'\'s Quotes ('.$qcount.')</a></li>'
+                            . '<li><a class="dropdown-item" href="' . Url::link('/admin/customers/show/' . $id) . '/entities">'
+                                . '<i class="fa fa-server"></i> View '.$name_split[0].'\'s Entities ('.$claims.')</a></li>'
+                            . '<li class="divider"></li>'
+                            . '<li><a class="dropdown-item" data-toggle="modal" data-target="#credetialsModal" href="' . Url::link('/ajax/admin/customers/showmodal/' . $id) . '">'
+                                . '<i class="fa fa-lock"></i> Update '.$name_split[0].'\'s Login Credentials</a></li>';
+                }
+            ]);
+            
             $customertable['table'] = $table->render(TRUE);
 
             return $customertable;
@@ -409,13 +517,7 @@ class CustomersView extends View
             ]
         ];
 
-        $table = Generate::Table($name, $schematic);
-
-        if (!is_null($tools))
-            $table->buildTools($tools);
-
-        $minitable = $table->render(TRUE);
-
+        $minitable = Generate::Table($name, $schematic);
         return $minitable;
     }
 

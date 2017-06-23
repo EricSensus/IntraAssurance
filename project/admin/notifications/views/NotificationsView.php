@@ -40,7 +40,7 @@ class NotificationsView extends View {
                 $list .= '<div id="list-item-'.$notice->id.'" class="list-group-item list-group-item-action '.($notice->viewed ? 'disabled' : '').'">'
                             . '<div class=" row">'
                                     . '<div class="col-md-11">'
-                                        . '<a data-system-location="'.$link.'" class="noticelink">'
+                                        . '<a id="notice-item-'.$notice->id.'" href="'.$link.'" class="noticelink">'
                                             . '<p>'.strip_tags($notice->message).'</p>'
                                             . '<small>Dated: '.date('d M Y H:i A',$notice->created_at).'</small>'
                                         . '</a>'

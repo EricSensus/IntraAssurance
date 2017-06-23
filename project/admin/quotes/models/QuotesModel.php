@@ -55,21 +55,22 @@ class QuotesModel extends ORM
     /**
      * Get the quotes from table
      * @param bool $show_archived
+     * @param null $user
      * @return
      */
-    public function getQuotes($show_archived = false)
+    public function getQuotes($show_archived = false, $user = null)
     {
         // the main query
         $this->select(TABLE_PREFIX . 'customer_quotes.*, '
-            . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents, '
-            . TABLE_PREFIX . 'customer_quotes.*');
+            . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents');
 
         $this->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id");
 
         // filter by logged in agent
-//        if($this->user()->is('agent'))
-//            $this->where('insurer_agents_id', $this->user()->insurer_agents_id);
+        if(!is_null($user) && $user->is('agent'))
+            $this->where('insurer_agents_id', $user->insurer_agents_id);
 
+//        dump(Input::post());exit;
         if (!is_null(Input::post('search'))) {
 
             //add the name section
@@ -89,7 +90,7 @@ class QuotesModel extends ORM
             if (Input::post('qtype') != '') {
 
                 $params .= 'Quote Type: ' . Input::post('qtype') . ', ';
-                $this->where('quotetype', '=', Input::post('qtype'));
+                $this->where('products_id', '=', Input::post('qtype'));
             }
 
             //add the quote status section
@@ -437,4 +438,112 @@ class QuotesModel extends ORM
         return false;
     }
 
+    /**
+     * Get the quotes that have been converted into policies for a particular month
+     */
+    public function getSalesConversionForCurrMonth(){
+        $weeks = $this->getWeeksInMonth(date('m'), date('Y'));
+
+        $month_data = [];
+        $count = 0;
+        foreach($weeks as $week){
+            $no = $count + 1;
+
+            $month_data['Week '.$no] = $this->getWeeklySaleConversions($week['from'], $week['to']);
+
+            $count++;
+        }
+        return $month_data;
+    }
+
+    /**
+     * @param $from_date
+     * @param $to_date
+     * @return int
+     */
+    public function getWeeklySaleConversions($from_date, $to_date){
+        $from_date = strtotime($from_date);
+        $to_date = strtotime($to_date);
+
+        // the main query
+        $scs = $this->join('policies', TABLE_PREFIX . "customer_quotes.id = " . TABLE_PREFIX . "policies.customer_quotes_id")
+            ->where(TABLE_PREFIX . 'customer_quotes.datetime', '>=', $from_date)
+            ->where(TABLE_PREFIX . 'customer_quotes.datetime', '<', $to_date)
+            ->get();
+
+        $scs_count = count($scs);
+
+        return $scs_count;
+    }
+
+    /**
+     * Get all the weeks in a month
+     * @param $month
+     * @param $year
+     * @return array
+     */
+    public function getWeeksInMonth($month, $year){
+        $last_day = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        $weeks = [];
+        $continue=true;
+        $start=1;
+        do{
+            $end=$start+7;
+
+            if($last_day<=$end)
+            {
+                $continue=false;
+                $end=$last_day;
+            }
+            $weeks[] = [
+                'from' => date('Y-m-'.$start),
+                'to' => date('Y-m-'.$end)
+            ];
+
+            $start+=7;
+        } while($continue);
+        return $weeks;
+    }
+
+    /**
+     * Get Quotes by Agent
+     * @param $agent_id
+     * @return \Jenga\App\Database\Mysqli\Database
+     */
+    public function getQuotesByAgent($agent_id, $conditions = array()){
+        
+        $agent_quotes = $this->select(TABLE_PREFIX . 'customer_quotes.*, '
+            . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents')
+            ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id")
+            ->where('insurer_agents_id', $agent_id)
+            ->where('datetime', '>=', strtotime(Input::post('from_date')))
+            ->where('datetime', '<=', strtotime(Input::post('to_date')));
+
+        if(count($conditions)){
+            foreach ($conditions as $key => $value){
+                $agent_quotes->where($key, $value);
+            }
+        }
+        return $agent_quotes->get();
+    }
+
+    public function getDirectQuotes($conditions = array()){
+        $direct_quotes = $this->select(TABLE_PREFIX . 'customer_quotes.*, '
+            . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents')
+            ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id")
+            ->where('datetime', '>=', strtotime(Input::post('from_date')))
+            ->where('datetime', '<=', strtotime(Input::post('to_date')))
+            ->whereIsNull('insurer_agents_id');
+
+        if(count($direct_quotes)){
+            foreach ($conditions as $key => $value){
+                $direct_quotes->where($key, $value);
+            }
+        }
+
+//         $direct_quotes->get();
+//        dump($this->getLastQuery());
+        return $direct_quotes->get();
+    }
 }

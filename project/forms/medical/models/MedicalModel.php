@@ -14,6 +14,7 @@ use Jenga\App\Models\ORM;
  * @author developer
  */
 class MedicalModel extends ORM{
+    
     public function createMedicalPricingTable(){
         $schema = $this->schema;
 

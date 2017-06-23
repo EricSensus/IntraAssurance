@@ -14,6 +14,7 @@ use Jenga\MyProject\Elements;
 
 use Jenga\MyProject\Navigation\Views\NavigationView;
 use Jenga\MyProject\Navigation\Models\NavigationModel;
+use MongoDB\BSON\Type;
 
 /**
  * Class NavigationController 
@@ -50,7 +51,7 @@ class NavigationController extends Controller
         $dbitems = $this->model->getMenuFromGroupAlias($group->alias);
 
         foreach ($dbitems as $item) {
-            $allitems[$item->linkid] = $item->linkname;
+            $allitems[$item->linkid] = $item->linkname.' ['.$group->alias.']';
         }
 
         if (!Input::has('id')) {
@@ -239,6 +240,7 @@ class NavigationController extends Controller
                 $url = str_replace('{base}', '', $baseurl);
             }
         } else {
+        print_r($menu_items);exit;
             $url = $ajax . $results[0]->href;
         }
 
@@ -283,7 +285,7 @@ class NavigationController extends Controller
                 $linklist[] = $link;
 
                 //process the children
-                $childlinks = $this->model->where('parentid', $link->id)->orderBy('linkorder', 'asc')->show();
+                $childlinks = $this->model->where('menu_groups_id', $id)->where('parentid', $link->id)->orderBy('linkorder', 'asc')->show();
 
                 if (count($childlinks) > 0) {
 
@@ -391,24 +393,41 @@ class NavigationController extends Controller
         $menuname = $this->getMenusFromAccesslevel();
         $menu_items = $this->display($menuname, null, true);
 
-        return $this->view->showFrontMenu($menu_items);
+        $front_menu = array();
+
+        if(count($menu_items)){
+            foreach ($menu_items as $item){
+                if($item->parentid == 0){
+                    $child_items = $this->model->getChildMenusByParentId($item->linkid);
+                    $front_menu[] = [
+                        'linkname' => $item->linkname,
+                        'href' => $item->href,
+                        'children' => $child_items
+                    ];
+                }
+            }
+        }
+
+        return $this->view->showFrontMenu($front_menu);
     }
-    
+
     /**
      * Gets the default link for each menu group by sent acl
      * @param type $acl
+     * @return mixed
      */
     public function getDefaultLinkByAcl($acl) {
         
         $url = $this->model->getDefaultLinkByAcl($acl);
         return $this->view->processHref($url->href);
     }
-    
+
     /**
      * Get link by alias and acl
-     * 
+     *
      * @param type $alias
      * @param type $acl
+     * @return mixed
      */
     public function getLinkByAliasAcl($alias, $acl){
         

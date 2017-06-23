@@ -210,8 +210,14 @@ class Input {
         
         $inputkeys = self::{$request_method}();
         
-        if(array_key_exists($key, $inputkeys))           
+        if(array_key_exists($key, $inputkeys)){  
+            
+            if(is_null($inputkeys[$key])){
+                return FALSE;
+            }
+            
             return TRUE;
+        }
         else            
             return FALSE;
     }

@@ -1,6 +1,7 @@
 <?php
 namespace Jenga\App\Views;
 
+use Jenga\App\Core\App;
 use Jenga\App\Request\Session;
 
 class Notifications extends Overlays {
@@ -82,8 +83,7 @@ class Notifications extends Overlays {
         
         if(in_array($level, $this->_msglevels)){
             
-            $session_key = 'message_'.$level;
-            
+            $session_key = 'message_'.$level;            
             Session::flash($session_key, $msg);
 
             if($attributes == 'sticky'){
@@ -123,7 +123,7 @@ class Notifications extends Overlays {
             $strongmsg = 'Warning: ';
 
             $msg = Session::get('message_warning');
-            $type = NULL;
+            $type = 'warning';
         }
         elseif(Session::has('message_error')){
 
@@ -134,14 +134,17 @@ class Notifications extends Overlays {
             $type = 'danger';
         }
         
-        if(!self::$detect->isMobile() && isset($msg)){
+        //get viewpoint MobileDetect class
+        $viewpoint = App::get('viewpoint');
+        
+        if(!$viewpoint->isMobile() && isset($msg)){
             
             HTML::script(RELATIVE_VIEWS.'/notifications/notifications.js','file');
             HTML::script('$.bootstrapGrowl("<strong>'.$strongmsg.'</strong>'.$msg.'", {
-            type: "'.$type.'",
-            width: "auto",
-            allow_dismiss: true
-        });');
+                            type: "'.$type.'",
+                            width: "auto",
+                            allow_dismiss: true
+                        });');
             
         }
         elseif(isset($msg)){

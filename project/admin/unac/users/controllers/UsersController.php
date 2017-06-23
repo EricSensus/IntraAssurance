@@ -148,8 +148,7 @@ class UsersController extends Controller
     /**
      * Logs the user into the system
      */
-    public function login()
-    {
+    public function login(){
 
         $this->view->disable();
         $user = $this->model->check(Input::post('username'), Input::post('password'));
@@ -166,12 +165,21 @@ class UsersController extends Controller
         } else {
 
             //get the full names from the user profiles
-            $data = $this->model->getUserFromProfile($user->user_profiles_id);
-
+            if(!is_null($user->user_profiles_id)){
+                
+                $data = $this->model->getUserFromProfile($user->user_profiles_id);
+                $names = $data->name;
+            }
+            elseif(!is_null($user->insurer_agents_id)){
+                
+                $data = $this->model->getUserFromProfile($user->insurer_agents_id,'agents','*');
+                $names = $data->names;
+            }
+            
             //assign all the user attributes
             $attributes = [
                 'id' => $user->id,
-                'fullname' => $data->name,
+                'fullname' => $names,
                 'username' => $user->username,
                 'password' => $user->password,
                 'acl' => $user->acl,
@@ -212,11 +220,10 @@ class UsersController extends Controller
     /**
      * Logs the user out of the system
      */
-    public function logout()
-    {
+    public function logout(){
 
         $id = Input::get('sessid');
-
+        
         if (!is_null($id)) {
 
             $this->auth->destroyUserState();
@@ -327,25 +334,22 @@ class UsersController extends Controller
     public function saveLoginCredentials()
     {
         $this->view->disable();
-
         if (Input::post('apassword') == Input::post('cpassword')) {
             $plain_pass = Input::post('apassword');
             $username = Input::post('username');
+            $agent_id = Input::post('id');
 
             $agent = Elements::call('Agents/AgentsController')
-                ->model->where('email_address', Input::post('username'))
+                ->model->where('id', $agent_id)
                 ->first();
 
-            $user = $this->model->find([
-                'username' => $username
-            ]);
+            $user = $this->model->find();
 
             $user->username = $username;
             $user->password = md5($plain_pass);
             $user->acl = 'agent';
             $user->enabled = (Input::post('enabled') != 'yes' ? 'no' : 'yes');
             $user->insurer_agents_id = $agent->id;
-
             $save = $user->save();
 
             if ($user->hasNoError()) {
@@ -370,10 +374,10 @@ class UsersController extends Controller
                     $own_company->email_address => $own_company->name
                 ]);
 
-                // add system notification
+                // add system notification to agent
                 $message = 'Dear ' .$agent->names . ', ';
                 $message .= 'Your login credentials are; Username: ' . $username . ', Password: ' . $plain_pass;
-                $notice->add($message, 'customer', $user->last_altered_row, 'setup');
+                $notice->add($message, 'agent', $user->last_altered_row, 'setup');
 
                 Redirect::withNotice('The user login credentials have been saved', 'success')
                     ->to(Input::post('destination'));
@@ -652,6 +656,14 @@ class UsersController extends Controller
 
     public function getUserByAgentId($agent_id){
         return $this->model->where('insurer_agents_id', $agent_id)->first();
+    }
+
+    /**
+     * Deletes a user
+     * @param $id
+     */
+    public function delete($id){
+        $this->model->where('id', $id)->delete();
     }
 }
 

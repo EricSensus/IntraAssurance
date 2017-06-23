@@ -1,3 +1,7 @@
+<?php
+    use Jenga\App\Views\Overlays;
+    use Jenga\App\Request\Session;
+?>
 <div class="col-md-12">
     <?php
 
@@ -81,3 +85,31 @@
     }
     ?>
 </div>
+<?php
+    if(Session::has('policy')){
+?>
+    <a href="" data-toggle="modal" data-target="#confirmquotemodal"
+       id="proceed_with_policy" class="btn btn-success pull-right">
+        Continue with Policy creation <i class="fa fa-arrow-right"></i>
+    </a>
+    <?php
+    $confirm_quote_modal = [
+        'formid' => 'confirmquoteform',
+        'id' => 'confirmquotemodal',
+        'role' => 'dialog',
+        'title' => 'Confirm Quote',
+        'buttons' => [
+            'Cancel' => [
+                'class' => 'btn btn-default',
+                'data-dismiss' => 'modal'
+            ],
+            'Attach' => [
+                'type' => 'submit',
+                'class' => 'btn btn-primary',
+                'id' => 'save_button'
+            ]
+        ]
+    ];
+    echo Overlays::Modal($confirm_quote_modal);
+    }
+?>

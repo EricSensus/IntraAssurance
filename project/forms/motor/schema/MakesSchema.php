@@ -13,12 +13,15 @@ class MakesSchema implements SchemaInterface {
      * This would be used for creating the table and inserting the new columns
      */
     public function build() {
+        
         $schema = SchemaTasks::create($this->table);
+        
         $schema->table('makes');
         $schema->column('id', ['int(10)' . 'NOT NULL']);
         $schema->column('code', ['varchar(55)', 'NOT NULL', 'DEFAULT \'\'']);
         $schema->column('title', ['varchar(55)', 'NOT NULL', 'DEFAULT \'\'']);
         $schema->build();
+        
         return $schema;
     }
 

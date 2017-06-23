@@ -1,6 +1,16 @@
 <?php
+use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
+use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
+
+HTML::script('$(document).ready( function () {
+    
+                $("#quotes_table").ready(function(){
+                    $("#quotes_table_paginate").appendTo($(".active-quotes-pagination"));
+                });
+                
+            } );');
 ?>
 <div class="mini-panel">
     <div class="float-left">
@@ -50,3 +60,8 @@ use Jenga\App\Views\Notifications;
 
     </div>
 </div>
+<?php
+echo Overlays::confirm();
+echo Overlays::Modal(['id' => 'confirmquotemodal']);
+echo Overlays::Modal(['id'=>'quotemodal','size'=>'large']);
+

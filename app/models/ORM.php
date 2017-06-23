@@ -271,7 +271,7 @@ class ORM { //extends Mysqli\Database
      * 
      * @var array
      */
-    public $operators = array('BETWEEN','NOT BETWEEN','LIKE','NOT LIKE','IN','NOT IN','IS NOT','IS NOT NULL',
+    public $operators = array('BETWEEN','NOT BETWEEN','LIKE','NOT LIKE','IN','NOT IN','IS NOT','IS NOT NULL','IS NULL',
                             '<','<=','=','!=',':=','^','|','<=>','->','>=','>');
     
     
@@ -820,6 +820,30 @@ class ORM { //extends Mysqli\Database
         //}
         
         $this->fxnstatus['last_function'] = __FUNCTION__;
+        return $this;
+    }
+    
+    /**
+     * Adds the IS NULL keyword to the where condition
+     * 
+     * @param type $whereProp
+     * @return \Jenga\App\Models\ORM
+     */
+    public function whereIsNull($whereProp){
+        
+        $this->where($whereProp, 'IS NULL');
+        return $this;
+    }
+    
+    /**
+     * Adds the IS NOT NULL keyword to the where condition
+     * 
+     * @param type $whereProp
+     * @return \Jenga\App\Models\ORM
+     */
+    public function whereIsNotNull($whereProp){
+        
+        $this->where($whereProp, 'IS NOT NULL');
         return $this;
     }
     

@@ -810,7 +810,7 @@ class Table extends View {
      */
     private function _returnShortcutMenuActions($list, $rowcount, $source){
         
-        $actions = '<ul id="shortcutMenu-'.($rowcount+1).'" class="dropdown-menu" role="shortcutmenu" >';
+        $actions = '<ul id="shortcutMenu-'.$this->name.($rowcount+1).'" class="dropdown-menu" role="shortcutmenu" >';
         
         foreach($list as $item){
             

@@ -24,8 +24,8 @@ class ClaimsView extends View
     /**
      * @param bool $dash
      */
-    public function generateTable($dash = false)
-    {
+    public function generateTable($dash = false){
+        
         $this->dash = $dash;
 
         $_navigation = Elements::call('Navigation/NavigationController');
@@ -40,9 +40,11 @@ class ClaimsView extends View
             $this->set('alerts', Notifications::Alert($condition
                 . '<a data-dismiss="alert" class="close" href="' . $url . '">×</a>', 'info', TRUE, TRUE));
         }
+        
         $cust_url = $_navigation->getUrl('customers');
         $polurl = $_navigation->getUrl('policies');
         $columns = ['Actions', 'Claim No', 'Customer', 'Policy', 'Product', 'Start Date', 'Status'];
+        
         //  print_r(get_defined_vars());exit;
         $rows = [
             '{actions}',
@@ -54,7 +56,9 @@ class ClaimsView extends View
             '{status}'
         ];
         $dom = '<"top">rt<"bottom"p><"clear">';
+        
         $claims_table = $this->_mainTable('claims_table', $count, $columns, $rows, $source, $dom, $search);
+        
         $modal_settings = [
             'id' => 'emailmodal',
             'formid' => 'email-claim-form',
@@ -67,6 +71,7 @@ class ClaimsView extends View
                 ]
             ]
         ];
+        
         $form = Overlays::Modal($modal_settings);
         $this->set('mailmodal', $form);
         $this->set('claims_table', $claims_table);
@@ -132,14 +137,9 @@ class ClaimsView extends View
                 ]
             ]
         ];
-        //   $new_claim->actions = '<div class="row">'
-//                . '<div class="col-md-2">'
-//                . '<a target="_blank" href="' . SITE_PATH . '/admin/claims/edit/' . $claim->id . '" >'
-//                . '<img style="opacity: 0.5" ' . Notifications::tooltip('Click to preview claim') . ' src="' . RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/small/preview_icon.png" />'
-//                . '</a>'
-//                . '</div>'
-//                . '</div>';
+        
         $table = Generate::Table($name, $schematic);
+        
         $table->buildShortcutMenu('{actions}', 'mouseover', [
             function ($id) {
                 return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '">'
@@ -162,17 +162,26 @@ class ClaimsView extends View
                     . '<i class="fa fa-check-circle"></i> Update Claim'
                     . '</a></li>';
             },
-            '<li class="divider"></li>', function ($id) {
-                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '#edit-claim">'
-                    . '<i class="fa fa-ban"></i> Close Claim'
-                    . '</a></li>';
+            function ($id) {
+                
+                if(!$this->user()->is('customer')){
+                    
+                    return '<li class="divider"></li>'
+                        . '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/edit/' . $id . '#edit-claim">'
+                        . '<i class="fa fa-ban"></i> Close Claim'
+                        . '</a></li>';
+                }
             },
             function ($id) {
-                return '<li><a  class="dropdown-item"  href="' . SITE_PATH . '/admin/claims/delete/' . $id . '">'
-                    . '<i class="fa fa-trash-o"></i> Delete Claim'
-                    . '</a></li>';
+                if(!$this->user()->is('customer')){
+                    
+                    return '<li><a data-confirm="Claim No.'.$id.' will be deleted. Are you sure?" title="Delete Claims" class="dropdown-item" href="' . SITE_PATH . '/admin/claims/delete/' . $id . '">'
+                        . '<i class="fa fa-trash-o"></i> Delete Claim'
+                        . '</a></li>';
+                }
             }
         ]);
+        
         $tools = [
             'images_path' => RELATIVE_PROJECT_PATH . '/templates/admin/images/icons/',
             'tools' => [
@@ -181,22 +190,22 @@ class ClaimsView extends View
                     'path' => '/admin/claims/add'
                 ],
                 'import' => [
-                    'path' => Url::base() . '/admin/policies/import',
+                    'path' => Url::base() . '/admin/claims/import',
                     'upload_folder' => ABSOLUTE_PATH . '/tmp',
                     'allowed_file_extensions' => ['csv', 'xls', 'xlsx', 'xlsm', 'xlsb'],
                     'file_preview' => FALSE
                 ],
                 'export' => [
-                    'path' => '/admin/policies/export'
+                    'path' => '/admin/claims/export'
                 ],
                 'printer' => [
-                    'path' => '/admin/policies/printer',
+                    'path' => '/admin/claims/printer',
                     'settings' => [
                         'title' => 'Quotes Management'
                     ]
                 ],
                 'delete' => [
-                    'path' => '/admin/policies/delete',
+                    'path' => '/admin/claims/delete',
                     'using' => ['{id}' => '{insurer},{customer}'],
                     'confirm' => true
                 ],
@@ -210,6 +219,12 @@ class ClaimsView extends View
 
             if (!$this->dash) {
 
+                //remove tools if user is customer
+                if($this->user()->is('customer')){
+                    
+                    unset($tools['tools']['import'],$tools['tools']['delete']);
+                }
+                
                 $claims_tools = $table->buildTools($tools, true); //->assignPanel('search');
                 $this->set('claims_tools', $claims_tools);
             }
@@ -255,6 +270,7 @@ class ClaimsView extends View
         $claim_schematic = [
             'preventjQuery' => TRUE,
             'method' => 'POST',
+            'attributes' => ['enctype' => 'multipart/form-data'],
             'css' => false,
             'action' => '/admin/claims/saveclaim',
             'controls' => [
@@ -553,5 +569,124 @@ class ClaimsView extends View
         $this->set('claimedit', $editform);
         $this->set('claim', $claim);
         $this->setViewPanel('claims_edit_panel');
+    }
+
+    public function matchImportColumns($doc)
+    {
+
+        $alert = Notifications::Alert('The <strong>' . $doc->worksheet->name . '</strong> has been imported. '
+            . 'Now align matching policies table columns with the imported document columns', 'success', TRUE);
+
+        $columns = [
+            'customer' => 'Customer',
+            'policy' => 'Policy No',
+            'created' => 'Date Created',
+            'status' => 'Status',
+            'subject' => 'Subject',
+            'description' => 'Description',
+            'closed' => 'Closed',
+            'agent_name' => 'Agent'
+        ];
+
+        $importcolumns = $doc->worksheet->columns;
+
+        //get full table
+        $count = 1;
+        $table = '<div class="row">';
+
+        foreach ($columns as $dbcol => $column) {
+            //create select tag
+            $scount = -1;
+            $select = '<select class="form-control" name="importselect_' . $count . '">';
+            foreach ($importcolumns as $imcolumn) {
+
+                if ($scount == -1) {
+                    $select .= '<option selected="selected" value="">Skip Column</option>';
+                    $scount++;
+                }
+
+                $select .= '<option value="' . $scount . '">' . $imcolumn . '</option>';
+                $scount++;
+            }
+            $select .= '</select>';
+
+            $table .= '<div class="col-md-3">'
+                . '<table class="table table-striped table-bordered">'
+                . '<tr>'
+                . '<td><p><strong>Column ' . $count . ': ' . $column . '</strong></p></td>'
+                . '</tr>'
+                . '<tr height="50">'
+                . '<td>'
+                . '<input type="hidden" name="columns[]" value="' . $count . ',' . $dbcol . '" >'
+                . 'Select the import column which matches with <strong>' . $column . '</strong>'
+                . '</td>'
+                . '</tr>'
+                . '<tr>'
+                . '<td>' . $select . '</td>'
+                . '</tr>'
+                . '</table>'
+                . '</div>';
+            $count++;
+        }
+        $table .= '</div>';
+
+        $this->set('filepath', $doc->worksheet->filename);
+        $this->set('alert', $alert);
+        $this->set('claims_match_columns', $table);
+
+        $this->setViewPanel('claims-match-columns');
+    }
+
+    public function showImportErrors($errorlog)
+    {
+
+        $dberrors = $errorlog['database'];
+
+        $table = '<table class="table table-striped">'
+            . '<thead>'
+            . '<tr>'
+            . '<th>Column Row Coordinates</th>'
+            . '<th>Error Category</th>'
+            . '<th>Error</th>'
+            . '</tr>'
+            . '</thead>';
+
+
+        $table .= '</tbody>';
+
+        //database errors
+        foreach ($dberrors as $coords => $error) {
+
+            $table .= '<tr>'
+                . '<td>' . $coords . '</td>'
+                . '<td>Database</td>'
+                . '<td>' . $error . '</td>'
+                . '</tr>';
+        }
+
+        //product errors
+        $pderrors = $errorlog['policy'];
+        foreach ($pderrors as $coords => $error) {
+
+            $table .= '<tr>'
+                . '<td>' . $coords . '</td>'
+                . '<td>Products</td>'
+                . '<td>' . $error . '</td>'
+                . '</tr>';
+        }
+
+        //product errors
+        $inserrors = $errorlog['agent_name'];
+        foreach ($inserrors as $coords => $error) {
+
+            $table .= '<tr>'
+                . '<td>' . $coords . '</td>'
+                . '<td>Insurers</td>'
+                . '<td>' . $error . '</td>'
+                . '</tr>';
+        }
+
+        $table .= '</tbody>'
+            . '</table>';
     }
 }

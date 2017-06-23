@@ -5,7 +5,7 @@ use Jenga\App\Views\HTML;
 
 HTML::start();
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,7 @@ HTML::start();
 ?>
 <div id="top">
   <div id="logo"><img src="<?php echo TEMPLATE_URL ?>admin/images/esurance_logo.png" width="215" height="75" /></div>
-  
+
 <?php
 if(Gateway::isLogged()){
 
@@ -28,7 +28,7 @@ if(Gateway::isLogged()){
   echo '</div>';
 }
 ?>
-  
+
 </div>
 <div class="content-container shadow">
     <div class="col-md-12">

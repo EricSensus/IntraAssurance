@@ -1,44 +1,45 @@
-var Medical = {
-    tab: 'tab2',
-    addDependantTab: function (form) {
-        $('.tab22').removeClass('hide');
-
-        // add form
-        $('div#tab22').html(form);
-    },
-    removeDependantTab: function () {
-        $('.tab22').addClass('hide');
-    },
-    generateQuote: function (site_path) {
-        $.ajax({
-            url: site_path + '/admin/quote/getquote/medical',
-            type: 'GET',
-            success: function (data) {
-                // show actual quote
-                $('.med').html(data);
-
-                // get the quote id and set it as the redirection link to the policy step two
-                var quote_id = $(document).find('#input_quote_id').val();
-                console.log(quote_id);
-
-                // set it
-                $(document).find('#proceed_with_policy').attr('href', site_path + '/admin/policies/createpolicy/' + quote_id);
-            }
-        })
-    },
-    switchToQuote: function() {
-        // loading...
-        $('.med').html($('span#preloader').html());
-
-        // show quote tab
-        $('.tab4').removeClass('hide');
-
-        // switch to tab4
-        $('li > a[href=#tab4]').click();
-    }
-}
-
 $(function () {
+    var sub_btn = $('#btnSubmit');
+    var next_btn = $('#next');
+    var prev_btn = $('#prev');
+    sub_btn.hide();
+    prev_btn.hide();
+    var Medical = {
+        tab: 'tab2',
+        addDependantTab: function (form) {
+            $('.tab22').removeClass('hide');
+
+            // add form
+            $('div#tab22').html(form);
+        },
+        removeDependantTab: function () {
+            $('.tab22').addClass('hide');
+        },
+        generateQuote: function (site_path, quote_id) {
+            $.ajax({
+                url: site_path + '/admin/quote/getquote/medical',
+                type: 'GET',
+                success: function (data) {
+                    // show actual quote
+                    $('.med').html(data);
+
+                    // set it
+                    var return_to = encodeURI('policies/createpolicy/' + quote_id);
+                    $(document).find('#proceed_with_policy').attr('href', site_path + '/ajax/admin/quotes/internalacceptquote/' + quote_id + '?return=' + return_to);
+                }
+            })
+        },
+        switchToQuote: function () {
+            // loading...
+            $('.med').html($('span#preloader').html());
+
+            // show quote tab
+            $('.tab4').removeClass('hide');
+
+            // switch to tab4
+            $('li > a[href=#tab4]').click();
+        }
+    }
     var site_path = $('#site_path').val();
 
     // initialize datepicker
@@ -47,8 +48,17 @@ $(function () {
     // inline radio
     $(document).find('input:radio, input:checkbox').css('display', 'inline');
 
-    $('button[name=btnsubmit], input[name=btnsubmit]').click(function () {
+    sub_btn.click(function () {
         Forms2.isFormValid();
+    });
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        Forms2.updateBtn(e);
+    });
+    $('#prev').click(function () {
+        Forms2.moveTab('prev');
+    });
+    $('#next').click(function () {
+        Forms2.moveTab('next');
     });
     var Forms2 = {
         isFormValid: function () {
@@ -66,7 +76,8 @@ $(function () {
                 var it = $('.has-error:first').parents('div.tab-pane').attr('id');
                 $('a[href=#' + it + ']').click();
             } else {
-                var completed = false;
+                var completed = false,
+                    quote_id = '';
 
                 Medical.switchToQuote();
 
@@ -81,20 +92,53 @@ $(function () {
                         async: false,
                         dataType: 'json',
                         success: function (data) {
-                            if(data.success)
+                            if (data.success) {
                                 completed = true;
-                            else
+
+                                if (data.quote_id != undefined)
+                                    quote_id = data.quote_id;
+                            } else {
                                 completed = false;
+                            }
                         }
                     });
                 });
 
-                if(completed) {
+                if (completed) {
                     // generate the quote
-                    Medical.generateQuote(site_path);
+                    Medical.generateQuote(site_path, quote_id);
 
                     return false;
                 }
+            }
+        },
+
+        updateBtn: function (e) {
+            var link = $(e.target).attr('href');
+            sub_btn.hide();
+            next_btn.hide();
+            prev_btn.hide();
+            if (link === '#tab3') {
+                next_btn.hide();
+                prev_btn.show();
+                sub_btn.show();
+            } else if (link === '#tab1') {
+                prev_btn.hide();
+                next_btn.show();
+            } else {
+                prev_btn.show();
+                next_btn.show();
+            }
+        },
+        moveTab: function moveTab(nextOrPrev) {
+            var target = $(".nav-tabs li.active");
+            if (nextOrPrev === "next") {
+                sibbling = target.next();
+            } else {
+                sibbling = target.prev();
+            }
+            if (sibbling.is("li")) {
+                sibbling.children("a").tab("show");
             }
         }
     };
@@ -103,7 +147,7 @@ $(function () {
         var control = $(this);
         var dependants = parseInt(control.val());
 
-        if (dependants >= 1){
+        if (dependants >= 1) {
             $.ajax({
                 url: site_path + '/medical/load/' + dependants,
                 type: 'GET',
@@ -125,8 +169,8 @@ $(function () {
     });
 
     // highlight selected plan on click of a radio
-    $('input[name="core_plans"]').on('click', function(){
-        $('input[name="core_plans"]').each(function(){
+    $('input[name="core_plans"]').on('click', function () {
+        $('input[name="core_plans"]').each(function () {
             $(this).parents('div.panel:first').removeClass('highlight-plan');
         });
         $(this).parents('div.panel:first').addClass('highlight-plan');
@@ -167,9 +211,9 @@ $(function () {
             $.each(customer, function (index, value) {
                 var selector = $('[name=' + index + ']');
 
-                if(selector.is(':checkbox')) {
+                if (selector.is(':checkbox')) {
                     selector.attr('checked', 'checked');
-                } else if(selector.is(':radio')) {
+                } else if (selector.is(':radio')) {
                     $('input[name=' + index + '][value=' + value + ']').attr("checked", "checked");
                 } else {
                     selector.val(value);
@@ -186,7 +230,7 @@ $(function () {
     }
 
     var additional_entities = $('#additional_covers').removeAttr('disabled').val();
-    if (additional_entities >= 1){
+    if (additional_entities >= 1) {
         $.ajax({
             url: site_path + '/medical/load/' + additional_entities,
             type: 'GET',

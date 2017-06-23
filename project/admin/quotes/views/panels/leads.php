@@ -1,6 +1,7 @@
 <?php
 use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
+use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
 
 use Jenga\MyProject\Elements;
@@ -53,6 +54,11 @@ $url = Elements::load('Navigation/NavigationController@getUrl', ['alias'=>'quote
 <div class="leads_panel"> 
     <?= $leads ?>
 </div>
+<?php
+    echo Overlays::confirm();
+    echo Overlays::Modal(['id' => 'confirmquotemodal']);
+    echo Overlays::Modal(['id'=>'quotemodal','size'=>'large']);
+?>
 <div class="dataTables_wrapper panel-footer">
     <div class="float-left">
         <p>Shows <strong>quotations</strong> which need to be processed</p>

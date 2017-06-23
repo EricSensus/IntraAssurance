@@ -146,8 +146,6 @@ class Permissions {
                             }
                         }
                     }
-                    
-                    
                 }
             }
         }
@@ -155,16 +153,25 @@ class Permissions {
             $error_message = 'ELEMENT_NOT_REGISTRED';
         }
         
-        if($error_message != ''){
+        //return error message or not    
+        if($error_message != '' && $debug){
+            App::warning($error_message);
+        }
+        
+        if($error_message == 'ELEMENT_NOT_REGISTRED'){
             
             //on Denied
             $user->role->onDenied($element, $controller, $action);
+            return FALSE;
+        }
+        else{
+            
+            //still allow access but throw warning
+            $user->role->onAllowed($element, $controller, $action);
+            return TRUE;
         }
         
-        //return error message or not    
-        if($debug){
-            App::warning($error_message);
-        }
+        
     }
     
     /**

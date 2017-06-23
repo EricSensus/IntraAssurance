@@ -13,6 +13,7 @@ Route::any('/quotes/previewquote/{id}/{view}', 'QuotesController@previewQuote')
     ->assignPanels([
         'logout' => 'UsersController@logout:logout'
     ]);
+
 Route::any('/customer/quote/pdfquote', 'QuotesController@frontQuote')
     ->attachTemplate('preview')
     ->assignPanels(['_ajax' => TRUE]);
@@ -26,6 +27,7 @@ Route::any('/customer/quote/createAttachment', 'QuotesController@customerEmailAt
     ->assignPanels(['_ajax' => TRUE]);
 
 Route::group(['before' => 'auth.check'], function () {
+    
     Route::get('/customer/my-quotes', 'QuotesController@myQuotes')
         ->attachTemplate('admin')
         ->assignPanels([
@@ -33,17 +35,22 @@ Route::group(['before' => 'auth.check'], function () {
             'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout'
         ]);
+    
     Route::get('/admin/quote/getquote/medical', 'MedicalController@showQuote')
         ->attachTemplate('admin')
         ->assignPanels(['_ajax' => TRUE]);
+    
     Route::any('/admin/quotes/pdfquote/{id}', 'QuotesController@pdfQuote')
         ->attachTemplate('preview')
         ->assignPanels(['_ajax' => TRUE]);
+    
     Route::any('/admin/quote/deletedoc/{quoteid}/{id}', 'QuotesController@deletedoc')
         ->assignPanels(['_ajax' => TRUE]);
+    
     Route::post('/admin/preview/quote', 'QuotesController@quotePreview')
         ->attachTemplate('admin')
         ->assignPanels(['_ajax' => TRUE]);
+    
     $path = Project::elements()['claims']['path'];
     Route::any('/admin/quotes/{action}/{id}', 'QuotesController@index')
         ->attachTemplate('admin')
@@ -60,12 +67,15 @@ Route::group(['before' => 'auth.check'], function () {
                 "<script src='" . RELATIVE_PROJECT_PATH . '/' . $path . "/assets/select2/js/select2.full.min.js'></script>",
             ]
         );
+    
     Route::get('/admin/leads/assignAgent/{quote_no}', 'QuotesController@assignAgent')
         ->attachTemplate('admin')
         ->assignPanels(['_ajax' => TRUE]);
+    
     Route::get('/admin/leads/createTask/{agent_id}', 'QuotesController@createTaskForAgent')
         ->attachTemplate('admin')
         ->assignPanels(['_ajax' => TRUE]);
+    
     Route::get('/admin/quotes/addquote/{id}', 'QuotesController@add')
         ->attachTemplate('admin')
         ->assignPanels([

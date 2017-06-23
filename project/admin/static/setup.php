@@ -35,19 +35,17 @@ echo '<div class="tabs row-padding">
     <ul role="tablist" class="nav nav-pills" id="myTabs">
       <li class="active" role="presentation" ><a aria-expanded="false" aria-controls="home" data-toggle="tab" role="tab" href="#company-details">Company Details</a></li>
       <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#insurer-companies" aria-expanded="true">Insurer Companies</a></li>
-      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#products" aria-expanded="true">Products</a></li>';
+      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#products" aria-expanded="true">Products</a></li>
+      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#api" aria-expanded="true">API Tokens</a></li>';
 
 //echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#commissions" aria-expanded="true">Commissions</a></li>';
-echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#agents" aria-expanded="true">Agents</a></li>';
+echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#agents" aria-expanded="true">Users / Agents</a></li>';
    echo  '  <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#entities" aria-expanded="true">Entities</a></li>';
 if (empty(Input::get('__company')))
     echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#companies-list" aria-expanded="true">Company Rates</a></li>';
 else
     echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#rates" aria-expanded="true">Rates</a></li>';
-/**
- * echo '<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#commissions" aria-expanded="true">Commissions</a></li>
- * <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#agents" aria-expanded="true">Agents</a></li>';
- **/
+
 echo '</ul>
     </div>';
 
@@ -109,6 +107,17 @@ echo '<div role="tabpanel" class="tab-pane" id="entities">'
     . '<div class="mini-panel no-bottom-border">';
 
 $this->loadPanelPosition('entities-setup');
+
+echo '</div>
+    </div>
+    </div>';
+
+//api tab
+echo '<div role="tabpanel" class="tab-pane" id="api">'
+    . '<div class="col-md-12">'
+    . '<div class="mini-panel no-bottom-border">';
+
+$this->loadPanelPosition('api-setup');
 
 echo '</div>
     </div>

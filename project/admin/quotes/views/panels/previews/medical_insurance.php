@@ -11,7 +11,7 @@ HTML::css('admin/css/admin_css.css', FALSE, TRUE);
 HTML::css('preview/css/preview.css', FALSE, TRUE);
 /** @var stdClass $quote */
 ?>
-<div class="container" style="background-color: #fff;">
+<div class="container" style="width: 100% !important; background-color: #fff;">
     <div class="row">
         <div class="col-xs-12">
             <div class="invoice-title">

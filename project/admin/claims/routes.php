@@ -14,7 +14,7 @@ Route::get('/customer/my-claims', 'ClaimsController@myClaims')
 
 Route::group(['before' => 'auth.check'], function () {
     $path = Project::elements()['claims']['path'];
-    Route::any('/admin/claims/{action}', 'ClaimsController@index')
+    Route::any('/admin/claims/{action}/{id}', 'ClaimsController@index')
         ->attachTemplate('admin')
         ->assignPanels([
             'top' => 'NotificationsController@load:notices',

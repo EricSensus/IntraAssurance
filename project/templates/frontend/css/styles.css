@@ -1,0 +1,916 @@
+@charset "utf-8";
+body {
+	background-repeat:no-repeat;
+	margin:auto;
+}
+.wrapper {
+	background-repeat: no-repeat;
+	padding:0;
+	height: 100%;
+	width: 100%;
+	overflow:hidden;
+}
+.header {
+	background-repeat: no-repeat;
+	height: auto;
+	width: 100%;
+	margin:auto;
+}
+.header-inner {
+	width:84.5%;
+	margin:auto;
+}
+.logobox {
+	padding: 0px;
+	height: 100%;
+	width: 79%;
+	margin:0;
+}
+.logo {
+	height: 100%;
+	width: 18.66%;
+}
+.usersection {
+	width: 20.9%;
+	padding:0;
+	height:auto;
+}
+.selectclaim {
+	background-image: url(../images/selectclaimbox.png);
+	background-repeat: repeat-x;
+	height: 100%;
+	width: 142px;
+	float:left;
+	padding:0;
+	margin-top: 16px;
+	margin-left: 20px;
+	border: thin solid #aaaaaa;
+}
+.selectclaim a {
+	font-family: "AvantGarde Md BT";
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	color: #295716;
+	margin-left: 25px;
+	margin-top: 4px;
+	display: block;
+}
+.go {
+	background-image: url(../images/gobox.png);
+	background-repeat: repeat-x;
+	height: 100%;
+	width: 69px;
+	float:left;
+	padding:0;
+	margin-top: 16px;
+	margin-left: 4px;
+}
+.go a {
+	font-family: "AvantGarde Md BT";
+	font-size: 15px;
+	font-style: normal;
+	font-weight: normal;
+	color: #ffffff;
+	margin-top: 5.5px;
+	margin-left: 23px;
+	display: block;
+}
+.signintomyesurance {
+	background-image: url(../images/selectclaimbox.png);
+	background-repeat: repeat-x;
+	height: 100%;
+	width: 214px;
+	float:left;
+	padding:0;
+	margin-top: 4px;
+	margin-left: 20px;
+	border: thin solid #aaaaaa;
+}
+.signintomyesurance a {
+	font-family: 'Muli', sans-serif;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	display: block;
+	margin-left: 28px;
+	margin-top: 2px;
+}
+.menubar {
+	background-repeat: no-repeat;
+	height: auto;
+	width: 100%;
+	margin: auto;
+}
+.menubar-inner{
+	margin:auto;
+	width:85%;
+}
+.menubar-inner ul.navbar-nav a{
+	font-family:arial;
+	letter-spacing:0.5px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    margin-right: 15px;
+}
+.menubar-inner span.icon-bar{
+    background-color: #FFF;
+}
+.links {
+	width: 100%;
+	padding:0;
+	margin:0;
+}
+.links a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	display: block;
+	text-decoration:none;
+	padding-top: 25px;
+	padding-left:40px;
+}
+.seperator p{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	padding-top: 25px;
+	padding-left: 39px;
+}
+.banner {
+	height: auto;
+	width: 100%;
+	margin:auto;
+}
+.bannerimage {
+	margin-right: auto;
+    margin-left: auto;
+	padding:0;	
+}
+.caption {
+    width: 100%;
+    bottom: 45%;
+    left: 30%;
+    position: absolute;
+    background: transparent;
+}
+.caption h1{
+	font-family: 'Muli', sans-serif;
+	font-style:normal;
+	font-weight:normal;
+	font-size:76px;
+}
+.img-responsive{
+	display: block;
+    max-width: 100%;
+    height: auto;
+}
+.insurancecovers {
+	background-repeat:no-repeat;
+	width:100%;
+	height:auto;
+	margin:auto;
+}
+.insurancecovers-inner {
+	max-width:1225px;
+	margin:auto !important;
+	padding-top:10px;
+	padding-bottom:50px;
+	padding-left:0;
+	height:auto;
+}
+.insurancecover1 {
+	width:215px;
+	height:435px;
+	margin-top:25px;
+	margin-left:25px;
+	padding:0px;
+}
+.insurancebackground1 {
+	background-image: url(../images/insurancebackground1.jpg);
+	background-repeat: no-repeat;
+	height: 370px;
+	width: 100%;
+	margin:0;
+}
+.coverheading a{
+	font-family: 'Muli', sans-serif;
+	font-size: 24px;
+	font-style: normal;
+	font-weight: normal;
+	margin-left: 55px;
+	margin-top: 20px;
+	padding: 0px;
+	float: left;
+	text-align: center;
+	display:block;
+	line-height:24px;
+}
+.covercontent p{
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 13.4px;
+	font-style: normal;
+	font-weight: normal;
+	height: 30px;
+	width: 175px;
+	margin-top: 58px;
+	margin-left: 20px;
+	padding-left: 9px;
+	float: left;
+	letter-spacing: -0.8px;
+}
+
+.getquotebox1 {
+	background-image: url(../images/getquotebox1.jpg);
+	background-repeat: no-repeat;
+	float: left;
+	height: 47px;
+	width: 115px;
+}
+.getquotebox1 a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11.5px;
+	font-style: normal;
+	font-weight: normal;
+	margin-top:15px;
+	margin-left: 22px;
+	display:block;
+}
+.insurancecover2 {
+	width:215px;
+	height:435px;
+	margin-top:25px;
+	margin-left:25px;
+	padding:0;
+}
+.insurancebackground2 {
+	background-image: url(../images/insurancebackground2.jpg);
+	background-repeat: no-repeat;
+	height: 370px;
+	width: 100%;
+	margin:0;
+}
+.domesticpackage {
+	float: left;
+	height: 136px;
+	width: 138px;
+	margin-top: 18px;
+	margin-left: 40px;
+}
+.getquotebox2 {
+	background-image: url(../images/getquotebox2.jpg);
+	background-repeat: no-repeat;
+	float: left;
+	height: 47px;
+	width: 113px;
+}
+.getquotebox2 a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11.5px;
+	font-style: normal;
+	font-weight: normal;
+	margin-top:15px;
+	margin-left: 22px;
+	display:block;
+}
+.insurancecover3 {
+	width:215px;
+	height:435px;
+	margin-top:25px;
+	margin-left:25px;
+	padding:0;
+}
+.insurancebackground3 {
+	background-image: url(../images/insurancebackground3.jpg);
+	background-repeat: no-repeat;
+	height: 370px;
+	width: 100%;
+	margin:0;
+}
+.medicalcover {
+	float: left;
+	height: 136px;
+	width: 138px;
+	margin-top: 18px;
+	margin-left: 40px;
+}
+.getquotebox3 {
+	background-image: url(../images/getquotebox3.jpg);
+	background-repeat: no-repeat;
+	float: left;
+	height: 47px;
+	width: 113px;
+}
+.getquotebox3 a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11.5px;
+	font-style: normal;
+	font-weight: normal;
+	margin-top:15px;
+	margin-left: 22px;
+	display:block;
+}
+.insurancecover4 {
+	width:215px;
+	height:435px;
+	margin-top:25px;
+	margin-left:25px;
+	padding:0;
+}
+.insurancebackground4 {
+	background-image: url(../images/insurancebackground4.jpg);
+	background-repeat: no-repeat;
+	height: 370px;
+	width: 100%;
+	margin:0;
+}
+.travelinsurance {
+	float: left;
+	height: 136px;
+	width: 138px;
+	margin-top: 18px;
+	margin-left: 40px;
+}
+.getquotebox4 {
+	background-image: url(../images/getquotebox4.jpg);
+	background-repeat: no-repeat;
+	float: left;
+	height: 47px;
+	width: 113px;
+}
+.getquotebox4 a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11.5px;
+	font-style: normal;
+	font-weight: normal;
+	margin-top:15px;
+	margin-left: 22px;
+	display:block;
+}
+.insurancecover5 {
+	width:215px;
+	height:435px;
+	margin-top:25px;
+	margin-left:25px;
+	padding:0;
+}
+.insurancebackground5 {
+	background-image: url(../images/insurancebackground5.jpg);
+	background-repeat: no-repeat;
+	height: 370px;
+	width: 100%;
+	margin:0;
+}
+.personalaccident {
+	float: left;
+	height: 136px;
+	width: 138px;
+	margin-top: 18px;
+	margin-left: 40px;
+}
+.getquotebox5 {
+	background-image: url(../images/getquotebox5.jpg);
+	background-repeat: no-repeat;
+	float: left;
+	height: 47px;
+	width: 113px;
+}
+.getquotebox5 a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11.5px;
+	font-style: normal;
+	font-weight: normal;
+	margin-top:15px;
+	margin-left: 22px;
+	display:block;
+}
+.footer {
+	background-repeat: no-repeat;
+	margin: auto;
+	height: auto;
+	width: 100%;
+}
+.footer-inner {
+	max-width:1200px;
+	margin:auto;
+	display:block;
+}
+.footerlinks a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	display: block;
+	text-decoration:none;
+	padding-top: 65px;
+	padding-left:23px;
+}
+.seperator2 p{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	padding-top: 65px;
+	padding-left: 22px;
+}
+.socialmedia a{
+}
+div.form-group li.active a{
+	background-color: #666 !important;
+}
+.header-inner {
+	width:82%;
+	margin:auto;
+	height:auto;
+	padding-bottom:11px;
+}
+.logobox {
+	padding: 0;
+	margin:0;
+}
+.logo {
+	height: 94px;
+	width: 220px;
+}
+.selectclaim {
+	background-image: url(../images/selectclaimbox.png);
+	background-repeat: repeat-x;
+	height: 30px;
+	width: 142px;
+	float:left;
+	padding:0;
+	border: thin solid #aaaaaa;
+}
+.selectclaim a {
+	font-family: "AvantGarde Md BT";
+	font-size: 16px;
+	font-style: normal;
+	font-weight: normal;
+	color: #295716;
+	margin-left: 25px;
+	margin-top: 4px;
+	display: block;
+}
+.go {
+	background-image: url(../images/gobox.png);
+	background-repeat: repeat-x;
+	height: 30px;
+	width: 69px;
+	float:left;
+	padding:0;
+	margin-left: 4px;
+}
+.go a {
+	font-family: "AvantGarde Md BT";
+	font-size: 15px;
+	font-style: normal;
+	font-weight: normal;
+	color: #ffffff;
+	margin-top: 5.5px;
+	margin-left: 23px;
+	display: block;
+}
+.signintomyesurance {
+	background-image: url(../images/selectclaimbox.png);
+	background-repeat: repeat-x;
+	height: 30px;
+	width: 224px;
+	float:left;
+	padding:0;
+	margin-top: 6px;
+	border: thin solid #aaaaaa;
+}
+.selectclaim a:hover, .go a:hover, .signintomyesurance a:hover{
+	text-decoration:none;
+}
+.menubar {
+	background-repeat: no-repeat;
+	height: auto;
+	width: 100%;
+	margin: auto;
+}
+.menubar-inner a{
+	color: #FFF;
+}
+.menubar-inner span.icon-bar{
+	background-color: #FFF;
+}
+.links {
+	width: 100%;
+	padding:0;
+	margin:0;
+}
+.links a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	display: block;
+	text-decoration:none;
+	padding-top: 25px;
+	padding-left:40px;
+}
+.seperator p{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	padding-top: 25px;
+	padding-left: 39px;
+}
+.insuranceheader{
+	width:100%;
+	margin:0;
+	height:auto;
+}
+.insurance img{
+	float: left;
+	padding-left:0;
+    width: 138px;
+    margin-top: 18px;
+    margin-left: 40px;
+}
+.insurance {
+    width: 100%;
+    padding: 0;
+}
+.wizard-heading{
+	background-repeat:no-repeat;
+    width: 100%;
+	height:auto;
+	text-align:left;
+	padding-top:5px;
+	padding-bottom:5px;
+    margin-bottom: 20px;
+	margin-left:0px;
+}
+th.heading a h5{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:26.05px;
+	font-weight:bold;
+	margin-bottom:0px;
+	display:block;
+}
+th.heading a.active h5{
+	display:block;
+}
+th.heading a h6{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:13px;
+	margin-top:7px;
+	display:block;
+}
+th.heading a.active h6{
+	display:block;
+}
+th.heading a:hover, th.heading a.description:hover, th.heading a.active h5:hover, th.heading a.active h6:hover{
+	text-decoration: none;
+	display:block;
+}
+.formheading{
+	width:100%;
+	height:auto;
+	padding-top:26px;
+	padding-left:0;
+	padding-right:0;
+	margin:0;
+	padding-bottom:20px;
+	
+}
+.formheadingcaption {
+	padding:0;
+	margin:0;
+}
+.formheadingcaption p {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	padding:0;
+	margin:0;
+}
+.formheadingcaption p .dateof birth {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:13px;
+	font-weight:bold;
+	font-color:#000000;
+	padding:0;
+	margin:0;
+}
+form{
+	width:100%;
+	height:auto;
+	margin:0;
+	padding-top:0;	
+}
+.form-group{
+	margin-bottom:20px;
+}
+.checkbox input[type=checkbox]{
+	margin-left:0;
+}
+.leftsection{
+	margin:0;
+	padding:0;
+}
+label{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	display: block;
+	font-weight:700;
+}
+.rows{
+	width:100%;
+	height:auto;
+	margin:0;
+	padding:0;
+}
+.rightsection{
+	margin:0;
+	padding:0;
+}
+.formheading2{
+	width:100%;
+	height:auto;
+	padding-top:10px;
+	padding-left:0;
+	padding-right:0;
+	margin:0;
+	padding-bottom:10px;	
+}
+.yes-nosection{
+	margin:0;
+	padding:0;
+}
+.yes{
+	margin:0;
+	padding:0;
+}
+textarea{
+	background-color:#dddddd;
+	border:1px solid #cccccc;
+	padding:9px 11px;
+	margin: 0px;
+	display:block;
+	width:100%;	
+}
+.buttonsection{
+	height:auto;
+	margin-top:19px;
+	padding:0;
+	margin-right:0;
+	margin-left:0;
+}
+button{
+	background-image: url(../images/proceedtomotor.png);
+	background-repeat: repeat-x;
+	height: 40px;
+	width: 200px;
+	float:right;
+	border:0;
+}
+label.proceedtomotor{
+	color:#ffffff;
+	font-weight:normal;
+	font-size:13px;
+	padding-top:5px;
+}
+.bottomcaption{
+	width:100%;
+	border:1px solid #9fc04b;
+	height:auto;
+	margin-top:20px;
+	margin-left:0;
+	margin-right:0;
+	padding:0;
+}
+.importantnotice{
+	margin:0;
+	padding:19px 12px;
+}
+.importantnotice p{
+	margin:0;
+	padding:0;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	font-weght:12px;
+	color:#000000;
+	display:block;
+}
+.footer {
+	background-repeat: no-repeat;
+	margin: auto;
+	height: auto;
+	width: 100%;
+}
+.logo2 {
+	margin-top:23px;
+	padding:0;
+}
+.footerlinks {
+	margin:auto !important;
+	height:auto;
+}
+.links-inner{
+	max-width:800px;
+	margin:auto;
+}
+.footerlinks a{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	float: left;
+	display: block;
+	text-decoration:none;
+	padding-top: 65px;
+	padding-left:20px;
+}
+.seperator2 p{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: normal;
+	color: #ffffff;
+	float: left;
+	padding-top: 65px;
+	padding-left: 22px;
+}
+.socialmedia{
+	margin-top:41px;
+	padding:0;
+	padding-left:10px;
+	margin-right:0;
+}
+.social-icons{
+	float:right;
+}
+.parsley-required{
+    color: red;
+}
+/***** For Small Devices **********/
+@media screen and (max-width: 768px) {
+	table.heading{
+		display: none;
+	}
+	.usersection {
+	padding:0;
+	padding-top:20px;
+	padding-left:0;
+	padding-right:0;
+	padding-bottom:0;
+	margin:0;
+}
+	.insurance h2{
+	margin:0;
+	font-family:"Bauhaus Md Bt";
+	font-size:34px;
+	font-color:#3f3f3f;
+	padding-bottom:0;
+}
+	.middlesection{
+	  background-color:#ffffff;
+	  background-repeat:no-repeat;
+	  height:auto;
+	  width:100%;
+	  margin:auto;
+	  padding-top:20px;
+	  padding-bottom:20px;
+	  padding-left:20px;
+	  padding-right:20px;
+  }
+  .contentbox{
+	  background-color:#f3f3f3;
+	  background-repeat:no-repeat;
+	  width:100%;
+	  padding-bottom:30px;
+	  padding-left:30px;
+	  padding-right:30px;
+	  padding-top:30px;
+	  margin:auto;
+  }
+input.form-control, select.form-control {
+	background-color:#dddddd;
+	border:1px solid #cccccc;
+	padding:9px 11px;
+	margin: 4px 0;
+	display:block;
+	width:100%;
+}
+select  {
+    width: 100%;
+    padding:9px 11px;
+    margin: 4px 0;
+    display: block;
+    border: 1px solid #cccccc;
+	background-color:#dddddd;
+}
+}
+/***** End of Small Devices section **********/
+
+/***** For Medium Devices **********/
+@media (min-width: 769px) and (max-width: 1480px) {
+    
+.usersection {
+    padding:0;
+    padding-top:25px;
+    padding-left:0;
+    padding-right:0;
+    padding-bottom:0;
+    margin:0;
+}
+.insurance h2{
+    margin:0;
+	font-family: 'Muli', sans-serif;
+    font-size:32px;
+    padding-bottom:36px;
+}
+.middlesection{
+      background-repeat:no-repeat;
+      height:auto;
+      width:100%;
+      margin:auto;
+      padding-bottom:45px;
+      padding-left:8.96%;
+      padding-right:8.96%;
+  }
+.contentbox{
+      background-color:#f3f3f3;
+      background-repeat:no-repeat;
+      width:100%;
+      padding-bottom:43px;
+      padding-left:75px;
+      padding-right:75px;
+      padding-top:36px;
+      margin:auto;
+  }
+.btn-primary{
+	float:left !important;
+}
+input.form-control, select.form-control {
+    padding:9px 11px;
+    margin: 4px 0;
+    display:block;
+    width:100%;
+	border-radius:0;
+	margin-bottom:10px;
+}
+.checkbox label, .radio label {
+	padding-top:5px;
+    padding-left: 5px;
+	padding-right: 25px;
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;	
+}
+.checkbox input[type=checkbox]{
+	position:relative;
+}
+textarea.form-control {
+	border-radius:0;
+	border:1px solid #d2d2d2
+}
+.btn{
+	font-family:arial;
+}
+select  {
+    width: 76.8%;
+    padding:9px 11px;
+    margin: 4px 0;
+    display: block;
+    border: 1px solid #cccccc;
+	background-color:#dddddd;
+}
+}
+/***** End of Medium Devices section **********/
+/****** Toolbar Design ****************/
+#quote-toolbar{
+    margin-bottom: 20px;
+}
+#quote-toolbar button{
+    width: 60px;
+    height: 55px;
+    font-size: 12px;
+    margin-right: 5px;
+}

@@ -1,5 +1,9 @@
 $(function () {
     var sub_btn = $('#btnSubmit');
+    var next_btn = $('#next');
+    var prev_btn = $('#prev');
+    sub_btn.hide();
+    prev_btn.hide();
     var main_form = $('form#mainform');
     var QUOTE_ID = null;
     var IS_FORM_VALID = true;
@@ -17,6 +21,15 @@ $(function () {
             var before = '<ul class="nav nav-tabs"><li class="active"><a href="#tab1" data-toggle="tab">Proposer Personal Details</a></li><li><a href="#tab2" data-toggle="tab">Insurance Entity Details</a></li><li><a href="#tab3" data-toggle="tab">Cover Details</a></li></ul>';
             $('.tab-pane').wrapAll('<div class="tab-content"></div>');
             $(before).insertBefore('div.tab-content');
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                Common.updateBtn(e);
+            });
+            $('#prev').click(function () {
+                Common.moveTab('prev');
+            });
+            $('#next').click(function () {
+                Common.moveTab('next');
+            });
         },
         datePickers: function () {
             $("#dob").datepicker({dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true, maxDate: '-15Y'});
@@ -62,16 +75,45 @@ $(function () {
                 link_suffix = "domestic";
             }
             main_form.attr('action', SITE_PATH + '/admin/myquote/save/' + link_suffix);
+        },
+        updateBtn: function (e) {
+            var link = $(e.target).attr('href');
+            sub_btn.hide();
+            next_btn.hide();
+            prev_btn.hide();
+            if (link === '#tab3') {
+                next_btn.hide();
+                prev_btn.show();
+                sub_btn.show();
+            } else if (link === '#tab1') {
+                prev_btn.hide();
+                next_btn.show();
+            } else {
+                prev_btn.show();
+                next_btn.show();
+            }
+        },
+        moveTab: function moveTab(nextOrPrev) {
+            var target = $(".nav-tabs li.active");
+            if (nextOrPrev === "next") {
+                sibbling = target.next();
+            } else {
+                sibbling = target.prev();
+            }
+            console.log(target,sibbling);
+            if (sibbling.is("li")) {
+                sibbling.children("a").tab("show");
+            }
         }
     };
     var Motor = {
         addContent: function (count) {
             var uri = SITE_PATH + "/motor/others/" + count;
             $.get(uri, function (response) {
-                var res = Motor.cleanResponse(response);
-                $('#tab22').html(res);
-                $('#btnToSubmit').parents('div.form-group').remove();
-            }
+                    var res = Motor.cleanResponse(response);
+                    $('#tab22').html(res);
+                    $('#btnToSubmit').parents('div.form-group').remove();
+                }
             );
         },
         cleanResponse: function (text) {
@@ -155,12 +197,12 @@ $(function () {
 
                             inputs += '<label>Relationship</label>';
                             inputs += '<select name="other_relationship' + i + '" class="form-control">' +
-                                    '<option value="Wife">Wife</option> ' +
-                                    '<option value="Husband">Husband</option> ' +
-                                    '<option value="Son">Son</option>' +
-                                    '<option value="Daughter">Daughter</option>' +
-                                    '<option value="Other">Other</option> ' +
-                                    '</select>';
+                                '<option value="Wife">Wife</option> ' +
+                                '<option value="Husband">Husband</option> ' +
+                                '<option value="Son">Son</option>' +
+                                '<option value="Daughter">Daughter</option>' +
+                                '<option value="Other">Other</option> ' +
+                                '</select>';
 
                             inputs += '</div>';
                             inputs += '</div>';
@@ -170,16 +212,16 @@ $(function () {
 
                             inputs += '<label>Age Bracket</label>';
                             inputs += '<select name="other_bracket' + i + '" class="form-control">' +
-                                    '<option value="3-17">3-17</option>' +
-                                    '<option value="18-21">18 - 21</option>' +
-                                    '<option value="22-25">22 - 25</option>' +
-                                    '<option value="26-30">26 - 30</option>' +
-                                    '<option value="31-40">31 - 40</option>' +
-                                    '<option value="41-50">41 - 50</option>' +
-                                    '<option value="51-60">51 - 60</option>' +
-                                    '<option value="61-69">61 - 69</option>' +
-                                    '<option value="70 or over">70 or over</option>' +
-                                    '</select>';
+                                '<option value="3-17">3-17</option>' +
+                                '<option value="18-21">18 - 21</option>' +
+                                '<option value="22-25">22 - 25</option>' +
+                                '<option value="26-30">26 - 30</option>' +
+                                '<option value="31-40">31 - 40</option>' +
+                                '<option value="41-50">41 - 50</option>' +
+                                '<option value="51-60">51 - 60</option>' +
+                                '<option value="61-69">61 - 69</option>' +
+                                '<option value="70 or over">70 or over</option>' +
+                                '</select>';
 
                             inputs += '</div>';
                             inputs += '</div>';
@@ -189,10 +231,10 @@ $(function () {
 
                             inputs += '<label>Education</label>';
                             inputs += '<select name="other_education' + i + '" class="form-control">' +
-                                    '<option value="Primary">Primary</option>' +
-                                    '<option value="Secondary">Secondary</option>' +
-                                    '<option value="College">College</option>' +
-                                    '</select>';
+                                '<option value="Primary">Primary</option>' +
+                                '<option value="Secondary">Secondary</option>' +
+                                '<option value="College">College</option>' +
+                                '</select>';
 
                             inputs += '</div>';
                             inputs += '</div>';
@@ -202,14 +244,14 @@ $(function () {
 
                             inputs += '<label>Band</label>';
                             inputs += '<select name="other_band' + i + '" class="form-control">' +
-                                    '<option value="band1">Band 1</option>' +
-                                    '<option value="band2">Band 2</option>' +
-                                    '<option value="band3">Band 3</option>' +
-                                    '<option value="band4">Band 4</option>' +
-                                    '<option value="band5">Band 5</option>' +
-                                    '<option value="band6">Band 6</option>' +
-                                    '<option value="band7">Band 7</option>' +
-                                    '</select>';
+                                '<option value="band1">Band 1</option>' +
+                                '<option value="band2">Band 2</option>' +
+                                '<option value="band3">Band 3</option>' +
+                                '<option value="band4">Band 4</option>' +
+                                '<option value="band5">Band 5</option>' +
+                                '<option value="band6">Band 6</option>' +
+                                '<option value="band7">Band 7</option>' +
+                                '</select>';
 
                             inputs += '</div>';
                             inputs += '</div>';
@@ -219,9 +261,9 @@ $(function () {
 
                             inputs += '<label>Plan</label>';
                             inputs += '<select name="other_class' + i + '" class="form-control">' +
-                                    '<option value="class1">Class I</option>' +
-                                    '<option value = "class2">Class II </option>' +
-                                    '</select>';
+                                '<option value="class1">Class I</option>' +
+                                '<option value = "class2">Class II </option>' +
+                                '</select>';
 
                             inputs += '</div>';
                             inputs += '</div>';
@@ -279,6 +321,10 @@ $(function () {
                     var wrapped = $("<div>" + response + "</div>");
                     wrapped.find('button').remove();
                     $('#tab4').html(wrapped);
+
+                    var return_to = encodeURI('policies/createpolicy/' + QUOTE_ID);
+                    $(document).find('#proceed_with_policy').attr('href', SITE_PATH +
+                        '/ajax/admin/quotes/internalacceptquote/' + QUOTE_ID + '?return=' + return_to);
                 },
                 error: function (response) {
                     //  Quote.removeTabs();
@@ -307,7 +353,8 @@ $(function () {
     Common.createTabs();
     Common.datePickers();
     Common.setUrl();
-    if (typeof customer_data !== 'undefined') {
+    try {
         Loader.autoFill(customer_data);
+    } catch (e) {
     }
 });

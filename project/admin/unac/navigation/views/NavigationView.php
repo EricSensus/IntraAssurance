@@ -172,8 +172,8 @@ class NavigationView extends View {
                 '{acl}',
                 '{{<a href="'.Url::route('/admin/navigation/{action}/{id}',['action'=>'showitems']).'{id}">{itemcount}</a>}}',
                 '{description}',
-                '{{<a class="smallicon" data-confirm="{name} will be deleted. Are you sure?" href="'.Url::base().'/ajax/admin/navigation/deletegroup/{id}" >'
-                    . '<img '.Notifications::tooltip('Delete {name}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
+                '{{<a class="smallicon" data-confirm="{title} will be deleted. Are you sure?" href="'.Url::base().'/ajax/admin/navigation/deletegroup/{id}" >'
+                    . '<img '.Notifications::tooltip('Delete {title}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
                 . '</a>}}'
                 ];
 
@@ -468,10 +468,28 @@ class NavigationView extends View {
 
         if(count($menu_items)){
             foreach ($menu_items as $item){
-                $li .= '<li><a href="'. $this->processHref($item->href) .'">'. $item->linkname .'</a></li>';
+                $class = (count($item['children'])) ? 'dropdown-submenu' : '';
+                $li .= '<li class="'. $class .'"><a href="' . $this->processHref($item['href']) . '">' . $item['linkname'] . '</a>';
+
+                $li .= $this->getChildMenuItems($item['children']);
+
+                $li .= '</li>';
             }
         }
-
         return $li;
+    }
+
+    public function getChildMenuItems($children = array()){
+        if(count($children)){
+            $li = '<ul class="dropdown-menu">';
+
+            foreach ($children as $child) {
+                $li .= '<li><a href="'. $this->processHref($child->href) .'">' . $child->linkname . '</a> </li>';
+            }
+
+            $li .= '</ul>';
+
+            return $li;
+        }
     }
 }

@@ -521,15 +521,12 @@ abstract class QuotesBlueprint
         if (empty($rate_type)) {
             $rate = $model->where('rate_category', $category)
                 ->where('insurer_id', $this->insurer_id)
-                ->where('rate_name', $rate_name)
-                ->orWhere('alias', $rate_name)->first();
+                ->where('rate_name', $rate_name)->first();
         } else {
             $rate = $model->where('rate_category', $category)
                 ->where('insurer_id', $this->insurer_id)
-                ->where('rate_type', $rate_type)
                 ->where('rate_name', $rate_name)
-                ->orWhere('alias', $rate_name)
-                ->first();
+                ->where('rate_type', $rate_type)->first();
         }
         if ($rate->rate_type == 'Percentage') {
             $computed_value = (($tsi * $rate->rate_value) / 100);

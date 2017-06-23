@@ -14,6 +14,7 @@ body.innerbody{
 }
 .container {
   height: auto;
+  width: 1060px;
   margin-top: 0px;
   margin-right: auto;
   margin-left: auto;

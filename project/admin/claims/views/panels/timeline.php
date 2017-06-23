@@ -5,6 +5,7 @@ $bgs = ['bg-info', 'bg-secondary', 'bg-success', 'bg-warning'];
 <div class="col-md-12">
     <div class="timeline-centered">
         <?php foreach ($timeline as $event): ?>
+<!--            --><?php //dump($event); ?>
             <article class="timeline-entry">
 
                 <div class="timeline-entry-inner">
@@ -15,7 +16,8 @@ $bgs = ['bg-info', 'bg-secondary', 'bg-success', 'bg-warning'];
 
                     <div class="timeline-label">
                         <h2><?= $event->user->name ?>
-                            <small title="<?= $event->user->email ?>"><strong><?= $event->user->username ?></strong>
+                            <small title="<?= $event->user->email ?>"><strong><?= $event->user->username ?>
+                                    <span class="label label-default"><?=$event->user->acl; ?></span></strong>
                             </small>
                         </h2>
                         <p>
@@ -48,7 +50,12 @@ $bgs = ['bg-info', 'bg-secondary', 'bg-success', 'bg-warning'];
                     <i class="entypo-flight"></i>
                     <a data-target="#adddocument" href="<?= $url; ?>" data-backdrop="static" data-toggle="modal"
                        class="new-entity add toolsbutton">
-                        <img src="<?= RELATIVE_PROJECT_PATH ?>/templates/admin/images/icons/small/add_icon.png"></a>
+                        <img src="<?= RELATIVE_PROJECT_PATH ?>/templates/admin/images/icons/small/add_icon.png"> </a>
+                </div>
+                <div class="timeline-label">
+                    <p>   <a data-target="#adddocument" href="<?= $url; ?>" data-backdrop="static" data-toggle="modal"
+                             class="new-entity add toolsbutton">
+                            Attach any picures or document scans here </a></p>
                 </div>
 
             </div>

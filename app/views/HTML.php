@@ -7,7 +7,6 @@ class HTML {
     
     public static $notifications;
     public static $tracker = [];
-    public static $detect;
     public static $keywords = ['dataTables','overlay_modal','rowreorder'];
 
     /**
@@ -50,9 +49,6 @@ class HTML {
         
         //insert the notifications class
         self::$notifications = new Notifications();
-        
-        //initialize MobileDetect class
-        self::$detect = new MobileDetect();
     }
     
     /**
@@ -65,6 +61,9 @@ class HTML {
                 . self::AddPreloader('center','50','50')
             . '</div>';
         
+        //get viewpoint MobileDetect class
+        $viewpoint = App::get('viewpoint');
+        
         if(count(self::$tracker)>='1'){
             
             $tooltipset = false;
@@ -74,7 +73,7 @@ class HTML {
                 if($component == 'tooltip'){
                     
                     //detect device
-                    if(self::$detect->isMobile() || self::$detect->isTablet()){
+                    if($viewpoint->isMobile() || $viewpoint->isTablet()){
                         
                         $options = '{ trigger: "click" }';
                     }
@@ -93,7 +92,7 @@ class HTML {
                 elseif($component == 'popover'){
                     
                     //detect device
-                    if(!self::$detect->isMobile() && !self::$detect->isTablet() ){
+                    if(!$viewpoint->isMobile() && !$viewpoint->isTablet() ){
                         
                         $options = '{ trigger: "hover" }';
                     }
@@ -252,6 +251,7 @@ class HTML {
      */
     public static function head($use_native_componenets = TRUE, $inline_css = FALSE){
         
+        //start the notifications
         self::start();
         
         if($use_native_componenets){
@@ -289,8 +289,7 @@ class HTML {
         
     }
     
-    public static function notifications(){
-        
+    public static function notifications(){        
         self::$notifications->display();
     }
     

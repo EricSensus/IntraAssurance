@@ -12,6 +12,7 @@ use Jenga\MyProject\Services\Charts;
 use Jenga\App\Controllers\Controller;
 
 use Jenga\MyProject\Elements;
+use Jenga\MyProject\Users\Controllers\UsersController;
 
 /**
  * Class AgentsController
@@ -21,6 +22,10 @@ use Jenga\MyProject\Elements;
  */
 class AgentsController extends Controller
 {
+    /**
+     * @var UsersController
+     */
+    protected $user_ctrl;
 
     public function index()
     {
@@ -97,6 +102,7 @@ class AgentsController extends Controller
 
     public function agentPerformance($settings = [])
     {
+        $settings = ['type'=>'pie','id'=>'agent-share-pie','width'=>'100%','height'=>'380px'];
 
         $series = $this->model->getAgentAnalysis();
 
@@ -137,11 +143,17 @@ class AgentsController extends Controller
 
     public function delete()
     {
-
+        $this->user_ctrl = Elements::call('Users/UsersController');
         if (!is_null(Input::get('id'))) {
 
             $id = Input::get('id');
             $delete = $this->model->where('id', '=', $id)->delete();
+
+            // get the related user account
+            $agent_login = $this->user_ctrl->model->where('insurer_agents_id', $id)->first();
+
+            // delete the related login account if any
+            $this->user_ctrl->delete($agent_login->id);
         } elseif (!is_null(Input::post('ids'))) {
 
             foreach (Input::post('ids') as $id) {
@@ -149,12 +161,12 @@ class AgentsController extends Controller
             }
         }
 
-        if (is_null($delete)) {
+//        if (is_null($delete)) {
 
             $url = Url::route('/admin/setup');
             Redirect::withNotice('The agent has been deleted', 'success')
                 ->to($url);
-        }
+//        }
     }
 
     public function configureAgentLogin($id = null)

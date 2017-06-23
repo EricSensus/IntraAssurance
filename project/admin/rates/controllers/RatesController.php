@@ -22,8 +22,14 @@ use Jenga\MyProject\Rates\Views\RatesView;
  */
 class RatesController extends Controller
 {
+    /**
+     * @var
+     */
     private $rate_cats, $rate_types, $rates, $insurer;
 
+    /**
+     *
+     */
     private function _init()
     {
 
@@ -40,6 +46,9 @@ class RatesController extends Controller
         $this->rate_cats = $this->getRateCategories($rate_cats);
     }
 
+    /**
+     *
+     */
     private function setInsurer()
     {
         $this->insurer = Elements::call('Insurers/InsurersController')->getInsurerByFinder([
@@ -53,6 +62,9 @@ class RatesController extends Controller
         $this->companies = $haystack;
     }
 
+    /**
+     *
+     */
     public function index()
     {
 
@@ -65,6 +77,9 @@ class RatesController extends Controller
         $this->$action();
     }
 
+    /**
+     *
+     */
     public function show()
     {
         $this->_init();
@@ -73,6 +88,9 @@ class RatesController extends Controller
         $this->view->generateTable();
     }
 
+    /**
+     *
+     */
     public function showSetup()
     {
         $this->_init();

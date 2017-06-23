@@ -5,7 +5,7 @@ use Jenga\App\Views\Overlays;
 use Jenga\App\Request\Session;
 
 //get names
-if($this->user()->acl == 'superadmin' || $this->user()->acl == 'admin'){  
+if($this->user()->acl == 'superadmin' || $this->user()->acl == 'admin' || $this->user()->acl == 'agent'){  
     $names = explode(' ', $this->user()->fullname);
 }
 elseif($this->user()->acl == 'customer'){
@@ -13,8 +13,7 @@ elseif($this->user()->acl == 'customer'){
 }
 ?>
 <script>
-    $(function() {
-        
+    $(function() {        
         //moved the notice script from the notices element
         $('#profilemodal').on('hidden.bs.modal',function(){
             $.ajax({
@@ -40,7 +39,7 @@ elseif($this->user()->acl == 'customer'){
         <span class="caret"></span>
     </div>
     <ul class="dropdown-menu dropdown-menu-right">
-        <!-- to be redone using a much better ways -->
+        <!-- to be redone using a much better way -->
         <li>
             <?php
                 if($this->user()->acl == 'superadmin' || $this->user()->acl == 'admin'){

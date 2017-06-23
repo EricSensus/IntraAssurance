@@ -10,10 +10,11 @@
             var rowid = $(this).parent().closest('tr').attr('id');
 
             //hide all previous shorcuts
-            $('#'+settings.tablename+' ul[id!=shortcutMenu-'+rowid+']').hide();
+            $('#'+settings.tablename+' ul[id!=shortcutMenu-'+settings.tablename+rowid+']').hide();
 
             //set the new menu selector
-            settings.menuSelector = settings.menuSelector+rowid;
+            settings.menuSelector = settings.menuSelector+settings.tablename+rowid;
+            
             $(settings.menuSelector).show('fast',function(){ 
                 settings.menuSelector = '#shortcutMenu-';
             });

@@ -9,7 +9,6 @@
         </td>
     </tr>
 </table>
-<form method="post">
     <div class="form-group">
         <?= $label_subject ?>
         <?= $subject ?>
@@ -18,15 +17,38 @@
         <?= $label_description ?>
         <?= $description ?>
     </div>
-    <div>
-        <button type="submit" class="btn btn-lg btn-success" id="filenow"><i class="fa fa-arrow-circle-o-right"></i>
-            File
-            claim
-        </button>
-    </div>
-</form>
+        <?=$attach_image = '<div class="form-group"><label class="col-md-2 control-label">Attach files</label><div class="col-md-6"><input type="file" name="attached_files[]" class="form-control"/></div></div>'; ?>
+        <div class="col-md-4">
+            <button type="button" id="attach_more" class="btn btn-default"><i class="fa fa-plus"></i> Attach More...</button>
+        </div>
+        <div id="more_attachments"></div>
+        <br/>
+        <div class="form-group">
+            <button type="submit" class="btn btn-lg btn-success" id="filenow"><i class="fa fa-arrow-circle-o-right"></i>File Claim</button>
+        </div>
+        <!--hidden fields-->
+        <input type="hidden" name="element" value="claims"/>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.5.6/tinymce.min.js"></script>
+<script>
+    $(function () {
+        // add more file upload fields
+        $('#attach_more').on('click', function () {
+            var blueprint = '<?=$attach_image; ?>';
+            blueprint += '<div class="col-md-4">' +
+                '<button type="button" class="btn btn-danger remove_attachment">' +
+                '<i class="fa fa-trash"></i> Remove</button></div>';
+
+            $(blueprint).appendTo('#more_attachments');
+        });
+
+        // remove upload fields
+        $(document).on('click', '.remove_attachment', function(){
+            $(this).closest('.col-md-4').prev().remove();
+            $(this).closest('.col-md-4').remove();
+        });
+    });
+</script>
 <script type="text/javascript">
     $(function () {
         tinymce.init({

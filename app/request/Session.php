@@ -171,9 +171,9 @@ class Session {
      */
     public static function all($include_token = false){        
         
-        $allvalues = self::$_symsession->all();
+        $sessionvars = self::$_symsession->all();
         
-        foreach($allvalues as $key => $value){
+        foreach($sessionvars as $key => $value){
             
             //remove security token and user class
             if($include_token === FALSE){
@@ -243,17 +243,19 @@ class Session {
                 if(!is_null($sessionkeys[$key]))
                     return TRUE;            
             }
-            else{    
+        }
+        else{    
 
-                //also check the flash massages
-                if(self::$_flash->has($key)){
-                    return TRUE;
-                }
+            //also check the flash massages
+            if(self::$_flash->has($key)){
+                return TRUE;
             }
         }
         
         return FALSE;
     }
+    
+    
     
     /**
      * Returns the set user security token

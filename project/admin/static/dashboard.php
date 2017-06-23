@@ -68,25 +68,20 @@ HTML::script('
 
 <div class="col-md-8">
     <div class="shadow white-bg leads margin-bottom-20px">
-        <?php
-            $this->loadPanel('leads');
-        ?>
+        <?php $this->loadPanel('leads'); ?>
     </div>
+
     <div class="shadow white-bg expiredpolicies margin-bottom-20px">
-        <?php
-            $this->loadPanel('expired-policies');
-        ?>
+        <?php $this->loadPanel('expired-policies'); ?>
     </div>
-    <div class="shadow white-bg activequotes margin-bottom-20px">
-        <?php
-            $this->loadPanel('active-quotes');
-        ?>
+
+    <div class="shadow white-bg unprocessedpolicies margin-bottom-20px">
+        <?php $this->loadPanel('unprocessed-policies'); ?>
     </div>
-    <div class="shadow white-bg unprocessedpolicies">
-    <?php
-        $this->loadPanel('unprocessed-policies');
-    ?>
-</div>
+
+    <div class="shadow white-bg activeclaims">
+        <?php $this->loadPanel('active-claims'); ?>
+    </div>
 </div>
     
 <div class="col-md-4">

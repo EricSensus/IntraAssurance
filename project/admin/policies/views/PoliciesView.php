@@ -20,8 +20,15 @@ use Jenga\MyProject\Elements;
  */
 class PoliciesView extends View
 {
+    /**
+     * @var bool
+     */
     private $dash = false;
 
+    /**
+     * @param bool $mypolicies
+     * @param bool $dash
+     */
     public function generateTable($mypolicies = false, $dash = false)
     {
         $this->dash = $dash;
@@ -44,9 +51,7 @@ class PoliciesView extends View
         $suburl = Elements::call('Navigation/NavigationController')->getUrl('customers');
         $polurl = Elements::call('Navigation/NavigationController')->getUrl('policies');
 
-        $columns = ['Actions', 'Created', 'Policy No', 'Validity', 'Issue Date', 'Customer', 'Product', 'Premium',
-//            'Issue', 'Renew'
-        ];
+        $columns = ['Actions', 'Created', 'Policy No', 'Validity', 'Issue Date', 'Customer', 'Product', 'Premium'];
 
         $rows = [
             '{actions}',
@@ -56,14 +61,18 @@ class PoliciesView extends View
             '{issuedate}',
             '{{<a href="' . $suburl . '/show/{customers_id}">{customer}</a>}}',
             '{product}',
-            '{premium}',
-//            '{image}',
-//            '{renew}'
+            '{premium}'
         ];
 
-        if($mypolicies) {
+        if ($mypolicies) {
             $columns = $this->removeKey('Issue', $columns);
             $rows = $this->removeKey('{image}', $rows);
+        }
+
+        //dashboard
+        if ($dash) {
+            $columns = $this->removeKey('Customer', $columns);
+            $rows = $this->removeKey('{{<a href="' . $suburl . '/show/{customers_id}">{customer}</a>}}', $rows);
         }
 
         $dom = '<"top">rt<"bottom"p><"clear">';
@@ -105,16 +114,32 @@ class PoliciesView extends View
         $this->set('mypolicies', $mypolicies);
     }
 
-    public function removeKey($needle, $array = array()){
+    /**
+     * @param $needle
+     * @param array $array
+     * @return array
+     */
+    public function removeKey($needle, $array = array())
+    {
         $key = array_search($needle, $array);
-        if($key != false)
+        if ($key != false)
             unset($array[$key]);
 
         return $array;
     }
 
-    private function _mainTable($name, $count, array $columns, array $rows, $source, $dom, $searchform = '', $mypolicies = false)
-    {
+    /**
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @param string $searchform
+     * @param bool $mypolicies
+     * @return \Jenga\App\Html\type
+     */
+    private function _mainTable($name, $count, array $columns, array $rows, $source, $dom, $searchform = '', $mypolicies = false){
 
         $schematic = [
             'table' => [
@@ -163,38 +188,58 @@ class PoliciesView extends View
         $table = Generate::Table($name, $schematic);
 
         $table->buildShortcutMenu('{actions}', 'mouseover', [
-            function($id) {
-                return '<li><a href="' . Url::link('/admin/policies/edit/'. $id) . '"><i class="fa fa-edit"></i> Open Policy</a></li>';
+            function ($id) {
+                return '<li><a href="' . Url::link('/admin/policies/edit/' . $id) . '"><i class="fa fa-edit"></i> Open Policy</a></li>';
             },
             '<li class="divider"></li>',
-            function($id) {
-                return '<li><a href="' . Url::link('/admin/policies/processissue/' . $id) . '"><i class="fa fa-check-square"></i> Issue Policy</a></li>' .
-                    '<li>
-                        <a href="' . Url::link('/ajax/admin/policies/renewpolicy/' . $id) . '"
-                            data-target="#renewal_modal" data-toggle="modal">
-                        <i class="fa fa-refresh"></i> Renew Policy</a></li>'
-                    .'<li>
-                        <a href="'. Url::link('/admin/policies/downloaddocs/' . $id) .'" data-toggle="modal" data-target="#download-docs">
+            function ($id) {
+                
+                if(!$this->user()->is('customer')){
+                    
+                    $list = '<li>'
+                            . '<a href="' . Url::link('/admin/policies/processissue/' . $id) . '"><i class="fa fa-check-square"></i> Issue Policy</a>'
+                            . '</li>';
+
+                    $list .= '<li>
+                                <a href="' . Url::link('/ajax/admin/policies/renewpolicy/' . $id) . '"
+                                    data-target="#renewal_modal" data-toggle="modal">
+                                <i class="fa fa-refresh"></i> Renew Policy</a>
+                              </li>';
+                }
+                elseif($this->user()->is('customer')){
+                    
+                    $list .= '<li>
+                                <a href="' . Url::link('/ajax/admin/policies/renewpolicyrequest/' . $id) . '"
+                                    data-target="#renewal_modal" data-toggle="modal">
+                                <i class="fa fa-refresh"></i> Send Renewal Request</a>
+                              </li>';
+                }
+                
+                $list .= '<li>
+                        <a href="' . Url::link('/admin/policies/downloaddocs/' . $id) . '" data-toggle="modal" data-target="#download-docs">
                             <i class="fa fa-download"></i> Download Related Docs </a>
                     </li>';
+                
+                return $list;
             },
             '<li class="divider"></li>',
-            function($id) {
-                return '<li><a target="_blank" href="' . Url::link('/admin/policies/previewpolicy/' . $id) . '"><i class="fa fa-eye"></i> Preview Policy</a></li>' .
+            function ($id) {
+                return '<li><a target="_blank" href="' . Url::link('/policies/previewpolicy/' . $id) . '"><i class="fa fa-eye"></i> Preview Policy</a></li>' .
                     '<li>
                         <a href="' . Url::link('/ajax/admin/policies/emailpolicy/' . $id) . '" 
                             data-toggle="modal" data-target="#emailmodal">
-                                <i class="fa fa-envelope"></i> Email Policy</a></li>'.
-                    '<li><a href="' . Url::link('/ajax/admin/policies/pdfpolicy/' . $id) . '"><i class="fa fa-file-pdf-o"></i> Generate PDF</a></li>';
+                                <i class="fa fa-envelope"></i> Email Policy</a></li>' .
+                    '<li><a target="_blank" href="' . Url::link('/ajax/admin/policies/pdfpolicy/' . $id) . '"><i class="fa fa-file-pdf-o"></i> Generate PDF</a></li>';
             },
-            '<li class="divider"></li>',
-            function($id){
-                return '<li><a href="javascript::void();" onclick="deletePolicy();">'
-                . '<i class="fa fa-check-square-o"></i> Delete Policy'
-                . '</a></li>'
-                . '<form id="del_policy" action="'. Url::link('/admin/policies/deletesingle') .'" method="post">'
-                . '<input type="hidden" name="id" value="'.$id.'"/>'
-                . '</form>';
+            function ($id) {
+                if (!$this->user()->is('customer')) {
+                    return '<li class="divider"></li>'
+                        . '<li>'
+                            . '<a data-confirm="Policy No.'.$id.' will be deleted. Are you sure?" title="Delete Policy" href="' . Url::link('/ajax/admin/policies/deletesingle/' . $id) . '">'
+                                . '<i class="fa fa-check-square-o"></i> Delete Policy'
+                            . '</a>'
+                        . '</li>';
+                }
             }
         ]);
 
@@ -250,7 +295,7 @@ class PoliciesView extends View
 
             $table->printOutput();
         } else {
-            if(!$this->dash)
+            if (!$this->dash)
                 $table->buildTools($tools); //->assignPanel('search');
             $maintable = $table->render(TRUE);
 
@@ -258,6 +303,9 @@ class PoliciesView extends View
         }
     }
 
+    /**
+     * @param $from
+     */
     public function generateMiniTable($from)
     {
 
@@ -275,11 +323,13 @@ class PoliciesView extends View
         $suburl = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'customers']);
         $polurl = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'policies']);
 
-        $columns = ['Policy No', 'Validity', 'Customer', 'Issue'];
+        $columns = ['Actions', 'Policy No', 'Validity', 'Customer', 'Premium', 'Issue'];
 
-        $rows = ['{{<a href="' . SITE_PATH . $polurl . '/edit/{id}">{policyno}</a>}}',
+        $rows = ['{actions}',
+            '{{<a href="' . SITE_PATH . $polurl . '/edit/{id}">{policyno}</a>}}',
             '{validity}',
             '{customer}',
+            '{amount}',
             '{image}'];
 
         $dom = '<"top">rt<"bottom"p><"clear">';
@@ -295,6 +345,15 @@ class PoliciesView extends View
         }
     }
 
+    /**
+     * @param $name
+     * @param $count
+     * @param array $columns
+     * @param array $rows
+     * @param $source
+     * @param $dom
+     * @return \Jenga\App\Html\type
+     */
     private function _minitable($name, $count, array $columns, array $rows, $source, $dom)
     {
 
@@ -340,10 +399,41 @@ class PoliciesView extends View
 
         $table = Generate::Table($name, $schematic);
         $table->buildShortcutMenu('{actions}', 'mouseover', [
+            function ($id) {
+                return '<li><a href="' . Url::link('/admin/policies/edit/' . $id) . '"><i class="fa fa-edit"></i> Open Policy</a></li>';
+            },
             '<li class="divider"></li>',
-            '<li><a data-toggle="modal" data-target="#confirmquotemodal" class="dropdown-item" title="Mark Customer Response" href="' . SITE_PATH . '/ajax/admin/quotes/internalacceptquote/' . '{quote_no}">'
-            . '<i class="fa fa-check-square-o"></i> Confirm Quote'
-            . '</a></li>'
+            function ($id) {
+                return '<li><a href="' . Url::link('/admin/policies/processissue/' . $id) . '"><i class="fa fa-check-square"></i> Issue Policy</a></li>' .
+                    '<li>
+                        <a href="' . Url::link('/ajax/admin/policies/renewpolicy/' . $id) . '"
+                            data-target="#renewal_modal" data-toggle="modal">
+                        <i class="fa fa-refresh"></i> Renew Policy</a></li>'
+                    . '<li>
+                        <a href="' . Url::link('/admin/policies/downloaddocs/' . $id) . '" data-toggle="modal" data-target="#download-docs">
+                            <i class="fa fa-download"></i> Download Related Docs </a>
+                    </li>';
+            },
+            '<li class="divider"></li>',
+            function ($id) {
+                return '<li><a target="_blank" href="' . Url::link('/admin/policies/previewpolicy/' . $id) . '"><i class="fa fa-eye"></i> Preview Policy</a></li>' .
+                    '<li>
+                        <a href="' . Url::link('/ajax/admin/policies/emailpolicy/' . $id) . '" 
+                            data-toggle="modal" data-target="#emailmodal">
+                                <i class="fa fa-envelope"></i> Email Policy</a></li>' .
+                    '<li><a href="' . Url::link('/ajax/admin/policies/pdfpolicy/' . $id) . '"><i class="fa fa-file-pdf-o"></i> Generate PDF</a></li>';
+            },
+            function ($id) {
+                if (!$this->user()->is('customer')) {
+                    return '<li class="divider"></li>'
+                        . '<li><a href="javascript::void();" onclick="deletePolicy();">'
+                        . '<i class="fa fa-check-square-o"></i> Delete Policy'
+                        . '</a></li>'
+                        . '<form id="del_policy" action="' . Url::link('/admin/policies/deletesingle') . '" method="post">'
+                        . '<input type="hidden" name="id" value="' . $id . '"/>'
+                        . '</form>';
+                }
+            }
         ]);
 
         $minitable = $table->render(TRUE);
@@ -351,6 +441,9 @@ class PoliciesView extends View
         return $minitable;
     }
 
+    /**
+     * @param null $customer
+     */
     public function addPolicyForm($customer = null)
     {
 
@@ -409,6 +502,12 @@ class PoliciesView extends View
         $this->setViewPanel('policiesaddpanel');
     }
 
+    /**
+     * @param $coverage
+     * @param $premium
+     * @param bool $edit
+     * @return string
+     */
     public function processCoverage($coverage, $premium, $edit = false)
     {
         //process entity
@@ -554,6 +653,11 @@ class PoliciesView extends View
         return $table;
     }
 
+    /**
+     * @param $amounts
+     * @param $products
+     * @return string
+     */
     public function loadCoverDetails($amounts, $products)
     {
         $amounts = json_decode($amounts['amounts']);
@@ -611,7 +715,7 @@ class PoliciesView extends View
 
         if (count($amounts)) {
             foreach ($amounts as $title => $amount) {
-                if($amount->chosen) {
+                if ($amount->chosen) {
                     unset($amount->chosen);
                     // core
 //                    dump($amount);exit;
@@ -737,11 +841,14 @@ class PoliciesView extends View
         $this->setViewPanel('policiesaddpanel');
     }
 
+    /**
+     * @param $policy
+     */
     public function editPolicy($policy)
     {
         $readonly = [];
         $dates = 'date';
-        if($this->user()->is('customer')) {
+        if ($this->user()->is('customer')) {
             $readonly = ['readonly' => 'readonly'];
             $dates = 'text';
         }
@@ -849,6 +956,9 @@ class PoliciesView extends View
         $this->setViewPanel('policieseditpanel');
     }
 
+    /**
+     *
+     */
     public function uploadAdditionalDocs()
     {
 
@@ -892,6 +1002,10 @@ class PoliciesView extends View
         $this->setViewPanel('policiesaddpanel');
     }
 
+    /**
+     * @param $policy
+     * @param string $output
+     */
     public function issuePolicy($policy, $output = 'policiesaddpanel')
     {
 
@@ -923,6 +1037,10 @@ class PoliciesView extends View
         $this->setViewPanel($output);
     }
 
+    /**
+     * @param $policies
+     * @param string $output
+     */
     public function batchPolicy($policies, $output = 'process-issue')
     {
 
@@ -975,10 +1093,15 @@ class PoliciesView extends View
 
     }
 
+    /**
+     * @param $list
+     * @return string
+     */
     public function getQuoteList($list)
     {
-
-        $select = '<select class="control" id="quotes" name="quotes">';
+        $select = '<select class="control" id="quotes" name="quotes" required>';
+        $select .= '<option value="">--Select a Quote--</option>';
+        $select .= '<option value="new_quote" cust_id="'. $this->get('customer_id') .'">-Create a New Quote-';
 
         foreach ($list as $item) {
             $select .= '<option value="' . $item['id'] . '">'
@@ -994,6 +1117,10 @@ class PoliciesView extends View
         return $select;
     }
 
+    /**
+     * @param $step
+     * @return string
+     */
     private function _policyGuide($step)
     {
         switch ($step) {
@@ -1060,6 +1187,9 @@ class PoliciesView extends View
         return $guide;
     }
 
+    /**
+     * @param $doc
+     */
     public function matchImportColumns($doc)
     {
 
@@ -1082,11 +1212,12 @@ class PoliciesView extends View
         //get full table
         $count = 1;
         $table = '<div class="row">';
-        foreach ($columns as $dbcol => $column) {
 
+        foreach ($columns as $dbcol => $column) {
+            $required = ($column == 'Policy Start Date' || $column == 'Policy End Date') ? 'required' : '';
             //create select tag
             $scount = -1;
-            $select = '<select class="form-control" name="importselect_' . $count . '">';
+            $select = '<select class="form-control" name="importselect_' . $count . '" ' . $required . '>';
             foreach ($importcolumns as $imcolumn) {
 
                 if ($scount == -1) {
@@ -1179,6 +1310,9 @@ class PoliciesView extends View
             . '</table>';
     }
 
+    /**
+     * @param $policy_data
+     */
     public function generatePolicyPreview($policy_data)
     {
         $this->set('policy', $policy_data);
@@ -1238,6 +1372,11 @@ class PoliciesView extends View
         $this->setViewPanel('preview_policy');
     }
 
+    /**
+     * @param $product_info
+     * @param null $product_alias
+     * @return string
+     */
     public function loadProductDetails($product_info, $product_alias = null)
     {
         $product_info = $this->amountAsArray($product_info);
@@ -1280,6 +1419,10 @@ class PoliciesView extends View
         return $product_details;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function getCoreOptionals($key)
     {
         $optionals = [];
@@ -1293,6 +1436,11 @@ class PoliciesView extends View
         return in_array($key, $optionals);
     }
 
+    /**
+     * @param $letters
+     * @param $key
+     * @return string
+     */
     public function identifyOptional($letters, $key)
     {
         if ($letters == 'ba') {
@@ -1311,6 +1459,10 @@ class PoliciesView extends View
         }
     }
 
+    /**
+     * @param $amounts
+     * @return string
+     */
     public function loadOtherCovers($amounts)
     {
         $html = '';
@@ -1332,6 +1484,10 @@ class PoliciesView extends View
         return $html;
     }
 
+    /**
+     * @param $amount
+     * @return string
+     */
     public function loadCore($amount)
     {
         $core = [];
@@ -1347,6 +1503,10 @@ class PoliciesView extends View
         return $html;
     }
 
+    /**
+     * @param $amounts
+     * @return array
+     */
     public function amountAsArray($amounts)
     {
         $array = [];
@@ -1358,6 +1518,10 @@ class PoliciesView extends View
         return $array;
     }
 
+    /**
+     * @param $amounts
+     * @return string
+     */
     public function moreAmounts($amounts)
     {
 //        dump($amounts);exit;
@@ -1377,6 +1541,9 @@ class PoliciesView extends View
         return $more;
     }
 
+    /**
+     *
+     */
     public function loadDownloadDocsModal()
     {
         $docstable = '';
@@ -1419,11 +1586,20 @@ class PoliciesView extends View
         $this->setViewPanel('renew_policies');
     }
 
+    /**
+     *
+     */
     public function showMailModal()
     {
         $this->setViewPanel('email-policy-form');
     }
 
+    /**
+     * @param $policy
+     * @param $customer
+     * @param $products
+     * @param $agent
+     */
     public function mailPolicy($policy, $customer, $products, $agent)
     {
         $names = ucwords(strtolower($customer->name));
@@ -1487,6 +1663,9 @@ class PoliciesView extends View
         $this->setViewPanel('email-policy-form');
     }
 
+    /**
+     * @param $file
+     */
     public function createEmailAttachment($file)
     {
 
@@ -1511,6 +1690,12 @@ class PoliciesView extends View
         echo $formfile;
     }
 
+    /**
+     * @param $alias
+     * @param int $other_covers_no
+     * @return array
+     */
+
     public function getIndicesByProductAlias($alias, $other_covers_no = 0)
     {
         $indices = [];
@@ -1529,21 +1714,34 @@ class PoliciesView extends View
         return $indices;
     }
 
-    public function showRenewalModal($policy){
+    /**
+     * @param $policy
+     * @param bool $request
+     */
+
+    public function showRenewalModal($policy, $request = false)
+    {
+        if($request){
+            $destination = '/admin/policies/renewpolicy';
+        }
+        else{
+            $destination = '/admin/policies/sendrenewrequest';
+        }
+        
         $renew_schema = [
             'preventjQuery' => TRUE,
             'preventZebraJs' => TRUE,
             'method' => 'POST',
-            'action' => '/admin/policies/renewpolicy',
+            'action' => $destination,
             'controls' => [
                 '{id}' => ['hidden', 'id', $policy->id],
-                '{note}' => ['note', 'note', '<h5>Policy#: <b>'.$policy->policy_number.'</b></h5>'],
+                '{note}' => ['note', 'note', '<h5>Policy#: <b>' . $policy->policy_number . '</b></h5>'],
                 'End Date' => ['date', 'end_date', $policy->end_date],
                 'Period' => ['select', 'period', '', [
-                        '3 month' => '3 Months',
-                        '6 month' => '6 Months',
-                        '1 year' => '1 Year'
-                    ]
+                    '3 month' => '3 Months',
+                    '6 month' => '6 Months',
+                    '1 year' => '1 Year'
+                ]
                 ]
 //                '{submit}' => ['submit', 'btnsubmit', 'Send Email']
             ]
@@ -1554,13 +1752,13 @@ class PoliciesView extends View
             'formid' => 'renewal_modal_form',
             'role' => 'dialog',
             'size' => 'large',
-            'title' => 'Renew Policy',
+            'title' => 'Renew Policy'.($request ? ' Request' : ''),
             'buttons' => [
                 'Cancel' => [
                     'class' => 'btn btn-default',
                     'data-dismiss' => 'modal'
                 ],
-                'Renew Policy' => [
+                'Renew Policy'.($request ? ' Request' : '') => [
                     'type' => 'submit',
                     'class' => 'btn btn-primary mail',
                     'id' => 'renew_pol_btn'
@@ -1569,7 +1767,19 @@ class PoliciesView extends View
         ];
 
         $modal_content = Overlays::ModalDialog($modal_settings, $renewalform, true);
+        
         $this->set('modal_content', $modal_content);
         $this->setViewPanel('renewal_policy_modal');
+    }
+
+    /**
+     *
+     */
+    public function excelReports(){
+
+
+
+        $this->set('excel_reports', 'hellow');
+        $this->setViewPanel('excel-reports');
     }
 }

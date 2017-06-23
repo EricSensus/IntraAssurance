@@ -2,6 +2,7 @@
 
 namespace Jenga\MyProject\Quotes\Controllers;
 
+use function DI\object;
 use Jenga\App\Controllers\Controller;
 use Jenga\App\Core\App;
 use Jenga\App\Helpers\Help;
@@ -102,9 +103,8 @@ Class QuotesController extends Controller
     }
 
     /**
-     *
+     * Loads the leads table in the dashboard
      */
-
     public function getLeads()
     {
         $leads = $this->getTheLeads($this->statuslist);
@@ -293,6 +293,7 @@ Class QuotesController extends Controller
     public function internalAcceptQuote()
     {
         $id = Input::get('id');
+        $return = Input::get('return');
         $data['quote'] = $quote = $this->model->where('id', $id)->first();
         //get products
         $data['product'] = Elements::call('Products/ProductsController')->getProduct($quote->products_id);
@@ -301,6 +302,7 @@ Class QuotesController extends Controller
         $data['insurer'] = $this->_processAmount($quote);
         //get agent
         $data['agent'] = Elements::call('Agents/AgentsController')->retrieveAgents($data['customer']->insurer_agents_id);
+        $this->view->set('return_to', $return);
         $this->view->internalConfirmQuote($data);
     }
 
@@ -399,6 +401,11 @@ Class QuotesController extends Controller
     public function acceptRejectQuote(PoliciesController $_policy)
     {
         $return = Input::get('return');
+        if(empty($return))
+            $return = 'quotes';
+        else
+            $skip_policy = true;
+
         $status = "Accepted";
         $quote = $this->getQuoteById(Input::post('quote'));
         $begin = true; // whether to start quote generation
@@ -410,7 +417,7 @@ Class QuotesController extends Controller
             $insurer = Input::post('insurer');
             $this->updateChosenInsurer($quote, $insurer);
         }
-        if ($begin) {
+        if ($begin && !$skip_policy) {
             $_policy->saveAcceptedQuotePolicy($quote);
         }
         $this->notificationForQuoteResponse($quote, $begin);
@@ -418,7 +425,7 @@ Class QuotesController extends Controller
 
         if (!empty($return)) {
             Redirect::withNotice('Quote was marked as accepted')
-                ->to(Url::link('/admin/quotes/'));
+                ->to(Url::link('/admin/' . $return));
         } else {
             Redirect::withNotice('Your response was successfully recorded')
                 ->to(Url::base());
@@ -832,16 +839,23 @@ Class QuotesController extends Controller
     }
 
     /**
-     *
+     * Display quotations on the main page
      */
-
     public function showQuotes()
     {
 
         $dbquotes = $this->model->getQuotes();
         $quotes = $this->_processQuotes($dbquotes);
+
         $this->view->set('count', count($quotes));
         $this->view->set('source', $quotes);
+
+        $products = Elements::call('Products/ProductsController')
+            ->getProductsArr();
+
+        $this->view->set('products', $products);
+        $this->view->set('statuslist', $this->statuslist);
+
         $this->view->generateTable();
     }
 
@@ -859,7 +873,7 @@ Class QuotesController extends Controller
 
         //create the return url from the Navigation element
         $url = Elements::load('Navigation/NavigationController@getUrl', ['alias' => 'quotes']);
-        $alerts = Notifications::Alert(' This section only displays <strong>Completed or Rejected</strong> quotes '
+        $alerts = Notifications::Alert(' This section only displays <strong>Archived</strong> quotes '
             . '<a data-dismiss="alert" class="close" href="' . Url::base() . $url . '">Ã—</a>', 'info', TRUE, TRUE);
 
         $this->view->set('alerts', $alerts);
@@ -922,7 +936,7 @@ Class QuotesController extends Controller
 
     public function analyseProducts($settings = [])
     {
-
+        $settings = ['type' => 'pie', 'id' => 'share-pie', 'width' => '100%', 'height' => '380px'];
         $series = $this->model->getProductAnalysis();
 
         //build the chart
@@ -965,6 +979,7 @@ Class QuotesController extends Controller
      */
     public function analyseQuotesByMonth($settings)
     {
+        $settings = ['type' => 'column', 'id' => 'monthly-quotes', 'width' => '100%', 'height' => '380px'];
 
         $quotes = $this->model->getQuotesByMonth();
         $months = array_keys($quotes);
@@ -1076,6 +1091,7 @@ Class QuotesController extends Controller
         $data['product_info'] = Elements::call('Products/ProductsController')->getProduct($the_quote->products_id, 'stdClass');
         $data['quotation'] = json_decode($the_quote->amount);
         $data['_quote'] = $this->getQuotations($the_quote->id);
+
         $this->view->createQuotePreview($data);
     }
 
@@ -1274,7 +1290,7 @@ Class QuotesController extends Controller
     public function search()
     {
 
-        $dbquotes = $this->model->getQuotes();
+        $dbquotes = $this->model->getQuotes(false, $this->user());
 
         $params = $dbquotes['terms'];
         unset($dbquotes['terms']);
@@ -1293,6 +1309,12 @@ Class QuotesController extends Controller
         $this->view->set('alerts', $alerts);
         $this->view->set('source', $search);
 
+
+        $products = Elements::call('Products/ProductsController')
+            ->getProductsArr();
+
+        $this->view->set('products', $products);
+        $this->view->set('statuslist', $this->statuslist);
         $this->view->generateTable();
     }
 
@@ -1301,11 +1323,19 @@ Class QuotesController extends Controller
      */
     public function export()
     {
-
         $dbquotes = $this->model->getQuotes();
         $quotes = $this->_processQuotesForExport($dbquotes);
 
-        $columns = $this->model->returnColumns('values');
+        $columns = [
+            'quoteno' => 'Quote No',
+            'dategen' => 'Created On',
+            'customer' => 'Customer',
+            'product' => 'Product',
+            'entity' => 'Entity',
+            'agent' => 'Agent',
+            'status' => 'Status',
+            'amount' => 'Amount'
+        ];
 
         $company = $this->model->table('own_company')->first();
         $doc = new Excel($company->name . ' Quotation Listing', Input::post('filename'));
@@ -1340,11 +1370,25 @@ Class QuotesController extends Controller
     {
 
         $this->view->disable();
-        $ids = Input::post('ids');
 
-        foreach ($ids as $id) {
-            $this->model->connectPayments();
-            $this->model->where('id', '=', $id)->delete();
+        if (Input::has('ids')) {
+
+            $ids = Input::post('ids');
+
+            foreach ($ids as $id) {
+
+                $quote = $this->model->find($id);
+
+                if ($quote->status != 'Accepted') {
+
+                    $this->model->connectPayments();
+                    $this->model->where('id', '=', $id)->delete();
+                }
+            }
+        } elseif (Input::has('id')) {
+
+            $id = Input::get('id');
+            $this->model->where('id', $id)->delete();
         }
 
         $url = Url::route('/admin/quotes/{action}/{id}');
@@ -1552,6 +1596,20 @@ Class QuotesController extends Controller
     }
 
     /**
+     * @param $quote_id
+     * @param $data
+     * @return bool
+     */
+    public function updateQuoteData($quote_id, $data)
+    {
+        $quote = $this->model->find($quote_id);
+        foreach ($data as $key => $value) {
+            $quote->{$key} = $value;
+        }
+        return $quote->save();
+    }
+
+    /**
      * Save quote remotely
      * @param array $ids
      * @param array $customer_info
@@ -1650,7 +1708,7 @@ Class QuotesController extends Controller
         // attach the selected agent to the customer
         Elements::call('Customers/CustomersController')->attachAgentToCustomer($customer_id, Input::post('agent'));
 
-        Session::flash('status', 'agent_attached');
+        Session::flash('status', $this->statuslist['agent_attached']);
         Session::flash('quote_id', $quote_no);
         Redirect::to(Input::post('destination'))->withNotice('Agent has been attached');
     }
@@ -1671,19 +1729,20 @@ Class QuotesController extends Controller
             ->join('customers c', $table_one . '.customers_id = c.id', 'LEFT')
             ->where('source', 'External');
 
-        if ($this->user()->is('agent'))
-            $leads = $leads->where('insurer_agents_id', $this->user()->insurer_agents_id);
+        if ($this->user()->is('agent')) {
+            $leads->where('insurer_agents_id', $this->user()->insurer_agents_id);
+        }
 
-        $leads = $leads->where('status', 'new')
-            ->orWhere('status', 'agent_attached');
+        $leads->where('status', 'new')
+            ->orWhere('status', $statuses['agent_attached']);
 
-        $leads = $leads->get();
+        $leadresults = $leads->get();
 
-        if (count($leads)) {
+        if (count($leadresults)) {
 
             $count = 0;
 
-            foreach ($leads as $lead) {
+            foreach ($leadresults as $lead) {
 
                 $lead->datetime = date('d M, Y H:i A', $lead->datetime);
                 $lead->cname = '<a href="' . Url::base() . '/admin/customers/show/' . $lead->customers_id . '">' . $lead->name .
@@ -1697,6 +1756,9 @@ Class QuotesController extends Controller
 
                 //process status
                 $lead->status = $statuses[$lead->status];
+
+                //encrypt quote no
+                $lead->encryptedno = Help::encrypt($lead->quote_no);
 
                 $customer_leads[] = $lead;
                 $count++;
@@ -1748,6 +1810,23 @@ Class QuotesController extends Controller
         return $the_arrays;
     }
 
+
+    /**
+     * Get detailed info on quote
+     * @param $id
+     * @return object
+     */
+    public function getQuoteData($id)
+    {
+        $q = $this->getQuoteById($id);
+        $q->amount = $this->getPreviewQuoteAmount($q);
+        $q->customer_info = json_decode($q->customer_info);
+        $q->product_info = json_decode($q->product_info);
+        unset($q->customer_info->additional_info, $q->product_info->btnsubmit);
+        return $q;
+    }
+
+
     /**
      * Get full information on customer
      * @param null $customer_id
@@ -1786,6 +1865,7 @@ Class QuotesController extends Controller
     {
         $customer = $this->getCustomerDataArray();
 
+        $this->view->set('product', ucfirst($element));
         // delete any previous sessions
         if (Session::has('customer_id') || Session::has('quote_id')) {
             Session::delete('customer_id');
@@ -1822,9 +1902,11 @@ Class QuotesController extends Controller
      */
     public function saveInternalQuote(CustomersController $_customer, EntitiesController $_entity, $element)
     {
+
         $this->view->disable();
         $quote_id = Input::post('quote_id');
         $editing = !(empty($quote_id));
+
         switch ($element) {
             case 'motor':
                 $_element = Elements::call('Motor/MotorController');
@@ -1844,6 +1926,7 @@ Class QuotesController extends Controller
             default:
                 return 'Unknown element';
         }
+
         $step1 = $_element->getInputForStep(1);
         $step2 = $_element->getInputForStep(2);
         $step3 = $_element->getInputForStep(3);
@@ -1899,7 +1982,7 @@ Class QuotesController extends Controller
         $saved = [];
         $_entity = Elements::call('Entities/EntitiesController');
         for ($i = 1; $i <= $count; $i++) {
-            $got = $this->__buildStack($i);
+            $got = $this->_buildStack($i);
             $entity_id = $_entity->getEntityIdByAlias($alias)->id;
             $saved[] = $_entity->saveEntityDataRemotely($cust_id, $entity_id, json_encode($got), $product);
         }
@@ -1937,16 +2020,13 @@ Class QuotesController extends Controller
         foreach ($companies as $insures) {
             $alias = $insures->alias;
             $name = "Jenga\MyProject\Quotes\Library\Companies\\" . $alias; //get class reflection
-            if (!class_exists($name, false)) {
-                $name = "Jenga\MyProject\Quotes\Library\Companies\\CommonQuotes"; //get class reflection
-            }
             $r = new $name($the_quote);
             $values[] = $r->calculate();
         }
         return $values;
     }
 
-    private function __buildStack($index)
+    private function _buildStack($index)
     {
         $build = [];
         foreach (Input::post() as $key => $value) {
@@ -1981,8 +2061,121 @@ Class QuotesController extends Controller
         $this->myQuotes(true);
     }
 
-    public function sendQuoteNotification()
+    public function salesConvForCurrentMonth()
     {
+        $settings = ['type' => 'column', 'id' => 'current-scs', 'width' => '100%', 'height' => '380px'];
 
+        $quotes = $this->model->getSalesConversionForCurrMonth();
+        $months = array_keys($quotes);
+
+        $qchart = new Charts($settings);
+
+        $qchart->setup(['type' => $settings['type']]);
+        $qchart->title('Sales Conversions for ' . date('F') . ', ' . date('Y'));
+
+        $qchart->xAxis([
+            'categories' => $months
+        ]);
+
+        $qchart->yAxis([
+            'allowDecimals' => 'false',
+            'min' => 0,
+            'title' => [
+                'text' => "''"
+            ],
+            'plotLines' => [
+                'value' => '0',
+                'width' => '1',
+                'color' => "'#808080'"
+            ]
+        ]);
+
+        $qchart->tooltip([
+            'valueSuffix' => "' Quote(s)'"
+        ]);
+
+        $qchart->legend([
+            'layout' => "'vertical'",
+            'align' => "'right'",
+            'verticalAlign' => "'middle'",
+            'floating' => 'true',
+            'borderWidth' => '0'
+        ]);
+
+        $seriesmethod = $settings['type'] . 'Series';
+        $qchart->$seriesmethod($quotes, ['Quotes']);
+
+        $quoteschart = $qchart->build();
+//        dump($quoteschart);exit;
+
+        $this->view->set('current_scs', $quoteschart);
+        $this->view->setViewPanel('current-scs');
+    }
+
+    /**
+     * /**
+     * Prepare the quotes to be exported
+     */
+    public function getProcessedQuotes()
+    {
+        $agents = Elements::call('Agents/AgentsController')->getAllAgents();
+        $quote_data = [];
+
+        // get direct quotes
+        $direct_quotes = $this->model->getDirectQuotes();
+        $direct_pending = $this->model->getDirectQuotes(['status' => $this->statuslist['pending']]);
+        $direct_rejected = $this->model->getDirectQuotes(['status' => $this->statuslist['rejected']]);
+        $direct_accepted = $this->model->getDirectQuotes(['status' => $this->statuslist['Accepted']]);
+        $direct_new = $this->model->getDirectQuotes(['status' => $this->statuslist['new']]);
+        $direct_agent_attached = $this->model->getDirectQuotes(['status' => $this->statuslist['agent_attached']]);
+        $policy_created_quotes = $this->model->getDirectQuotes(['status' => $this->statuslist['policy_created']]);
+
+        $quote_data[] = (object)[
+            'agent_name' => 'Direct',
+            'total_quotes' => count($direct_quotes),
+            'pending' => count($direct_pending),
+            'rejected' => count($direct_rejected),
+            'accepted' => count($direct_accepted),
+            'new' => count($direct_new),
+            'agent_attached' => count($direct_agent_attached),
+            'policy_created' => count($policy_created_quotes)
+        ];
+
+        // format the quotes
+        if (count($agents)) {
+            foreach ($agents as $agent) {
+                // get quotes by agent
+                $agent_quotes = $this->model->getQuotesByAgent($agent->id);
+
+                // get pending quotes
+                $pending_quotes = $this->model->getQuotesByAgent($agent->id, ['status' => 'Pending']);
+
+                // get rejected quotes
+                $rejected_quotes = $this->model->getQuotesByAgent($agent->id, ['status' => $this->statuslist['rejected']]);
+
+                // get accepted quotes
+                $accepted_quotes = $this->model->getQuotesByAgent($agent->id, ['status' => $this->statuslist['Accepted']]);
+
+                // get new quotes
+                $new_quotes = $this->model->getQuotesByAgent($agent->id, ['status' => $this->statuslist['new']]);
+
+                // get agent attached quotes
+                $agent_attached = $this->model->getQuotesByAgent($agent->id, ['status' => $this->statuslist['agent_attached']]);
+                $policy_created_quotes = $this->model->getQuotesByAgent($agent->id, ['status' => $this->statuslist['policy_created']]);
+
+                $quote_data[] = (object)[
+                    'agent_name' => $agent->names,
+                    'total_quotes' => count($agent_quotes),
+                    'pending' => count($pending_quotes),
+                    'rejected' => count($rejected_quotes),
+                    'accepted' => count($accepted_quotes),
+                    'new' => count($new_quotes),
+                    'agent_attached' => count($agent_attached),
+                    'policy_created' => count($policy_created_quotes)
+                ];
+            }
+        }
+
+        return $quote_data;
     }
 }

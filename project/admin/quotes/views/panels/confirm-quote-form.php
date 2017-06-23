@@ -116,7 +116,7 @@ extract($data);
                 });
                 function sendResponse() {
                     var newForm = $('<form>', {
-                        'action': SITE_URL + '/quote/acceptreject?return=quotes',
+                        'action': SITE_URL + '/quote/acceptreject?return=<?= $return_to?>',
                         'method': 'post'
                     }).append($('<input>', {
                         'name': 'action',

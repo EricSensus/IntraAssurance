@@ -41,68 +41,56 @@ Route::collect('notifications');
 Route::collect('claims');
 Route::collect('profile');
 Route::collect('users');
+Route::collect('reports');
+Route::collect('api');
 
 //the admin template behind the login wall
 Route::group(['before' => 'auth.check'], function () {
 
     Route::get('/admin/dashboard', 'admin' . DS . 'static' . DS . 'dashboard.php')
-            ->attachTemplate('admin')
-            ->assignPanels([
-                'top' => 'NotificationsController@load:notices',
-                'navigation' => 'NavigationController@display:menus',
-                'logout' => 'UsersController@logout:logout',
-                'leads' => 'QuotesController@getLeads:leads',
-                'active-quotes' => 'QuotesController@getActiveQuotes:active-quotes',
-                'unprocessed-policies' => 'PoliciesController@getUnprocessedPolicies:unprocessed-policies',
-                'expired-policies' => 'PoliciesController@getExpiringPolicies:expired-policies',
-                'tasks' => 'TasksController@show:tasks'
-            ]);
-
-    Route::get('/admin/reports', 'admin' . DS . 'static' . DS . 'reports.php')
-            ->attachTemplate('admin')
-            ->assignPanels([
-                'top' => 'NotificationsController@load:notices',
-                'navigation' => 'NavigationController@display:menus',
-                'logout' => 'UsersController@logout:logout',
-                'products-share' => 'QuotesController@analyseProducts:products-share',
-                'monthly-quotes' => 'QuotesController@analyseQuotesByMonth:monthly-quotes',
-                'monthly-policies' => 'PoliciesController@analysePoliciesByMonth:monthly-policies',
-                'agents-share' => 'AgentsController@agentPerformance:agents-share'
-            ])
-            ->assignResources([
-                //highchart scripts
-                '<script src="' . RELATIVE_PROJECT_PATH . '/services/highcharts-4.1.5/js/highcharts.js"></script>'
-            ]);
+        ->attachTemplate('admin')
+        ->assignPanels([
+            'top' => 'NotificationsController@load:notices',
+            'navigation' => 'NavigationController@display:menus',
+            'logout' => 'UsersController@logout:logout',
+            'leads' => 'QuotesController@getLeads:leads',
+//            'active-quotes' => 'QuotesController@getActiveQuotes:active-quotes',
+            'unprocessed-policies' => 'PoliciesController@getUnprocessedPolicies:unprocessed-policies',
+            'active-claims' => 'ClaimsController@getActiveClaims:active-claims',
+            'expired-policies' => 'PoliciesController@getExpiringPolicies:expired-policies',
+            'tasks' => 'TasksController@show:tasks'
+        ]);
 
     Route::get('/admin/setup', 'admin' . DS . 'static' . DS . 'setup.php')
-            ->attachTemplate('admin')
-            ->assignPanels([
-                'top' => 'NotificationsController@load:notices',
-                'navigation' => 'NavigationController@display:menus'    ,
-                'logout' => 'UsersController@logout:logout',
-                'company-details' => 'CompaniesController@ownCompany:own-company-details',
-                'insurer-companies' => 'CompaniesController@getInsurers:insurer-companies',
-                'products-setup' => 'ProductsController@getProducts:products-setup',
-                'entities-setup' => 'EntitiesController@getEntities:entities-setup',
-                'rates-setup' => 'RatesController@showSetup',
-                'companies' => 'RatesController@getCompanies:companies',
-                //'commissions-setup' => 'InsurersController@getCommissions:commissions',
-                'agents-setup' => 'AgentsController@getAgents:agents'
-            ]);
+        ->attachTemplate('admin')
+        ->assignPanels([
+            'top' => 'NotificationsController@load:notices',
+            'navigation' => 'NavigationController@display:menus'    ,
+            'logout' => 'UsersController@logout:logout',
+            'company-details' => 'CompaniesController@ownCompany:own-company-details',
+            'insurer-companies' => 'CompaniesController@getInsurers:insurer-companies',
+            'products-setup' => 'ProductsController@getProducts:products-setup',
+            'api-setup' => 'ApiController@getTokens:tokens-setup',
+            'entities-setup' => 'EntitiesController@getEntities:entities-setup',
+            'rates-setup' => 'RatesController@showSetup',
+            'companies' => 'RatesController@getCompanies:companies',
+            //'commissions-setup' => 'InsurersController@getCommissions:commissions',
+            'agents-setup' => 'AgentsController@getAgents:agents'
+        ]);
 
     Route::get('/admin/{element}/{action}/{id}', '{default}')
-            ->attachTemplate('admin')
-            ->assignPanels([
-                'top' => 'NotificationsController@load:notices',
-                'navigation' => 'NavigationController@display:menus',
-                'logout' => 'UsersController@logout:logout'
-            ]);
+        ->attachTemplate('admin')
+        ->assignPanels([
+            'top' => 'NotificationsController@load:notices',
+            'navigation' => 'NavigationController@display:menus',
+            'logout' => 'UsersController@logout:logout'
+        ]);
 
     Route::post('/admin/{element}/{action}', '{default}')
-            ->attachTemplate('admin')
-            ->assignPanels([
-                'top' => 'NotificationsController@load:notices',
-                'navigation' => 'NavigationController@display:menus',
-                'logout' => 'UsersController@logout:logout'
-            ]);
+        ->attachTemplate('admin')
+        ->assignPanels([
+            'top' => 'NotificationsController@load:notices',
+            'navigation' => 'NavigationController@display:menus',
+            'logout' => 'UsersController@logout:logout'
+        ]);
 });

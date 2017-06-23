@@ -1,0 +1,48 @@
+@charset "utf-8";
+.middlesection{
+      background-color:#ffffff;
+}
+.contentbox{
+	background-color:#f3f3f3;	
+}
+.insurance h2{
+    color:#3f3f3f;	
+}
+.wizard-heading{
+	background-color:#3f3f3f;
+}
+th.heading a{
+	color:#b8b8b8;
+}
+th.heading a.active h5{
+	color:#ffffff;
+}
+th.heading a.active h6{
+	color:#ffffff;
+}
+th.heading a:hover, th.heading a.description:hover, th.heading a.active h5:hover, th.heading a.active h6:hover{
+	color: green;
+}
+.formheadingcaption p {
+	color:#404040;
+}
+label{
+	color:#404040;	
+}
+input.form-control, select.form-control {
+    background-color:#ffffff;
+    border:1px solid #d2d2d2;
+}
+.btn-primary{
+	color: #fff;
+    background-color: #5cb85c;
+    border-color: #4cae4c;	
+}
+.btn-success {
+    color: #fff;
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+.note a{
+	color:#317731;
+}

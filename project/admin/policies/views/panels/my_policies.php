@@ -1,6 +1,16 @@
 <?php
+use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
+use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
+
+HTML::script('$(document).ready( function () {
+    
+                $("#policies_table").ready(function(){
+                    $("#policies_table_paginate").appendTo($(".active-policies-pagination"));
+                });
+                
+            } );');
 ?>
 <div class="mini-panel">
     <div class="float-left">
@@ -46,7 +56,10 @@ use Jenga\App\Views\Notifications;
     <div class="float-left">
         <p>Shows all your policies</p>
     </div>
-    <div class="float-right active-quotes-pagination">
+    <div class="float-right active-policies-pagination">
 
     </div>
 </div>
+<?php
+echo Overlays::Modal(['id'=>'renewal_modal']);
+echo Overlays::Modal(['id'=>'download-docs']);

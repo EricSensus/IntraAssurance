@@ -11,9 +11,11 @@ use Jenga\App\Views\Notifications;
 use Jenga\MyProject\Elements;
 
 class ProductsView extends View {
-    
+    /**
+     * @param $products
+     */
     public function productsDisplay($products){
-        
+
         $columns = ['Name','Alias','Type',''];
         $rows = ['{name}',
                 '{alias}',
@@ -24,8 +26,8 @@ class ProductsView extends View {
                 . '<a class="smallicon" data-confirm="{name} will be deleted. Are you sure?" href="'.Url::base().'/admin/products/delete/{id}" >'
                     . '<img '.Notifications::tooltip('Delete {name}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
                 . '</a>}}'];
-        
-        $schematic = [            
+
+        $schematic = [
             'table' => [
                 'width' => '100%',
                 'class' => 'display',
@@ -71,9 +73,9 @@ class ProductsView extends View {
                 ]
             ]
         ];
-        
+
         $table = Generate::Table('productstable',$schematic);
-        
+
         $tools = [
                     'images_path' => RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small',
                     'settings' => [
@@ -97,19 +99,23 @@ class ProductsView extends View {
                         ]
                     ]
                 ];
-        
+
         $table->buildTools($tools);
         $producttable = $table->render(TRUE);
-        
+
         //add the delete confirm modal
         $deletemodal = Overlays::confirm();
         $this->set('deletemodal', $deletemodal);
-        
+
         $this->set('products_setup', $producttable);
     }
-    
+
+    /**
+     * @param $product
+     * @param $fields
+     */
     public function addProductForm($product,$fields){
-        
+
         $entities = Elements::call('Entities/EntitiesController')->getEntityTypes();
 
         $schematic = [
@@ -136,30 +142,35 @@ class ProductsView extends View {
                 ] ,
                 'multiple_entities' => [
                     'required' => 'Please answer the multiple entity questions'
-                ] 
+                ]
             ]
         ];
-        
+
         $pform = Generate::Form('pform', $schematic);
         $pfields = $this->productFieldsTable($fields,$product->forms_id);
-        
+
         $vars = [
             'productalias'=>$product->alias,
             'productfields' => $pfields
         ];
-        
-        $fullform = $pform->render(ABSOLUTE_PATH 
-                .DS. 'project' .DS. 'admin' .DS. 'products' 
-                .DS. 'views' .DS. 'panels' .DS. 'addeditproductform.php', 
+
+        $fullform = $pform->render(ABSOLUTE_PATH
+                .DS. 'project' .DS. 'admin' .DS. 'products'
+                .DS. 'views' .DS. 'panels' .DS. 'addeditproductform.php',
                 TRUE, $vars);
-        
+
         //create the edit Overlaymodal
         $this->set('editmodal',  Overlays::Modal(['id'=>'editformfield','title'=>'Edit Product Form Field']));
         $this->set('deletemodal', Overlays::confirm());
-        
+
         $this->set('product_add_edit', $fullform);
     }
-    
+
+    /**
+     * @param $fields
+     * @param $formid
+     * @return \Jenga\App\Html\type
+     */
     public function productFieldsTable($fields,$formid){
         $columns = ['Order','','Name','Type','Required',''];
         $rows = [
@@ -176,8 +187,8 @@ class ProductsView extends View {
                 . '<img '.Notifications::tooltip('Delete {name}').' src="'.RELATIVE_PROJECT_PATH.'/templates/admin/images/icons/small/delete_icon.png" width="18"/>'
             . '</a>}}'
             ];
-        
-        $schematic = [            
+
+        $schematic = [
             'table' => [
                 'width' => '100%',
                 'class' => 'display',
@@ -227,13 +238,16 @@ class ProductsView extends View {
                 ]
             ]
         ];
-        
+
         $table = Generate::Table('productstable',$schematic);
         return $table->render(TRUE);
     }
-    
+
+    /**
+     * @param $form
+     */
     public function addNewProductForm($form){
-        
+
         $modal_settings = [
             'formid' => 'addform',
             'role' => 'dialog',
@@ -250,19 +264,22 @@ class ProductsView extends View {
                 ]
             ]
         ];
-        
+
         $addform = Overlays::ModalDialog($modal_settings, $form);
-        
-        $this->set('addform',$addform);        
+
+        $this->set('addform',$addform);
         $this->setViewPanel('newproduct');
     }
-    
+
+    /**
+     * @param $pform
+     */
     public function fullProductForm($pform){
-        
+
         $productform = $pform->render(
-                ABSOLUTE_PATH .DS. 'project' .DS. 'admin' .DS. 'products' .DS. 'views' .DS. 'panels' .DS. 
-                'productform.php',TRUE); 
-        
+                ABSOLUTE_PATH .DS. 'project' .DS. 'admin' .DS. 'products' .DS. 'views' .DS. 'panels' .DS.
+                'productform.php',TRUE);
+
         $modal_settings = [
             'formid' => 'productfieldform',
             'role' => 'dialog',
@@ -279,19 +296,19 @@ class ProductsView extends View {
                 ]
             ]
         ];
-        
+
         $startform = Overlays::ModalDialog($modal_settings, $productform);
         $this->set('startform', $startform);
-        
+
         $this->setViewPanel('fieldform');
     }
-    
+
     public function fieldEditForm($pform){
         $attributes = ['attributes' => $this->get('attributes')];
         $editfieldform = $pform->render(
-                ABSOLUTE_PATH .DS. 'project' .DS. 'admin' .DS. 'products' .DS. 'views' .DS. 'panels' .DS. 
-                'editformfield.php',TRUE,$attributes); 
-        
+                ABSOLUTE_PATH .DS. 'project' .DS. 'admin' .DS. 'products' .DS. 'views' .DS. 'panels' .DS.
+                'editformfield.php',TRUE,$attributes);
+
         $modal_settings = [
             'formid' => 'editfieldform',
             'role' => 'dialog',
@@ -308,10 +325,11 @@ class ProductsView extends View {
                 ]
             ]
         ];
-        
+
         $editform = Overlays::ModalDialog($modal_settings, $editfieldform, true);
         $this->set('editform', $editform);
-        
+
         $this->setViewPanel('editformfieldpanel');
     }
+
 }

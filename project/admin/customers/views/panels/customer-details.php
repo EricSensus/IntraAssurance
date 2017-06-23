@@ -1,22 +1,17 @@
 <?php
 use Jenga\App\Views\HTML;
 use Jenga\App\Request\Url;
+use Jenga\App\Request\Input;
 use Jenga\App\Views\Overlays;
 use Jenga\App\Views\Notifications;
-HTML::script("$(function() { 
-    
-    // for bootstrap 3 use 'shown.bs.tab', for bootstrap 2 use 'shown' in the next line
-    $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
-        // save the latest tab; use cookies if you like 'em better:
-        localStorage.setItem('lastTab', $(this).attr('href'));
-    });
 
-    // go to the latest tab, if it exists:
-    var lastTab = localStorage.getItem('lastTab');
-    if (lastTab) {
-        $('[href=\"' + lastTab + '\"]').tab('show');
-    }
-});");
+//check tab
+if(Input::has('tab')){
+    $tab = Input::get('tab');
+}
+else{
+    $tab = 'personal-details';
+}
 
 echo '<div class="row">'
 . '<div class="col-md-12">
@@ -33,23 +28,25 @@ echo '</div>
 
 echo '<div class="tabs row-padding">
     <ul role="tablist" class="nav nav-pills" id="myTabs">
-      <li class="active" role="presentation" ><a aria-expanded="false" aria-controls="home" data-toggle="tab" role="tab" href="#personal-details">Personal Details</a></li>
-      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#policies" aria-expanded="true">Policies ('.$policycount.')</a></li>
-      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#claims" aria-expanded="true">Claims ('.$claims_count.')</a></li>
-      <li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#generated-quotes" aria-expanded="true">Generated Quotations ('.$quote_count.')</a></li>'
-    .'<li role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#entities" aria-expanded="true">Entities ('.$entitycount.')</a></li>';
-
-if(!$this->user()->is('customer'))
-    echo '<li class=""><a aria-controls="profile" data-toggle="tab" role="tab" href="#tasks" aria-expanded="false">Related Tasks and Remainders ('.$taskcount.')</a></li>
     
-    </ul>
+      <li '.($tab == 'personal-details' ? 'class="active"' : '').' role="presentation" ><a aria-expanded="false" aria-controls="home" data-toggle="tab" role="tab" href="#personal-details">Personal Details</a></li>
+      <li '.($tab == 'policies' ? 'class="active"' : '').' role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#policies" aria-expanded="true">Policies ('.$policycount.')</a></li>
+      <li '.($tab == 'claims' ? 'class="active"' : '').' role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#claims" aria-expanded="true">Claims ('.$claims_count.')</a></li>
+      <li '.($tab == 'generated-quotes' ? 'class="active"' : '').' role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#generated-quotes" aria-expanded="true">Generated Quotations ('.$quote_count.')</a></li>'
+    .'<li '.($tab == 'entities' ? 'class="active"' : '').' role="presentation"><a aria-controls="profile" data-toggle="tab" role="tab" href="#entities" aria-expanded="true">Entities ('.$entitycount.')</a></li>';
+
+    if(!$this->user()->is('customer')){
+        echo '<li class=""><a aria-controls="profile" data-toggle="tab" role="tab" href="#tasks" aria-expanded="false">Related Tasks and Remainders ('.$taskcount.')</a></li>';
+    }
+    
+    echo '</ul>
     </div>';
 
 echo '<div class="row show-grid">';
 echo '<div class="tab-content shadow col-md-12">';
 
 //personal details tab
-echo '<div role="tabpanel" class="tab-pane active" id="personal-details">';
+echo '<div role="tabpanel" class="tab-pane '.($tab == 'personal-details' ? 'active' : '').'" id="personal-details">';
 
     echo '<div class="col-md-6">'
         .'<div class="shadow">';
@@ -68,16 +65,17 @@ echo '<div role="tabpanel" class="tab-pane active" id="personal-details">';
     echo '</div>';
 
     echo Overlays::Modal($personalmodal);
+    
     echo HTML::simpleTable('bootstrap', $customer, ['class' => 'table-striped']);
-
-    echo '</div>';
-
+    
     echo  '<div class="dataTables_wrapper panel-footer">'
     . '<p><strong>Shows</strong> the customer\'s personal details</p>'
     . '</div>';
 
-    echo '</div>
-        </div>';
+    echo '</div>';
+    echo '</div>';
+    
+    echo '</div>';
 
     echo '<div class="col-md-6">'
         .'<div class="shadow">';
@@ -87,11 +85,15 @@ echo '<div role="tabpanel" class="tab-pane active" id="personal-details">';
     echo HTML::heading('h4', 'Linked Agent', ['class' => 'mb5 text-light']);
     echo '</div>';
 
-    echo '<div class="right">'
-        . '<a data-toggle="modal" data-target="#'.$agentmodal['id'].'" '
-        . 'href="'.SITE_PATH.'/ajax/admin/customers/addagent/'.$customer->id.'">';
-    echo '<img '.Notifications::popover('Click to add a linked agent', ['data-placement' => 'top']).' src="'.TEMPLATE_URL.'/admin/images/icons/edit_icon.png" width="25px" height="25px">'
-        . '</a>';
+    echo '<div class="right">';
+    
+    if(!$this->user()->is('customer')){
+        
+        echo '<a data-toggle="modal" data-target="#'.$agentmodal['id'].'" '
+            . 'href="'.SITE_PATH.'/ajax/admin/customers/addagent/'.$customer->id.'">';
+        echo '<img '.Notifications::popover('Click to add a linked agent', ['data-placement' => 'top']).' src="'.TEMPLATE_URL.'/admin/images/icons/edit_icon.png" width="25px" height="25px">'
+            . '</a>';
+    }
     echo '</div>';
     echo '<div class="clearfix"></div>';
 
@@ -106,6 +108,31 @@ echo '<div role="tabpanel" class="tab-pane active" id="personal-details">';
 
     echo '</div>
         </div>';
+    echo '<div class="clearfix"></div>';
+    //additional info
+    HTML::script('$(function(){'
+                . '$("div.panel-body").hide();'
+                . '$(".panel-heading").on("click",function(){'
+                        . 'var id = $(this).attr("id");'
+                        . '$("."+id+".panel-body").slideToggle();'
+                    . '});'
+            . '});');
+    echo '<div class="mini-panel">';   
+        echo '<h4 class="text-light">Additional Information</h4>';
+        
+        foreach($info as $product => $values){
+
+            $heading = strtolower(str_replace(' ', '-', $product));
+            
+            echo '<div class="panel panel-default">
+                  <div id="'.$heading.'" class=" panel-heading">
+                        Related to <strong>'.ucfirst($product).' Product</strong>
+                            <small class="pull-right">Click to Open</small>
+                </div>
+                  <div class="'.$heading.' panel-body">'.HTML::simpleTable('bootstrap', $values, ['class' => 'table-striped']).'</div>
+                </div>';
+        }
+    echo '</div>';
 
 echo '</div>';
 
@@ -116,7 +143,7 @@ HTML::script('$(document).ready( function () {
                 });
             } );');
 
-echo '<div role="tabpanel" class="tab-pane" id="policies">';
+echo '<div role="tabpanel" class="tab-pane '.($tab == 'policies' ? 'active' : '').'" id="policies">';
 echo '<div class="col-md-12">'
      .'<div class="shadow">'
     . '<div class="mini-panel">';
@@ -133,13 +160,19 @@ echo  '</div>'
 echo '</div>
     </div>
     </div>';
-//claims
+
+echo Overlays::Modal(['id'=>'emailmodal']);
+echo Overlays::Modal(['id'=>'renewal_modal']);
+echo Overlays::Modal(['id'=>'download-docs']);
+
+//claims tab
 HTML::script('$(document).ready( function () {
                 $("#myclaims").ready(function(){
                     $("#claimstable_paginate").appendTo($("#myclaims"));
                 });
             } );');
-echo '<div role="tabpanel" class="tab-pane" id="claims">';
+
+echo '<div role="tabpanel" class="tab-pane '.($tab == 'claims' ? 'active' : '').'" id="claims">';
 
 echo '<div class="col-md-12">'
     .'<div class="shadow">'
@@ -165,7 +198,7 @@ HTML::script('$(document).ready( function () {
                 });
             } );');
 
-echo '<div role="tabpanel" class="tab-pane" id="generated-quotes">';
+echo '<div role="tabpanel" class="tab-pane '.($tab == 'generated-quotes' ? 'active' : '').'" id="generated-quotes">';
 
 echo '<div class="col-md-12">'
      .'<div class="shadow">'
@@ -200,7 +233,7 @@ HTML::script('$(document).ready( function () {
                 });
             });');
 
-echo '<div role="tabpanel" class="tab-pane" id="entities">';
+echo '<div role="tabpanel" class="tab-pane '.($tab == 'entities' ? 'active' : '').'" id="entities">';
 echo '<div class="col-md-12">'
      .'<div class="shadow">'
     . '<div class="mini-panel">';
@@ -305,7 +338,10 @@ echo  '</div>
         </div>
         </div>';
 
-echo '</div>';
+echo '</div>'
+. '</div>';
 
 echo $deletemodal;
 echo $quoteModal;
+
+echo Overlays::confirm();

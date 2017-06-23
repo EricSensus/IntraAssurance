@@ -17,23 +17,4 @@ use Jenga\App\Models\ORM;
  */
 class MotorModel extends ORM
 {
-    /*
-
-        public function createUsersTable()
-        {
-            $schema = $this->schema;
-            if (!$schema->hasTable('users')) {
-                $schema->table('users');
-                $schema->column('userid', ['int', 'not null', 'auto_increment'])->primary('userid');
-                $schema->column('username', ['varchar(200)', 'not null']);
-                $schema->column('password', ['text', 'not null']);
-                $schema->column('usertype', ['text', 'not null']);
-                $schema->column('sourceid', ['int', 'not null']);
-                $schema->column('enabled', ['boolean', 'default 0']);
-                $schema->column('emailconfirmed', ['boolean', 'default 0']);
-                $schema->build();
-            }
-        }*/
-
-
 }

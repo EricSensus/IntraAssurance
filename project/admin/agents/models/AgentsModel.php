@@ -54,12 +54,16 @@ class AgentsModel extends ORM {
         $agents = $this->show();
         
         foreach($agents as $agent){
+            $quote_ctrl = Elements::call('Quotes/QuotesController');
             
             $quotes = Elements::call('Quotes/QuotesController')->model->show();
             $fullcount = count($quotes);
             
-            $agentquotes = Elements::call('Quotes/QuotesController')->model
-                    ->where('insurer_agents_id',$agent->id)->show();
+            $agentquotes = $quote_ctrl->model->select(TABLE_PREFIX . 'customer_quotes.*, '
+                . TABLE_PREFIX . 'customers.insurer_agents_id as customeragents, '
+                . TABLE_PREFIX . 'customer_quotes.*')
+                ->join('customers', TABLE_PREFIX . "customers.id = " . TABLE_PREFIX . "customer_quotes.customers_id")
+                ->where('insurer_agents_id', $agent->id)->get();
             
             $agentcount = count($agentquotes);
             

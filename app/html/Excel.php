@@ -1,11 +1,8 @@
 <?php
 namespace Jenga\App\Html;
 
-require APP_HTML .DS. 'facade' .DS. 'Phpexcel.php';
-require APP_HTML .DS. 'facade' .DS. 'PHPExcel' .DS. 'IOFactory.php';
-
 use Jenga\App\Request\Facade\Sanitize;
-use PHPExcel_Shared_Date;
+use PHPExcel;
 
 class Excel extends \PHPExcel{
     
@@ -53,9 +50,15 @@ class Excel extends \PHPExcel{
      * @param object $rowdata Object which holds the row information
      * @return doc The generated excel document
      */
-    public function generateDoc($columns, $rowdata, $format = 'excel'){
+    public function generateDoc($columns, $rowdata, $format = 'excel', $title = null){
         
         $col = 0; $row = 1;
+
+        if(!is_null($title)) {
+            self::$doc->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $title);
+        }
+
+        $col = 0; $row = 3;
         foreach($columns as $key => $fullname){
 
             self::$doc->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $fullname);

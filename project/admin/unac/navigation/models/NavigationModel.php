@@ -103,4 +103,11 @@ class NavigationModel extends ORM{
                     ->where(TABLE_PREFIX.'menu_groups.acl','=',$acl)
                     ->first();
     }
+
+    /**
+     * Get all child menus - menu items whose parent id is not 0
+     */
+    public function getChildMenusByParentId($parent_id){
+        return $this->where('parentid', $parent_id)->get();
+    }
 }
