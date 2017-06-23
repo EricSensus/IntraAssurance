@@ -11,7 +11,6 @@
 namespace Jenga\MyProject\Accident\Controllers;
 
 use Jenga\App\Controllers\Controller;
-use Jenga\App\Core\App;
 use Jenga\App\Request\Input;
 use Jenga\App\Request\Session;
 use Jenga\App\Views\Redirect;
@@ -21,9 +20,7 @@ use Jenga\MyProject\Accident\Views\AccidentView;
 use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Entities\Controllers\EntitiesController;
-use Jenga\MyProject\Products\Controllers\ProductsController;
 use Jenga\MyProject\Quotes\Controllers\QuotesController;
-use Jenga\MyProject\Tracker\Controllers\TrackerController;
 
 /**
  * Class AccidentController
@@ -52,10 +49,6 @@ class AccidentController extends Controller
      * @var ProductsController
      */
     private $_products;
-    /**
-     * @var TrackerController
-     */
-    private $_tracker;
 
     /**
      * Setup entities. Via Elements call
@@ -66,7 +59,6 @@ class AccidentController extends Controller
         $this->_entity = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
         $this->_products = Elements::call('Products/ProductsController');
-        $this->_tracker = Elements::call('Tracker/TrackerController');
     }
 
     /**
@@ -92,7 +84,6 @@ class AccidentController extends Controller
     public function save($step)
     {
         $this->setEntities();
-        $this->loadPartialQuote();
         switch ($step) {
             case "1":
                 $this->savePersonalDetails();
@@ -111,80 +102,24 @@ class AccidentController extends Controller
 
     }
 
+
     /**
      * Save personal details from step 1. Relies on POST
      */
     private function savePersonalDetails()
     {
-        if ($customer = $this->_customer->saveCustomer('accident', $this->getInputForStep(1), false)) {
+        if ($this->_customer->saveCustomer('accident', $this->getInputForStep(1), false)) {
             Session::set('type', 'accident');
-            $ids['customer_id'] = $customer;
-            $ids['product_id'] = $this->_products->getProductByAlias('personal_accident')->id;
-            $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById($customer, null)));
-            $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info);
-            Session::set('quote_id', $id);
+
             $notification = 'Saved Please proceed to step two';
             // get the verification notification if new customer registration
             if (Session::has('sent_confirmation'))
                 $notification = Session::get('sent_confirmation');
 
-            $this->_startAccidentTracking();
             Redirect::withNotice($notification, 'success')->to('/accident/step/2');
         } else {
             Redirect::to('/accident/step/1')->withNotice('Could not save your info, try again', 'error');
         }
-    }
-
-    /**
-     * Start Accident Quote tracking
-     */
-    private function _startAccidentTracking()
-    {
-
-        //create quote tracking
-        $this->setEntities();
-
-        $customer_id = Session::get('customer_id');
-        $product_id = $this->_products->getProductByAlias('personal_accident')->id;
-        $quote = Session::get('quote_id');
-        $trackerid = $this->_tracker->start($customer_id, $product_id, 1, $quote);
-
-        if (Session::has('trackerid')) {
-
-            $this->_tracker->close(Session::get('trackerid'));
-            Session::delete('trackerid');
-        }
-
-        Session::set('trackerid', $trackerid);
-    }
-
-    /**
-     * Update Tracker according to step
-     * @param type $step
-     */
-    private function _updateAccidentTracker($step)
-    {
-        if (Session::has('trackerid')) {
-            //create quote tracking
-            $this->setEntities();
-            $this->_tracker->assign(Session::get('trackerid'), $step);
-        } else {
-            App::warning('Quote tracking has not been initialized for this product: Accident');
-        }
-    }
-
-    /**
-     * Close Accident tracking
-     * @param type $id
-     */
-    private function _closeAccidentTracker($id)
-    {
-
-        //create quote tracking
-        $this->setEntities();
-        if (!empty($id))
-            $this->_tracker->close($id);
-        Session::delete('trackerid');
     }
 
     /**
@@ -196,8 +131,8 @@ class AccidentController extends Controller
         $product_id = $this->_products->getProductByAlias('personal_accident')->id;
         $id = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'),
             $entity_id, json_encode($this->getInputForStep(2)), $product_id);
-        $this->_quotes->updateQuoteData($this->quote->id, ['customer_entity_data_id' => json_encode([$id])]);
-        $this->_updateAccidentTracker(2);
+        Session::set('main_id', $id);
+        Session::set('other_id', serialize([]));
         Redirect::to('/accident/step/3');
     }
 
@@ -210,8 +145,13 @@ class AccidentController extends Controller
         if (!empty(Input::post('howmany'))) {
             $this->saveExtraCovers(Input::post('howmany'));
         }
-        $this->_quotes->updateQuoteData(Session::get('quote_id'), ['product_info' => json_encode($this->getInputForStep(3))]);
-        $this->_updateAccidentTracker(3);
+        $ids['customer_id'] = Session::get('customer_id');
+        $ids['product_id'] = 5;
+        $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById(Session::get('customer_id'), null)));
+        $entities = unserialize(Session::get('other_id'));
+        array_push($entities, Session::get('main_id'));
+        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->getInputForStep(3), null, $entities);
+        Session::set('quote_id', $id);
         Redirect::to('/accident/step/4');
     }
 
@@ -223,26 +163,14 @@ class AccidentController extends Controller
     private function saveExtraCovers($count)
     {
         $saved = [];
-        $main = array_first(json_decode($this->quote->customer_entity_data_id));
         $product_id = $this->_products->getProductByAlias('personal_accident')->id;
         for ($i = 1; $i <= $count; $i++) {
-            $got = $this->_buildStack($i);
+            $got = $this->__buildStack($i);
             $entity_id = $this->_entity->getEntityIdByAlias('person')->id;
             $saved[] = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'),
                 $entity_id, json_encode($got), $product_id);
         }
-        array_unshift($saved, $main);
-        $this->_quotes->updateQuoteData($this->quote->id, [
-            'customer_entity_data_id' => json_encode($saved)
-        ]);
-    }
-
-    /**
-     * Set up partial quote
-     */
-    private function loadPartialQuote()
-    {
-        $this->quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
+        Session::set('other_id', serialize($saved));
     }
 
     /**
@@ -255,9 +183,8 @@ class AccidentController extends Controller
         $this->setEntities();
         $this->data = new \stdClass();
         $this->data->step = $step;
-        $this->loadPartialQuote();
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
-        $this->data->age_bracket = $this->_select(['1-18', '19-30', '31-40', '41-50', '51-59', '60-69', '70 or over']);
+        $this->data->age_bracket = $this->__select(['1-18', '19-30', '31-40', '41-50', '51-59', '60-69', '70 or over']);
         $this->data->bands = [
             'band1' => 'Band 1: Covers you upto a limit of 250000 for accidental death',
             'band2' => 'Band 2:	Covers you upto a limit of 500000 for accidental death',
@@ -267,7 +194,7 @@ class AccidentController extends Controller
             'band6' => 'Band 6: Covers you upto a limit of 8000000 for accidental death',
             'band7' => 'Band 7: Covers you upto a limit of 10000000 for accidental death',
         ];
-        $this->data->towns = $this->_select(['Baragoi',
+        $this->data->towns = $this->__select(['Baragoi',
             'Bungoma', 'Busia', 'Butere', 'Dadaab', 'Diani Beach',
             'Eldoret', 'Embu', 'Garissa', 'Gede', 'Hola', 'Homa Bay',
             'Isiolo', 'Kajiado', 'Kakamega', 'Kakuma', 'Kapenguria', 'Kericho',
@@ -277,13 +204,13 @@ class AccidentController extends Controller
             'Nanyuki', 'Naro Moru', 'Narok', 'Nyahururu', 'Nyeri', 'Ruiru', 'Shimoni', 'Takaungu', 'Thika',
             'Vihiga', 'Voi', 'Wajir', 'Watamu', 'Webuye', 'Wundanyi']);
 
-        $this->data->years = $this->_years();
-        $this->data->insurer = $this->_select(['AIG Kenya', 'Gateway', 'AAR Insurance Kenya Limited', 'A P A Insurance Limited', 'Africa Merchant Assurance Company Limited', 'Apollo Life Assurance Limited', 'AIG Kenya Insurance Company Limited', 'American Insurance Company (Kenya) Limited', 'Cannon Assurance Limited', 'Capex Life Assurance Company Limited', 'CFC Life Assurance Limited', 'CIC General Insurance Limited', 'CIC Life Assurance Limited', 'Continental Reinsurance Limited', 'Corporate Insurance Company Limited', 'Directline Assurance Company Limited', 'East Africa Reinsurance Company Limited', 'Fidelity Shield Insurance Company Limited', 'First Assurance Company Limited', 'G A Insurance Limited', 'Gateway Insurance Company Limited', 'Geminia Insurance Company Limited', 'ICEA LION General Insurance Company Limited', 'ICEA LION Life Assurance Company Limited', 'Intra Africa Assurance Company Limited', 'Invesco Assurance Company Limited', 'Kenindia Assurance Company Limited', 'Kenya Orient Insurance Limited',
+        $this->data->years = $this->__years();
+        $this->data->insurer = $this->__select(['AIG Kenya', 'Gateway', 'AAR Insurance Kenya Limited', 'A P A Insurance Limited', 'Africa Merchant Assurance Company Limited', 'Apollo Life Assurance Limited', 'AIG Kenya Insurance Company Limited', 'American Insurance Company (Kenya) Limited', 'Cannon Assurance Limited', 'Capex Life Assurance Company Limited', 'CFC Life Assurance Limited', 'CIC General Insurance Limited', 'CIC Life Assurance Limited', 'Continental Reinsurance Limited', 'Corporate Insurance Company Limited', 'Directline Assurance Company Limited', 'East Africa Reinsurance Company Limited', 'Fidelity Shield Insurance Company Limited', 'First Assurance Company Limited', 'G A Insurance Limited', 'Gateway Insurance Company Limited', 'Geminia Insurance Company Limited', 'ICEA LION General Insurance Company Limited', 'ICEA LION Life Assurance Company Limited', 'Intra Africa Assurance Company Limited', 'Invesco Assurance Company Limited', 'Kenindia Assurance Company Limited', 'Kenya Orient Insurance Limited',
             'Kenya Reinsurance Corporation Limited', 'Madison Insurance Company Kenya Limited', 'Mayfair Insurance Company Limited',
             'Mercantile Insurance Company Limited', 'Metropolitan Life Insurance Kenya Limited', 'Occidental Insurance Company Limited',
             'Old Mutual Life Assurance Company Limited', 'Pacis Insurance Company Limited', 'Pan Africa Life Assurance Limited', 'Phoenix of East Africa Assurance Company Limited', 'Pioneer Assurance Company Limited', 'Real Insurance Company Limited', 'Resolution Insurance Company Limited', 'Shield Assurance Company Limited', 'Takaful Insurance of Africa Limited', 'Tausi Assurance Company Limited', 'The Heritage Insurance Company Limited', 'The Jubilee Insurance Company of Kenya Limited', 'The Monarch Insurance Company Limited', 'Trident Insurance Company Limited', 'UAP Insurance Company Limited', 'UAP Life Assurance Limited', 'Xplico Insurance Company Limited']);
 
-        $this->data->pick_cert = $this->_select([
+        $this->data->pick_cert = $this->__select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',
             'Nairobi, Mombasa Road, Tulip House, Ground Floor',
             'Nairobi, Fuji House, Westlands, Wing B, 6th Floor',
@@ -299,9 +226,7 @@ class AccidentController extends Controller
             'Post to my address in your records (a small extra charge will apply)']);
         if ($step == "4") {
             $this->data->payments = $this->_quotes->getQuotations(Session::get('quote_id'));
-            $this->_closeAccidentTracker(Session::get('trackerid'));
         }
-        $this->data->quote = $this->quote;
     }
 
     /**
@@ -309,7 +234,7 @@ class AccidentController extends Controller
      * @param $data
      * @return array
      */
-    private function _select($data)
+    private function __select($data)
     {
         $_data = [];
         foreach ($data as $v) {
@@ -323,7 +248,7 @@ class AccidentController extends Controller
      * @param int $span
      * @return array
      */
-    private function _years($span = 100)
+    private function __years($span = 100)
     {
         $year = date('Y');
         $lastyear = ($year - $span);
@@ -339,7 +264,7 @@ class AccidentController extends Controller
      * @param $index
      * @return array
      */
-    private function _buildStack($index)
+    private function __buildStack($index)
     {
         $build = [];
         foreach (Input::post() as $key => $value) {

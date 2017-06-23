@@ -16,9 +16,7 @@ use Jenga\App\Models\ORM;
  * Class DomesticModel
  */
 class DomesticModel extends ORM {
-    /**
-     * @var string
-     */
+
     public $table = 'subscribers';
 
 }

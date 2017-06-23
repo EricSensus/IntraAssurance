@@ -40,90 +40,42 @@ class DomesticQuotation
      */
     private $_quotes;
 
-    /**
-     * Constructor
-     * @param null $quote
-     */
-    public function __construct($quote = null)
-    {
-        $this->quote = $quote;
-    }
 
-    /**
-     * Get a recent new quote calculation and update database if any changes
-     * @return $this
-     */
-    public function getQuote()
+    public function __construct()
     {
-        $this->setUpEntities();
-        $this->setUpValues();
-        $this->calculateValues();
-        $this->updateQuote();
-        return $this;
-    }
-
-    /**
-     * Set up entities
-     * @return $this
-     */
-    private function setUpEntities()
-    {
+        $this->customer_id = Session::get('customer_id');
         $this->_customer = Elements::call('Customers/CustomersController');
         $this->_entities = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
-        return $this;
+        $this->customer = $this->_customer->getCustomerById($this->customer_id, null);
+        $this->quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
+        $this->main_entity = $this->_entities->getEntityDataByfinder(Session::get('main_id'));
+        $this->calculateValues();
+        $this->updateQuote();
+        unset($this->_customer, $this->_entities, $this->_quotes);
     }
 
-    /**
-     * Set up Values used to generate quotation
-     */
-    private function setUpValues()
-    {
-        if (empty($this->quote)) {
-            $this->customer_id = Session::get('customer_id');
-            $this->customer = $this->_customer->getCustomerById($this->customer_id, null);
-            $this->quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
-            $this->main_entity = $this->_entities->getEntityDataByfinder(Session::get('main_id'));
-            $others = unserialize(Session::get('other_id'));
-        } else {
-            $this->customer_id = $this->quote->customers_id;
-            $this->customer = $this->_customer->getCustomerById($this->customer_id, null);
-            $__id = json_decode($this->quote->customer_entity_data_id);
-            $this->main_entity = $this->_entities->getEntityDataByfinder($__id[0]);
-            $others = array_except($__id, 0);
-
-        }
-        $all = [];
-        foreach ($others as $other) {
-            $all[] = $this->_entities->getEntityDataByfinder($other);
-        }
-        $this->other_entities = $all;
-    }
-
-    /**
-     * Perform database quote updates on the amount column
-     */
     private function updateQuote()
     {
-        $available = get_object_vars($this);
-        $to_save = array_only($available, $this->quoteFields());
+        if (!empty($this->quote->amount)) {
+            return;
+        }
+        $copy = clone $this;
         $mine = $this->_quotes->model->find($this->quote->id);
-        $to_save = array_prepend($to_save, [], 'other_covers');
-        $to_save = array_prepend($to_save, 14, 'insurer_id');
-        $total = json_encode($to_save);
+        unset($copy->quote, $copy->customer, $copy->main_entity, $copy->other_entities, $copy->rates, $copy->customer_id);
+        unset($copy->_customer, $copy->_entities, $copy->_quotes);
+        $copy->insurer_id = 14;//@todo Get insurer id
+        $total = json_encode(get_object_vars($copy));
         $mine->amount = $total;
         $mine->save();
     }
 
-    /**
-     * Use already set values to calculate the values for the quote
-     */
     private function calculateValues()
     {
         $quote = json_decode($this->quote->product_info);
-        $this->tsi_a = (empty($quote->a_premium)) ? 0 : $quote->a_premium;
-        $this->tsi_b = (empty($quote->b_premium)) ? 0 : $quote->b_premium;
-        $this->tsi_c = (empty($quote->c_premium)) ? 0 : $quote->c_premium;
+        $this->tsi_a = $quote->a_premium;
+        $this->tsi_b = $quote->b_premium;
+        $this->tsi_c = $quote->c_premium;
         $section_a_rate = $this->returnRate('Section A', 'Property');
         $this->section_a = ($this->tsi_a * $section_a_rate) / 100;
         $section_b_rate = $this->returnRate('Section B', 'Property');
@@ -179,11 +131,7 @@ class DomesticQuotation
         $this->total = $this->gross_premium + $this->policy_levy + $this->stamp_duty + $this->training_levy;
     }
 
-    /**
-     * Perform a clean string like urls
-     * @param $text
-     * @return string
-     */
+
     private function strClean($text)
     {
         // replace non letter or digits by -
@@ -201,26 +149,10 @@ class DomesticQuotation
         return (empty($text)) ? 'n-a' : $text;
     }
 
-    /**
-     * Special rate for calculations
-     * @param $rate_name
-     * @param $category
-     * @return string
-     */
     private function returnRate($rate_name, $category)
     {
         $rates = $this->_customer->model->table('rates');
         $rate_model = $rates->find(['rate_category' => $category, 'rate_name' => $rate_name]);
         return ($rate_model->rate_type == 'Percentage' ? $rate_model->rate_value . '%' : $rate_model->rate_value);
-    }
-
-    /**
-     * Important fields to show in quote total
-     * @return array
-     */
-    public function quoteFields()
-    {
-        return ['training_levy', 'policy_levy', 'stamp_duty', 'total', 'section_a', 'section_b', 'section_c',
-            'workmen', 'owner_liability', 'occupiers_liability', 'gross_premium', 'basic_premium'];
     }
 }

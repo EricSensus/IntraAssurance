@@ -1,13 +1,8 @@
 <?php
-
 namespace Jenga\MyProject\Accident\Models;
 
 use Jenga\App\Models\ORM;
 
-/**
- * Class PersonalCoverPricing
- * @package Jenga\MyProject\Accident\Models
- */
 class PersonalCoverPricing extends ORM
 {
 

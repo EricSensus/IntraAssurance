@@ -12,16 +12,14 @@ namespace Jenga\MyProject\Motor\Views;
 
 use Jenga\App\Html\Generate;
 use Jenga\App\Request\Session;
-use Jenga\App\Request\Url;
 use Jenga\App\Views\View;
-use Jenga\MyProject\Elements;
+use Jenga\App\Helpers\Help;
 
 /**
  * Class MotorView
  */
 class MotorView extends View
 {
-
 
     /**
      * View data from the controller
@@ -34,6 +32,7 @@ class MotorView extends View
      */
     private $want_schematic = false;
     protected $special = false;
+
     /**
      * Get the schematic from form wizard
      * @param null $data
@@ -50,6 +49,7 @@ class MotorView extends View
         $this->want_schematic = true;
         return $this->wizard($data);
     }
+
     /**
      * The form wizard to switch between which form to display
      * @param null|\stdClass $data
@@ -94,38 +94,28 @@ class MotorView extends View
             'validator' => 'parsley',
             'css' => 'none',
             'method' => 'post',
-            'map' => [3, 3, 3, 3, 3, 1, 1, 1],
+            'map' => [2, 3, 3, 3, 1],
             'action' => '/motor/save/1',
             'attributes' => ['data-parsley-validate' => ''],
             'controls' => [
-                'Title' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control']],
-                'Surname *' => ['text', 'surname', '', ['class' => 'form-control', 'required' => '']],
-                'Other Names *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
-                'Occupation/Profession' => ['text', 'occupation', '', ['class' => 'form-control']],
-                'Date of Birth' => ['text', 'dob', '', ['class' => 'form-control']],
-                'PIN No' => ['text', 'pin', '', ['class' => 'form-control']],
+                'Title *' => ['select', 'title', '', $this->data->titles, ['class' => 'form-control', 'required' => '']],
+                'Full Name *' => ['text', 'names', '', ['class' => 'form-control', 'required' => '']],
+                'Date of Birth *' => ['text', 'dob', '', ['class' => 'form-control datepicker', 'required' => '']],
+                'Occupation/Profession *' => ['text', 'Occupation', '', ['class' => 'form-control', 'required' => '']],
                 'ID or Passport No. *' => ['text', 'id_passport_no', '', ['class' => 'form-control', 'required' => '']],
-                'Driving Licence No' => ['text', 'dlno', '', ['class' => 'form-control']],
-                'Year First Driving Licence issued' => ['select', 'dlyearissued', null, $this->data->years, ['class' => 'form-control']],
-                'No of years driving experience' => ['select', 'drivingexperience', '', $this->data->numbers, ['class' => 'form-control']],
+                'Mobile Number *' => ['text', 'mobile', '', ['class' => 'form-control', 'required' => '',]],
                 'Email*' => ['text', 'email', '', ['class' => 'form-control', 'required' => '']],
-                'Mobile Number' => ['text', 'mobile', '', ['class' => 'form-control']],
-                'P.O Box' => ['text', 'address', '', ['class' => 'form-control']],
-                'Postal Code' => ['text', 'code', '', ['class' => 'form-control']],
-                'Town' => ['select', 'town', '', $this->data->towns, ['class' => 'form-control']],
-                'Do you (and/or any other persons who to your knowledge will drive the car (s)) suffer from defective vision or hearing, or any physical infirmity including fits?'
-                => ['radios', 'deffectivevision', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Particulars' => ['textarea', 'particulars', '', ['class' => 'form-control', 'rows' => 2]],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'btn btn-success']]
+                'PIN Number*' => ['text', 'pin', '', ['class' => 'form-control', 'required' => '']],
+                'Address *' => ['text', 'address', '', ['class' => 'form-control', 'required' => '']],
+                'Postal Code *' => ['text', 'code', '', ['class' => 'form-control', 'required' => '']],
+                'Town *' => ['select', 'Town', '', $this->data->towns, ['class' => 'form-control', 'required' => '']],
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Car Details >>', ['class' => 'pull-right btn btn-success']]
             ]
         ];
 
         if ($this->want_schematic) {
             return $schematic;
         }
-
-        $this->set('modal_link', '<a href="' . Url::route('/customer/loadlogin/{element}', ['element' => 'motor']) . '"
-         data-target="#customer_login_modal" id="load_login_btn" data-toggle="modal"></a>');
 
         $form = Generate::Form('motor_personal_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
         $this->set('form', $form);
@@ -139,6 +129,13 @@ class MotorView extends View
      */
     private function carDetails()
     {
+
+        if (!Session::has('motor_commercial')) {
+            $map = [4, 4, 2, 2, 2, 2, 2, 1, 1,];
+        } else {
+            $map = [4, 3, 2, 2, 2, 2, 2, 2, 1, 1,];
+        }
+
         $schematic = [
             'preventjQuery' => true,
             'engine' => 'bootstrap',
@@ -147,33 +144,60 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/2',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 4, 2, 2, 2, 2, 1, 2, 1,],
+            'map' => $map,
             'controls' => [
-                'Registration no/mark*' => ['text', 'regno', '', ['class' => 'form-control', 'required' => '']],
-                'Chassis No *' => ['text', 'chassisno', '', ['class' => 'form-control', 'required' => '']],
-                'Engine No *' => ['text', 'engineno', '', ['class' => 'form-control', 'required' => '']],
-                'Make *' => ['select', 'makes', '', $this->data->makes, ['class' => 'form-control', 'required' => '']],
-                'Model *' => ['text', 'model', '', ['class' => 'form-control', 'required' => '']],
-                'Type of body *' => ['text', 'bodytype', '', ['class' => 'form-control', 'required' => '']],
-                'Seating Capacity *' => ['text', 'seatingcapacity', '', ['class' => 'form-control', 'required' => '']],
-                'Year of Manufacture *' => ['select', 'dlyear', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
-                'Estimated Value including accessories and parts in Kshs <span style="font-size: 11px;">(*will be subject to valuation by the insurer)</span> *'
-                => ['text', 'valueestimate', '', ['class' => 'form-control', 'required']],
-                'Is the vehicle fitted with any anti theft device *' => ['radios', 'antitheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'If Yes, please give particulars below*' => ['textarea', 'antitheftdetails', '', ['class' => 'form-control', 'rows' => 2]],
-                'Where is this car normally parked during daytime?*' => ['select', 'daytimeparking', '', $this->data->parking_lots, ['class' => 'form-control', 'required' => '']],
-                'Tell us the town, estate or road' => ['text', 'daytimeparkingdetails', '', ['class' => 'form-control', 'required']],
-                'Where is this car normally parked at night ? *' => ['select', 'nightparking', '', $this->data->parking_lots, ['class' => 'form-control', 'required']],
-                'Tell us the town, estate or road *' => ['text', 'nighparkingdetails', '', ['class' => 'form-control']],
+                '{type}' => ['hidden', 'type', 'private'],
+                'Registration no*' => ['text', 'regno', '', ['class' => 'form-control', 'required' => '']],
+                'Vehicle Color*' => ['text', 'vehicle_color', '', ['class' => 'form-control', 'required' => '']],
+                'Chassis No' => ['text', 'ChassisNo', '', ['class' => 'form-control']],
+                'Engine No' => ['text', 'EngineNo', '', ['class' => 'form-control']],
+                'Make *' => ['select', 'CarMake', '', $this->data->makes, ['class' => 'form-control', 'required' => '']],
+                'Cubic Capacity (cc)' => ['text', 'CC', '', ['class' => 'form-control']],
+                'Type of body *' => ['text', 'BodyType', '', ['class' => 'form-control', 'required' => '']],
+                'Seating Capacity *' => ['text', 'SeatingCapacity', '', ['class' => 'form-control', 'required' => '']],
+                'Year of Manufacture *' => ['select', 'ManufactureDate', '', $this->data->years, ['class' => 'form-control', 'required' => '']],
+                'Insured Value (Estimated Value of Vehicle)*'
+                => ['text', 'valueestimate', '', ['class' => 'form-control', 'required' => '']],
+                'Is the vehicle fitted with any anti theft device *' => ['radios', 'AntiTheft', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If Yes, please give particulars below (type and condition)*' => ['textarea', 'AntiTheftDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Are there any non-standard accessories in the vehicle (roof rack) *' => ['radios', 'NonStandardAccessories', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If so, please give particulars below (type and value)*' => ['textarea', 'NonStandardAccessoriesDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Is the vehicle subject to any special features (left hand drive,duty free)' => ['radios', 'SpecialFeatures', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If so, please give particulars of the features' => ['textarea', 'SpecialFeaturesDetails', '', ['class' => 'form-control', 'rows' => 2]],
+                'Are you the owner of the vehicles and are they registered in your name' => ['radios', 'TheOwner', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If not state name and address of owner' => ['textarea', 'NameOfOwner', '', ['class' => 'form-control', 'rows' => 2]],
                 'How do you use this vehicle?' => ['checkboxes', 'carusage', $this->data->car_usage, ['class' => 'form-control', 'rows' => 2]],
-                'Do you want to add another car?' => ['radios', 'somecovers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'How many additional cars? Choose  number' => ['select', 'othercovers', 1, [1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9'], ['class' => 'form-control']],
-                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success',]]
+                //   'Do you want to add another car?' => ['radios', 'somecovers', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                //'How many additional cars? Choose  number' => ['select', 'othercovers', 1, [1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9'], ['class' => 'form-control']],
+                '{submit}' => ['submit', 'btnSubmitSpecial', 'Proceed to Cover Details >>', ['class' => 'btn btn-success pull-right',]]
             ]
         ];
+
+        //add tonnage select field
+        if (Session::has('motor_commercial')
+            && Session::get('motor_commercial') === TRUE
+        ) {
+
+            $tonnage_list = [
+                '' => 'Select Tonnage',
+                'tpc03' => '0-3 tons',
+                'tpc37' => '3-7 tons',
+                'tpc715' => '7-15 tons',
+                'tpc15p' => 'Above 15 tons'
+            ];
+
+            $tonfield = [
+                '{type}' => ['hidden', 'type', 'commercial'],
+                'Vehicle Tonnage *' => ['select', 'tonnage', '', $tonnage_list, ['class' => 'form-control', 'required' => '']]
+            ];
+
+            Help::array_splice_assoc($schematic['controls'], array_search('Cubic Capacity (cc)', $schematic['controls']), 1, $tonfield);
+        }
+
         if ($this->want_schematic) {
             return $schematic;
         }
+
         $form = Generate::Form('motor_car_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-6,col-sm-6'], TRUE);
         $this->set('form', $form);
         $this->setViewPanel('car_details');
@@ -193,69 +217,79 @@ class MotorView extends View
             'method' => 'post',
             'action' => '/motor/save/3',
             'attributes' => ['data-parsley-validate' => ''],
-            'map' => [3, 4, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 1, 1, 1, 1],
+            'map' => [1, 2, 1, 1, 2, 2, 4, 2, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 1, 1, 1],
             'controls' => [
+                '{cover details}' => ['note', 'cover_heading', "benefits", "<span style=\"font-weight:bold\">Enter the cover type and life span</span>"],
+
                 'Cover start date *' => ['text', 'coverstart', '', ['class' => 'form-control', 'required' => '']],
                 'Cover End *' => ['text', 'coverend', '', ['class' => 'form-control', 'required' => '']],
+
                 'Type of cover *' => ['select', 'covertype', '', $this->data->cover_type, ['class' => 'form-control', 'required' => '']],
-                'Riots & Strikes?' => ['radios', 'riotes', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+
+                '{Additional Benefits}' => ['note', 'benefits', "benefits", "<span style=\"font-weight:bold\">Choose Additional Benefits to include in cover</span>"],
+
                 'Windscreen?' => ['radios', 'windscreen', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Audio System?' => ['radios', 'audio', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Passenger Liability' => ['radios', 'passenger', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'Terrorism' => ['radios', 'terrorism', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                'What is your No Claim Discount entitlement (NCD)(%)? (*Proof letter will be required)' =>
-                    ['select', 'ncd_percent', '', [0 => "0", 10 => 10, 20 => 20, 30 => 30, 40 => 40, 50 => 50], ['class' => 'form-control']],
-                'Have you, or anyone else who will drive this vehicle, had any insurance declined, voided or special terms imposed and regardless of blame' =>
-                    ['radios', 'previousdeclines', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, state value' => ['text', 'WindscreenValue', '', ['class' => 'form-control', 'rows' => 2]],
+
+                'Entertainment Equipment?' => ['radios', 'entertainment_equipment', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, state value of equipment' => ['text', 'entertainmentvalue', '', ['class' => 'form-control', 'rows' => 2]],
+
+                'Political Violence?' => ['radios', 'political_violence', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'SRCC (Strikes, Riots and Civil Commotion)?' => ['radios', 'srcc', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Excess Protector' => ['radios', 'excess_protector', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Loss of Use' => ['radios', 'loss_of_use', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+
+                'Do you require the cover Personal Accidents' => ['radios', 'NeedPersonalCover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'If yes, give details ' => ['textarea', 'PersonalCoverDetails', '', ['class' => 'form-control', 'rows' => 2]],
                 'Have you, or anyone else who will drive this vehicle (s), had any motor related accidents or losses, whether there was a claim or not and regardless of blame' =>
                     ['radios', 'previousaccidents', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company declined your proposal?' => ['radios', 'decline_cover', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company required an increase in premium?' => ['radios', 'demand_increased_rate', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company required your to bear the first portion of the loss?' => ['radios', 'imposed_special_terms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Has any company declined to renew or cover your policy?' => ['radios', 'declined_renewal', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+                'Have you, or anyone else who will drive this vehicle, had any insurance declined, voided or special terms imposed and regardless of blame'
+                => ['radios', 'previousdeclines', ['yes' => 'Yes', 'no' => 'No'], 'no'],
+
                 //some loop
-                '{noted1}' => ['note', 'noted1', "noted1", "If the answer is yes, please provide details for the last five years below"],
+                '{noted1}' => ['note', 'noted1', "noted1", "Give a record of accident and/or losses during the past three years
+                in connection to any motor vehicle owned or driven by you "],
                 //1
                 // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
-                "Year 1: Claim No" => ['text', "claim_no_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Amount" => ['text', "claim_amount_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Insurer" => ['text', "insurer_yr1", '', ['class' => 'form-control',]],
-                "Year 1: Claim Details" => ['text', "claim_details_yr1", '', ['class' => 'form-control',]],
-                //2
-                // '{note2}' => ['note', 'note2', "note2", "<h4>Year 2</h4><hr/>"],
-                "Year 2: Claim No" => ['text', "claim_no_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Amount" => ['text', "claim_amount_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Insurer" => ['text', "insurer_yr2", '', ['class' => 'form-control',]],
-                "Year 2: Claim Details" => ['text', "claim_details_yr2", '', ['class' => 'form-control',]],
-                //3
-                //'{note3}' => ['note', 'note3', "note3", "<h4>Year 3</h4><hr/>"],
-                "Year 3: Claim No" => ['text', "claim_no_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Amount" => ['text', "claim_amount_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Insurer" => ['text', "insurer_yr3", '', ['class' => 'form-control',]],
-                "Year 3: Claim Details" => ['text', "claim_details_yr3", '', ['class' => 'form-control',]],
-                //4
-                // '{note4}' => ['note', 'note4', "note4", "<h4>Year 4</h4><hr/>"],
-                "Year 4: Claim No" => ['text', "claim_no_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Amount" => ['text', "claim_amount_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Insurer" => ['text', "insurer_yr4", '', ['class' => 'form-control',]],
-                "Year 4: Claim Details" => ['text', "claim_details_yr4", '', ['class' => 'form-control',]],
-                //5
-                //'{note5}' => ['note', 'nots5', "note5", "<h4>Year 5</h4><hr/>"],
-                "Year 5: Claim No" => ['text', "claim_no_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Amount" => ['text', "claim_amount_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Insurer" => ['text', "insurer_yr5", '', ['class' => 'form-control',]],
-                "Year 5: Claim Details" => ['text', "claim_details_yr5", '', ['class' => 'form-control',]],
+                "Year 1: No of vehicles owned" => ['text', "record_no_of_vehicles_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Total no. of accidents" => ['text', "record_of_of_accidents_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Paid Amount" => ['text', "record_paid_yr1", '', ['class' => 'form-control',]],
+                "Year 1: Outstanding Amount" => ['text', "record_outstanding_yr1", '', ['class' => 'form-control',]],
+                // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
+
+                "Year 2: No of vehicles owned" => ['text', "record_no_of_vehicles_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Total no. of accidents" => ['text', "record_of_of_accidents_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Paid Amount" => ['text', "record_paid_yr2", '', ['class' => 'form-control',]],
+                "Year 2: Outstanding Amount" => ['text', "record_outstanding_yr2", '', ['class' => 'form-control',]],
+
+                // '{note1}' => ['note', 'note1', "note1", "<h4>Year 1</h4><hr/>"],
+                "Year 3: No of vehicles owned" => ['text', "record_no_of_vehicles_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Total no. of accidents" => ['text', "record_of_of_accidents_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Paid Amount" => ['text', "record_paid_yr3", '', ['class' => 'form-control',]],
+                "Year 3: Outstanding Amount" => ['text', "record_outstanding_yr3", '', ['class' => 'form-control',]],
+
                 //end
-                ' Where or how would you like to get your motor certificate? (Please note: You will need an ID or PIN certificate, No Claim Discount (NCD) Letter, and log book copy to collect your motor certificate)'
-                => ['select', 'pickat', '', $this->data->pick_cert, ['class' => 'form-control', 'required' => '']],
                 '{dec}' => ['note', 'declaration', 'accceptterms',
-                    '<p><strong>The liability of the Jubilee Insurance Company of Kenya Limited does not commence until the proposal has been accepted and the premium paid and cover confirmed by Jubilee.</strong></p><p></p>
-                    <p><strong>DECLARATION</strong></p><p></p>
-                    <p>I/We do hereby declare that the above answers and statements are true and that I/We have withheld no material information regarding this proposal. I/We agree that this Declaration and the answers given above, as well as any proposal or declaration or statement made in writing by me/us or anyone acting on my/our behalf shall form the basis of the contract between me/us and The Jubilee Insurance Company of Kenya Limited, and I/We further agree to accept indemnity subject to the conditions in and endorsed on the The Jubilee Insurance Company of Kenya Limited Policy. I/We also declare that any sums expressed in this proposal represent not less that the full value of the insurable property mentioned above.</p>'],
+                    '<p><strong>DECLARATION</strong></p><p></p>
+                    <p>I hereby warrant and declare the truth of all the above statements and that I have not withheld any material information
+and I agree that this proposal shall be the basis of the contract between me and Intra Africa Assurance Co. Ltd. And I
+agree to notify the company of any material alteration in my occupation, health or habits and to accept a policy subject
+to the terms, exceptions and conditions prescribed by the company</p>'],
                 'I hereby agree to all the above terms and conditions' => ['radios', 'acceptterms', ['yes' => 'Yes', 'no' => 'No'], 'no'],
-                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success']]
+                '{submit}' => ['submit', 'btnsubmit', 'Proceed to Quotation and Payment >>', ['class' => 'btn btn-success pull-right']]
             ]
         ];
+
+        $form = Generate::Form('motor_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+
         if ($this->want_schematic) {
             return $schematic;
         }
-        $form = Generate::Form('motor_cover_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-4,col-sm-8'], TRUE);
+
         $this->set('form', $form);
         $this->setViewPanel('cover_details');
     }
@@ -267,7 +301,6 @@ class MotorView extends View
     {
         $this->set('data', $this->data);
 //        $this->setViewPanel('show_quotations');
-
         $this->set('data_array', $this->data->payments);
         $this->setViewPanel('motor_insurance');
     }
@@ -278,8 +311,7 @@ class MotorView extends View
      */
     private function otherCarDetails()
     {
-        if (!$this->special)
-            $this->data->cars = Session::get('other_covers');
+        $this->data->cars = Session::get('other_covers');
         $controls = $this->makeMoreCars();
         $schematic = [
             'preventjQuery' => true,
@@ -292,21 +324,11 @@ class MotorView extends View
             'map' => $this->data->mapper,
             'controls' => $controls
         ];
-        if ($this->want_schematic) {
-            return $schematic;
-        }
         $form = Generate::Form('motor_other_car_details', $schematic)->render(['orientation' => 'horizontal', 'columns' => 'col-sm-6,col-sm-6'], TRUE);
-        if ($this->special) {
-            return $form;
-        }
         $this->set('form', $form);
         $this->setViewPanel('other_car_details');
     }
 
-    /**
-     * Generates schematic or any number of cars
-     * @return array
-     */
     private function makeMoreCars()
     {
         $map_template = [1, 3, 3, 1, 4, 1, 3, 2, 2, 2, 1,];
@@ -345,13 +367,11 @@ class MotorView extends View
             $my_push = array_merge($my_push, $group);
             $my_map = array_merge($my_map, $map_template);
         }
-        $my_push = array_merge($my_push, ['{submit}' => ['submit', 'btnToSubmit', 'Proceed to Cover Details >>', ['class' => 'btn btn-success']]]);
+        $my_push = array_merge($my_push, ['{submit}' => ['submit', 'btnsubmit', 'Proceed to Cover Details >>', ['class' => 'btn btn-success']]]);
         $my_map = array_merge($my_map, [1]);
         $this->data->mapper = $my_map;
         return $my_push;
     }
-
-
     /**
      * Generate human-readable indices for the display
      * @return array

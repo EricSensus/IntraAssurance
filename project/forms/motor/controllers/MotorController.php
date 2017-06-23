@@ -10,19 +10,20 @@
 
 namespace Jenga\MyProject\Motor\Controllers;
 
-use Jenga\App\Core\App;
-use Jenga\App\Request\Input;
-use Jenga\App\Views\Redirect;
-use Jenga\App\Request\Session;
 use Jenga\App\Controllers\Controller;
-
+use Jenga\App\Request\Input;
+use Jenga\App\Request\Session;
+use Jenga\App\Views\Redirect;
+use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
-use Jenga\MyProject\Motor\Repositories\Payments;
+use Jenga\MyProject\Entities\Controllers\EntitiesController;
+use Jenga\MyProject\Motor\Models\MotorModel;
 use Jenga\MyProject\Motor\Repositories\MotorQuotation;
-use Jenga\MyProject\Quotes\Library\Companies\AIGQuotes;
+use Jenga\MyProject\Motor\Repositories\Payments;
+use Jenga\MyProject\Motor\Views\MotorView;
 use Jenga\MyProject\Quotes\Controllers\QuotesController;
+use Jenga\MyProject\Quotes\Library\Companies\AIGQuotes;
 use Jenga\MyProject\Quotes\Library\Companies\JubileeQuotes;
-use Jenga\MyProject\Tracker\Controllers\TrackerController;
 
 /**
  * @property-read MotorView $view
@@ -54,15 +55,6 @@ class MotorController extends Controller
     private $_products;
 
     /**
-     * @var TrackerController
-     */
-    private $_tracker;
-    /**
-     * @var object
-     */
-    private $quote;
-
-    /**
      * Setup entities. Via Elements call
      */
     private function setEntities()
@@ -71,7 +63,6 @@ class MotorController extends Controller
         $this->_entity = Elements::call('Entities/EntitiesController');
         $this->_quotes = Elements::call('Quotes/QuotesController');
         $this->_products = Elements::call('Products/ProductsController');
-        $this->_tracker = Elements::call('Tracker/TrackerController');
     }
 
     /**
@@ -88,7 +79,6 @@ class MotorController extends Controller
 //                exit;
 //            }
 //        }
-
         $this->setEntities();
         $this->loadData($step);
         $this->view->wizard($this->data);
@@ -101,24 +91,21 @@ class MotorController extends Controller
     public function save($step)
     {
         $this->setEntities();
-        $this->loadPartialQuote();
         switch ($step) {
             case 1:
                 $this->savePersonalDetails();
                 break;
             case 2 :
-                $this->_updateMotorTracker(2);
                 $this->saveCarDetails();
                 break;
             case 22:
-                $this->_updateMotorTracker(22);
                 $this->saveOtherCarDetails();
                 break;
             case 3 :
-                $this->_updateMotorTracker(3);
                 $this->saveCoverDetails();
                 break;
-            default:
+            case 4 :
+                //$this->saveStep3();
                 break;
         }
         exit;
@@ -134,11 +121,10 @@ class MotorController extends Controller
         $this->setEntities();
         $this->data = new \stdClass();
         $this->data->step = $step;
-        $this->loadPartialQuote();
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
-        $this->data->numbers = $this->_select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
-        $this->data->years = $this->_years();
-        $this->data->towns = $this->_select(['Select Town', 'Baragoi',
+        $this->data->numbers = $this->__select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
+        $this->data->years = $this->__years();
+        $this->data->towns = $this->__select(['Select Town', 'Baragoi',
             'Bungoma', 'Busia', 'Butere', 'Dadaab', 'Diani Beach', 'Eldoret', 'Embu', 'Garissa',
             'Gede', 'Hola', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kakuma', 'Kapenguria',
             'Kericho', 'Kiambu', 'Kilifi', 'Kisii', 'Kisumu', 'Kitale', 'Lamu', 'Langata', 'Lodwar',
@@ -158,13 +144,13 @@ class MotorController extends Controller
             $make[$one->code] = $one->title;
         }
         $this->data->makes = $make;
-        $this->data->cover_type = $this->_select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
+        $this->data->cover_type = $this->__select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
+
         if ($step == 4) {
             $this->data->payments = $this->_quotes->getQuotations(Session::get('quote_id'));
-            $this->_closeMotorTracker(Session::get('trackerid'));
         }
-        $this->data->quote = $this->quote;
-        $this->data->pick_cert = $this->_select([
+
+        $this->data->pick_cert = $this->__select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',
             'Nairobi, Mombasa Road, Tulip House, Ground Floor',
             'Nairobi, Fuji House, Westlands, Wing B, 6th Floor',
@@ -183,35 +169,18 @@ class MotorController extends Controller
     }
 
     /**
-     * Set up partial quote
-     */
-    private function loadPartialQuote()
-    {
-        $this->quote = $this->_quotes->getQuoteById(Session::get('quote_id'));
-    }
-
-    /**
      * Save details of other cars
      */
     private function saveOtherCarDetails()
     {
         $count = Session::get('other_covers');
-        $main = array_first(json_decode($this->quote->customer_entity_data_id));
         $saved = [];
         $product_id = $this->_products->getProductByAlias('motor_insurance')->id;
         for ($i = 1; $i <= $count; $i++) {
-            $got = $this->_buildStack($i);
+            $got = $this->__buildStack($i);
             $entity_id = $this->_entity->getEntityIdByAlias('vehicle')->id;
-            $saved[] = $this->_entity->saveEntityDataRemotely($this->quote->customers_id, $entity_id,
+            $saved[] = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id,
                 json_encode($got), $product_id);
-
-        }
-        array_unshift($saved, $main);
-        $this->_quotes->updateQuoteData($this->quote->id, [
-            'customer_entity_data_id' => json_encode($saved)
-        ]);
-        //set the tracker
-        if (Session::has('trackerid')) {
 
         }
         Session::set('other_id', serialize($saved));
@@ -223,21 +192,14 @@ class MotorController extends Controller
      */
     private function savePersonalDetails()
     {
-
-        if ($customer = $this->_customer->saveCustomer('motor', $this->getInputForStep(1), false)) {
-
+        if ($this->_customer->saveCustomer('motor', $this->getInputForStep(1), false)) {
             Session::set('type', 'motor');
-            $ids['customer_id'] = $customer;
-            $ids['product_id'] = $this->_products->getProductByAlias('motor_insurance')->id;
-            $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById($customer, null)));
-            $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info);
-            Session::set('quote_id', $id);
 
-            $notification = 'Saved. Please proceed to step two';
+            $notification = 'Saved Please proceed to step two';
             // get the verification notification if new customer registration
             if (Session::has('sent_confirmation'))
                 $notification = Session::get('sent_confirmation');
-            $this->_startMotorTracking();
+
             Redirect::withNotice($notification, 'success')->to('/motor/step/2');
         } else {
             Redirect::to('/motor/step/1')->withNotice('Could not save your info, try again', 'error');
@@ -245,64 +207,11 @@ class MotorController extends Controller
     }
 
     /**
-     * Start Motor Quote tracking
-     */
-    private function _startMotorTracking()
-    {
-
-        //create quote tracking
-        $this->setEntities();
-
-        $customer_id = Session::get('customer_id');
-        $product_id = $this->_products->getProductByAlias('motor_insurance')->id;
-        $step = 1;
-        $quote = Session::get('quote_id');
-        $trackerid = $this->_tracker->start($customer_id, $product_id, $step, $quote);
-
-        if (Session::has('tracker')) {
-
-            $this->_tracker->close(Session::get('tracker'));
-            Session::delete('tracker');
-        }
-        Session::set('trackerid', $trackerid);
-    }
-
-    /**
-     * Update Tracker according to step
-     * @param type $step
-     */
-    private function _updateMotorTracker($step)
-    {
-        if (Session::has('trackerid')) {
-
-            //create quote tracking
-            $this->setEntities();
-            $this->_tracker->assign(Session::get('trackerid'), $step);
-        } else {
-            App::warning('Quote tracking has not been initialized for this product: Motor');
-        }
-    }
-
-    /**
-     * Close Motor tracking
-     * @param type $id
-     */
-    private function _closeMotorTracker($id)
-    {
-
-        //create quote tracking
-        $this->setEntities();
-        if (!empty($id))
-            $this->_tracker->close($id);
-        Session::delete('trackerid');
-    }
-
-    /**
      * Attempt to get an array of each cars for extra covers
      * @param $index
      * @return array
      */
-    private function _buildStack($index)
+    private function __buildStack($index)
     {
         $build = [];
         foreach (Input::post() as $key => $value) {
@@ -313,6 +222,7 @@ class MotorController extends Controller
         return $build;
     }
 
+
     /**
      * Save car details
      */
@@ -322,7 +232,8 @@ class MotorController extends Controller
         $car_details = json_encode($this->getInputForStep(2));
         $product_id = $this->_products->getProductByAlias('motor_insurance')->id;
         $saved = $this->_entity->saveEntityDataRemotely(Session::get('customer_id'), $entity_id, $car_details, $product_id);
-        $this->_quotes->updateQuoteData($this->quote->id, ['customer_entity_data_id' => json_encode([$saved])]);
+        Session::set('main_id', $saved);
+        Session::set('other_id', serialize([]));
         if (!empty(Input::post('othercovers'))) {
             Session::set('other_covers', Input::post('othercovers'));
             Redirect::to('/motor/step/22');
@@ -332,21 +243,29 @@ class MotorController extends Controller
 
     }
 
+
     /**
      * Save cover details
      */
     private function saveCoverDetails()
     {
-        $this->_quotes->updateQuoteData(Session::get('quote_id'), ['product_info' => json_encode($this->getInputForStep(3))]);
+        $ids['customer_id'] = Session::get('customer_id');
+        $ids['product_id'] = 1;
+        $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById(Session::get('customer_id'), null)));
+        $entities = unserialize(Session::get('other_id'));
+        array_push($entities, Session::get('main_id'));
+        $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info, $this->getInputForStep(3), null, $entities);
+        Session::set('quote_id', $id);
         Redirect::to('/motor/step/4');
     }
+
 
     /**
      * Transform an array to its key:value representation
      * @param $data
      * @return array
      */
-    private function _select($data)
+    private function __select($data)
     {
         $_data = [];
         foreach ($data as $v) {
@@ -360,7 +279,7 @@ class MotorController extends Controller
      * @param int $span
      * @return array
      */
-    private function _years($span = 100)
+    private function __years($span = 100)
     {
         $year = date('Y');
         $lastyear = ($year - $span);

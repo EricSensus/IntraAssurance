@@ -41,12 +41,14 @@ var Travel = {
                         '<option value="husband">husband</option>' +
                         '<option value="son">son</option>' +
                         '<option value="daughter">daughter</option>' +
-                        '<option value="other">other</option>' +
+                        '<option value="other">other</option>'
                     '</select>';
 
                 inputs += '</div>';
                 inputs += '</div>';
+                inputs += '</div>';
 
+                inputs += '<div class="row">';
                 inputs += '<div class="col-md-3">';
                 inputs += '<div class="form-group">';
 

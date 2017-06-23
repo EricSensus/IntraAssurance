@@ -44,9 +44,9 @@ $(function() {
     });
 
     $('input:radio[id^="i_agree"]').on('click', function(){
-        var agree = $(this).val();
-
-        if(agree == 'yes'){
+        var agree = parseInt($(this).val());
+        // alert(agree);
+        if(agree){
             $('#btnsubmit').removeAttr('disabled');
         }else{
             $('#btnsubmit').attr('disabled', 'disabled');

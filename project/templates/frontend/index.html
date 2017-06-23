@@ -1,190 +1,681 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link href="css/styles.css" rel="stylesheet" type="text/css">
-  <style type="text/css">
-  </style>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-</head>
+<!DOCTYPE html>
+<!-- saved from url=(0029)http://www.intraafrica.co.ke/ -->
+<html class=" js " style=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		 <title>Intra Africa Assurance | Home</title>
+         
+  <!--<base href="http://www.intraafrica.co.ke/">--><base href=".">
+		<link href="./css/style.css" rel="stylesheet" type="text/css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+		
+		<script src="./js/jquery.min.js.download"></script>
+		<!---script---->
+		<link rel="stylesheet" href="./css/jquery.bxslider.css" type="text/css">
+		<script src="./js/jquery.bxslider.js.download"></script>
+			<script type="text/javascript">
+				$(document).ready(function(){
+					$('.bxslider').bxSlider({
+						 auto: true,
+ 						 autoControls: true,
+						 minSlides: 4,
+						 maxSlides: 4,
+						 slideWidth:450,
+						 slideMargin: 10
+					});
+				});
+			</script>
+		<!---//script---->
+		<!---smoth-scrlling---->
+			<script type="text/javascript">
+				$(document).ready(function(){
+									$('a[href^="#"]').on('click',function (e) {
+									    e.preventDefault();
+									    var target = this.hash,
+									    $target = $(target);
+									    $('html, body').stop().animate({
+									        'scrollTop': $target.offset().top
+									    }, 1000, 'swing', function () {
+									        window.location.hash = target;
+									    });
+									});
+								});
+				</script>
+		<!---//smoth-scrlling---->
+		<!----start-top-nav-script---->
+		<script type="text/javascript" src="./js/flexy-menu.js.download"></script>
+		<script type="text/javascript">$(document).ready(function(){$(".flexy-menu").flexymenu({speed: 400,type: "horizontal",align: "right"});});</script>
+		<!----//End-top-nav-script---->
+		<!---webfonts---->
+		<link href="./css/css" rel="stylesheet" type="text/css">
+		<!---webfonts---->
+		<!--start slider -->
+	    <link rel="stylesheet" href="./css/fwslider.css" media="all">
+		<script src="./js/jquery-ui.min.js.download"></script>
+		<script src="./js/css3-mediaqueries.js.download"></script>
+		<script src="./js/fwslider.js.download"></script>
+		<!--end slider -->
+		<!---calender-style---->
+		<link rel="stylesheet" href="./css/jquery-ui.css">
+		<!---//calender-style---->
+	</head>
+	<body>
+		<!----start-wrap---->
+			<!----start-top-header----->
+			<div class="top-header" id="header">
+				<div class="wrap">
+				<div class="top-header-left">
+					<ul>
+                    <li><a href="http://www.intraafrica.co.ke/index.php?id=1">Home</a></li><li><a href="http://www.intraafrica.co.ke/index.php?id=6">IAA Careers</a></li><li><a href="http://www.intraafrica.co.ke/index.php?id=7">Marine Portal</a></li><li><a href="http://www.intraafrica.co.ke/index.php?id=8">Media Center</a></li><li><a href="http://www.intraafrica.co.ke/index.php?id=9">Downloads</a></li>
+						<li><a href="http://www.intraafrica.co.ke/">Call Us Now :020-2712607 /11
+020-3743991/955</a></li>
+						<div class="clear"> </div>
+					</ul>
+				</div>
+				<div class="top-header-right">
+					<ul>
+                    	<li class="sbox"><input class="search" name="Search" type="text" value="" placeholder="Search.."><input class="sbutton" value="GO" name="Go" type="button"></li>
+						 <li><a class="face" href="https://www.facebook.com/I.A.A.Co.Ltd" target="_blank"><span> </span></a></li>
+<li><a class="twit" href="https://twitter.com/intraafrica"><span> </span></a></li>
+<li><a class="thum" href="https://plus.google.com/u/0/+IntraAfricaNairobi/"><span> </span></a></li>
+<li><a class="pin" href="https://www.linkedin.com/company/intra-africa-assurance-co-ltd-incorporated-in-kenya"><span> </span></a></li>
+						<div class="clear"> </div>
+					</ul>
+				</div>
+				<div class="clear"> </div>
+			</div>
+			</div>
+			<!----//End-top-header----->
+			<!---start-header---->
+			<div class="header">
+				<div class="wrap">
+				<!--- start-logo---->
+				<div class="logo">
+					<a href="http://www.intraafrica.co.ke/index.php?id=1"><img src="./images/logo.png" title="Intra Africa Assurance"></a>
+				</div>
+				<!--- //End-logo---->
+				<!--- start-top-nav---->
+				<div class="top-nav">
+                    <ul id="" class="flexy-menu thick orange"><li class="showhide right" style="display: none;"><span class="title">MENU</span><span class="icon"><em></em><em></em><em></em><em></em></span></li>
 
-<body>
-<div class="wrapper container">
-    <div class="header">
-    	<div class="header-inner row">
-        	<div class="logobox col-md-3 col-sm-12 col-xs-12">
-            	<div class="logo">
-        			<img src="images/logo.png" width="225px" height="94px"/>
-        		</div>
-            </div>
-        	<div class="usersection col-md-3 col-sm-12 col-xs-12">
-            	<div class="selectclaim">
-                    <a href="/index.php/selectclaim">Select Claim</a>
-            	</div>
-            	<div class="go">
-                    <a href="/index.php/go">GO</a>
-                </div>
-                <div class="signintomyesurance">
-                    <a href="/index.php/signintonyesurance">Sign into my Esurance</a>
-            	</div>
-            </div>
-         </div>
-    </div>
-    <div class="menubar">
-    	<div class="menubar-inner row">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="true" aria-controls="navbar">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-          </div>
-        <div id="navbar" class="navbar-collapse collapse" aria-expanded="true">
-            <ul class="nav navbar-nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Contact</a></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li role="separator" class="divider"></li>
-                  <li class="dropdown-header">Nav header</li>
-                  <li><a href="#">Separated link</a></li>
-                  <li><a href="#">One more separated link</a></li>
-                </ul>
-              </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-              <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
-              <li><a href="../navbar-static-top/">Static top</a></li>
-              <li><a href="../navbar-fixed-top/">Fixed top</a></li>
-            </ul>
-          </div>
-    	</div>
-    </div>
-    <div class="banner row">
-    	<div class="bannerimage col-md-12 col-sm-12 col-xs-12">
-      		<img alt="" class="img-responsive" src="images/bannerimage.jpg"/>
-            <div class="caption">
-                <h1>Simplify Insurance</h1>
-            </div>
-        </div>
-    </div>
-    <div class="insurancecovers">
-    	<div class="insurancecovers-inner row">
-      		<div class="insurancecover1 col-md-2 col-sm-6 col-xs-12">
-      			<div class="insurancebackground1">
-        			<div class="insurance">
-        				<img src="images/motorinsurance.png" width="138px" height="137px"/>
-       				</div>
-            		<div class="coverheading">
-            			<a href="/index.php/motorinsurance">Motor<br/>Insurance</a>
-                    </div>
-            		<div class="covercontent"><p>•  Get Motor Quote <br>•  Retrieve Motor Quote</p>
-                    </div>
-        		</div>
-        		<div class="getquotebox1">
-        			<a href="/index.php/getquote">GET QUOTE</a>
-        		</div>
-      		</div>
-      		<div class="insurancecover2 col-md-2 col-sm-6 col-xs-12">
-      			<div class="insurancebackground2">
-        			<div class="domesticpackage">
-        				<img src="images/domesticpackage.png" width="138px" height="136px"/>
-       				</div>
-            		<div class="coverheading">
-            			<a href="/index.php/domesticpackage">Domestic<br/>Package</a>
-                    </div>
-            		<div class="covercontent"><p>•  Get Domestic Quote <br>•  Retrieve Domestic Quote</p>
-                    </div>
-        		</div>
-        		<div class="getquotebox2">
-        			<a href="/index.php/getquote">GET QUOTE</a>
-        		</div>
-      		</div>
-      		<div class="insurancecover3 col-md-2 col-sm-6 col-xs-12">
-      			<div class="insurancebackground3">
-        			<div class="medicalcover">
-        				<img src="images/medicalcover.png" width="138px" height="136px"/>
-       				</div>
-            		<div class="coverheading">
-            			<a href="/index.php/medicalcover">Medical<br/>Cover</a>
-                    </div>
-            		<div class="covercontent"><p>•  Get Medical Quote <br>•  Retrieve Medical Quote</p>
-                    </div>
-        		</div>
-        		<div class="getquotebox3">
-        			<a href="/index.php/getquote">GET QUOTE</a>
-        		</div>
-      		</div>
-      		<div class="insurancecover4 col-md-2 col-sm-6 col-xs-12">
-      			<div class="insurancebackground4">
-        			<div class="travelinsurance">
-        				<img src="images/travelinsurance.png" width="138px" height="136px"/>
-       				</div>
-            		<div class="coverheading">
-            			<a href="/index.php/travelinsurance">Travel<br/>Insurance</a>
-                    </div>
-            		<div class="covercontent"><p>•  Get Travel Quote <br>•  Retrieve Travel Quote</p>
-                    </div>
-        		</div>
-         		<div class="getquotebox4">
-         			<a href="/index.php/getquote">GET QUOTE</a>
-         		</div>
-      		</div>
-      		<div class="insurancecover5 col-md-2 col-sm-6 col-xs-12">
-      			<div class="insurancebackground5">
-        			<div class="personalaccident">
-        				<img src="images/personalaccident.png" width="138px" height="136px"/>
-       				</div>
-            		<div class="coverheading">
-            			<a href="/index.php/personalaccident">Personal<br/>Accident</a>
-                    </div>
-            		<div class="covercontent"><p>•  Get Accident Quote <br>•  Retrieve Accident Quote</p>
-                    </div>
-        		</div>
-        		<div class="getquotebox5">
-        			<a href="/index.php/getquote">GET QUOTE</a>
-        		</div>
-      		</div>
-    	</div>
-    </div>
-    <div class="footer">
-    	<div class="footer-inner row">
-      		<div class="logo2 col-md-2 col-sm-12 col-xs-12">
-            	<img src="images/logo2.jpg" width="202px" height="105px"/>
-            </div>
-      		<div class="footerlinks col-md-7 col-sm-12 col-xs-12">
-           		<a href="/index.php/aboutus">ABOUT US</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/motor">MOTOR</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/domesticpackage">DOMESTIC PACKAGE</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/medical">MEDICAL</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/travel">TRAVEL</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/personalaccident">PERSONAL ACCIDENT</a>
-                <div class="seperator2"><p>|</p></div>
-                <a href="/index.php/blog">BLOG</a> 
-            </div>
-      		<div class="socialmedia col-md-3 col-sm-6 col-xs-12">
-                	<a href="/facebook"><img src="images/facebook.jpg" width="43px" height="45px"/></a>
-                	<a twitter="/twitter"><img src="images/twitter.jpg" width="43px" height="45px"/></a>
-                	<a href="/blog"><img src="images/blog.jpg" width="43px" height="45px"/></a>
-                	<a href="/google+"><img src="images/google+.jpg" width="43px" height="45px"/></a>
-            </div>
-    	</div>
-    </div>
-</div>
+
+
+<li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=5" title="Contact Us">Contact Us</a></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=4" title="About IAA">About IAA</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=39" title="The Company">The Company</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=45" title="Management Team">Management Team</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=44" title="Board of Directors">Board of Directors</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=41" title="Financial Statements">Financial Statements</a></li>
+</ul></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=3" title="Corporate Products &amp; Services">Corporate Products &amp; Services</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=18" title="All Risks Insurance">All Risks Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=19" title="Burglary Insurance">Burglary Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=20" title="Cash in Transit Insurance">Cash in Transit Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=21" title="Consequential Loss (Fire) Insurance">Consequential Loss (Fire) Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=22" title="Contractor&#39;s All Risk Insurance">Contractor's All Risk Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=23" title="Employers Liability (Common Law) Insurance">Employers Liability (Common Law) Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=24" title="Fidelity Guarantee Insurance">Fidelity Guarantee Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=25" title="Fire Insurance">Fire Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=26" title="Plate Glass Insurance">Plate Glass Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=27" title="Goods in Transit Insurance">Goods in Transit Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=28" title="Group Personal Accident Insurance">Group Personal Accident Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=29" title="Machinery Insurance">Machinery Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=30" title="Marine Cargo Insurance">Marine Cargo Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=31" title="Motor Private Fleet Insurance">Motor Private Fleet Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=32" title="Motor Commercial vehicles Fleet Insurance">Motor Commercial vehicles Fleet Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=33" title="Work Injury Benefits Act (WIBA)">Work Injury Benefits Act (WIBA)</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=34" title="Motor cycles Fleet Insurance">Motor cycles Fleet Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=35" title="Professional Indemnity Insurance">Professional Indemnity Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=36" title="School Package Insurance">School Package Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=37" title="Terrorism and Political Risks Insurance">Terrorism and Political Risks Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=38" title="Public Liability Insurance">Public Liability Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=70" title="Bonds">Bonds</a></li>
+</ul></li><li class="right" style=""><a href="http://www.intraafrica.co.ke/index.php?id=2" title="Individual Products &amp; Services">Individual Products &amp; Services</a><ul style=""><li class=""><a href="http://www.intraafrica.co.ke/index.php?id=16" title="Domestic Package">Domestic Package</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=15" title="Motor Commercial Insurance">Motor Commercial Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=17" title="Motor cycles">Motor cycles</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=14" title="Motor Private Insurance">Motor Private Insurance</a></li>
+<li class=""><a href="http://www.intraafrica.co.ke/index.php?id=13" title="Personal Accident">Personal Accident</a></li>
+</ul></li></ul>
+						<!--<div class="search-box">
+							<div id="sb-search" class="sb-search">
+								<form>
+									<input class="sb-search-input" placeholder="Enter your search term..." type="search" name="search" id="search">
+									<input class="sb-search-submit" type="submit" value="">
+									<span class="sb-icon-search"> </span>
+								</form>
+							</div>
+						</div>-->
+						<!----search-scripts---->
+						<script src="./js/modernizr.custom.js.download"></script>
+						<script src="./js/classie.js.download"></script>
+						<script src="./js/uisearch.js.download"></script>
+						<script>
+							new UISearch( document.getElementById( 'sb-search' ) );
+						</script>
+						<!----//search-scripts---->
+				</div>
+				<!--- //End-top-nav---->
+				<div class="clear"> </div>
+			</div>
+			<!---//End-header---->
+		</div>
+		<!----start-index_files-slider---->
+		<div class="index_files-slider">
+			<!-- start slider -->
+		    <div id="fwslider" style="height: 554px;">
+            
+		        <div class="slider_container">
+                <div class="slide" style="display: block; z-index: 1; opacity: 1;"> 
+		                <!-- Slide image -->
+		                    <img src="./images/slider-bg.jpg" alt="">
+		                <!-- /Slide image -->
+		                <!-- Texts container -->
+		                <div class="slide_content">
+		                    <div class="slide_content_wrap">
+		                        <!-- Text title -->
+		                        <h4 class="title" style="opacity: 1;">Domestic Package</h4>
+		                        <!-- /Text title -->
+		                        <!-- Text description -->
+		                        <p class="description" style="opacity: 1;">Domestic insurance includes house and contents insurance.</p>
+		                        <!-- /Text description -->
+		                        <div class="slide-btns description" style="opacity: 1;">
+		                        	<ul>
+		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=16">Learn more</a></li>
+		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=16">Contact us</a></li>
+		                        		<div class="clear"> </div>
+		                        	</ul>
+		                        </div>
+		                    </div>
+		                </div>
+		                 <!-- /Texts container -->
+		            </div><div class="slide" style="opacity: 1; z-index: 0; display: none;"> 
+		                <!-- Slide image -->
+		                    <img src="./images/moto-private-insurance.jpg" alt="">
+		                <!-- /Slide image -->
+		                <!-- Texts container -->
+		                <div class="slide_content">
+		                    <div class="slide_content_wrap">
+		                        <!-- Text title -->
+		                        <h4 class="title" style="opacity: 0;">Motor Private Insurance</h4>
+		                        <!-- /Text title -->
+		                        <!-- Text description -->
+		                        <p class="description" style="opacity: 0;">Cover is available for: Saloons, station wagons etc.</p>
+		                        <!-- /Text description -->
+		                        <div class="slide-btns description" style="opacity: 0;">
+		                        	<ul>
+		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=14">Learn more</a></li>
+		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=14">Contact us</a></li>
+		                        		<div class="clear"> </div>
+		                        	</ul>
+		                        </div>
+		                    </div>
+		                </div>
+		                 <!-- /Texts container -->
+		            </div><div class="slide" style="z-index: 0; opacity: 1; display: none;"> 
+		                <!-- Slide image -->
+		                    <img src="./images/fire-insurance.jpg" alt="">
+		                <!-- /Slide image -->
+		                <!-- Texts container -->
+		                <div class="slide_content">
+		                    <div class="slide_content_wrap">
+		                        <!-- Text title -->
+		                        <h4 class="title" style="opacity: 0;">Fire Insurance</h4>
+		                        <!-- /Text title -->
+		                        <!-- Text description -->
+		                        <p class="description" style="opacity: 0;">This policy covers loss, damage or destruction to the insured property, caused by Fire and allied perils</p>
+		                        <!-- /Text description -->
+		                        <div class="slide-btns description" style="opacity: 0;">
+		                        	<ul>
+		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=25">Learn more</a></li>
+		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=25">Contact us</a></li>
+		                        		<div class="clear"> </div>
+		                        	</ul>
+		                        </div>
+		                    </div>
+		                </div>
+		                 <!-- /Texts container -->
+		            </div><div class="slide" style="z-index: 0; opacity: 1; display: none;"> 
+		                <!-- Slide image -->
+		                    <img src="./images/slider-bg2.jpg" alt="">
+		                <!-- /Slide image -->
+		                <!-- Texts container -->
+		                <div class="slide_content">
+		                    <div class="slide_content_wrap">
+		                        <!-- Text title -->
+		                        <h4 class="title" style="opacity: 0;">School Package Insurance</h4>
+		                        <!-- /Text title -->
+		                        <!-- Text description -->
+		                        <p class="description" style="opacity: 0;">IAA is now offering a comprehensive package to cater for insurance needs of learning institutions.</p>
+		                        <!-- /Text description -->
+		                        <div class="slide-btns description" style="opacity: 0;">
+		                        	<ul>
+		                        		<li><a class="mapbtn" href="http://www.intraafrica.co.ke/index.php?id=36">Learn more</a></li>
+		                        		<li><a class="minfo" href="http://www.intraafrica.co.ke/index.php?id=36">Contact us</a></li>
+		                        		<div class="clear"> </div>
+		                        	</ul>
+		                        </div>
+		                    </div>
+		                </div>
+		                 <!-- /Texts container -->
+		            </div>
+		            <!--/slide -->
+		        </div>
+                
+		        <div class="timers" style="width: 225px;"> <div class="timer"><div class="progress" style="overflow: hidden; width: 18.72%;"></div></div><div class="timer"><div class="progress" style="overflow: hidden; width: 0%;"></div></div><div class="timer"><div class="progress" style="width: 0%;"></div></div><div class="timer"><div class="progress" style="width: 0%;"></div></div></div>
+		        <div class="slidePrev" style="left: 0px; top: 252.5px; opacity: 0.5;"><span> </span></div>
+		        <div class="slideNext" style="right: 0px; top: 247px; opacity: 0.5;"><span> </span></div>
+		    </div>
+		    <!--/slider -->
+		</div>
+		<!----start-find-place---->
+		<div class="find-place">
+			<div class="wrap">
+				<div class="p-h">
+					<span>IAA</span>
+					<label>M-pesa Paybill</label>
+				</div>
+				<!---strat-date-piker---->
+				  <script src="./js/jquery-ui.js.download"></script>
+				  <script>
+				  $(function() {
+				    $( "#datepicker" ).datepicker();
+				  });
+				  </script>
+				<!---/End-date-piker---->
+				<div class="p-ww">
+                <h2 class="bold">PAYBILL NO.<span class="span_of_mpesa">861600</span></h2>
+                <img class="mpesa" src="./images/mpesa.png">
+                
+					<!--<form>
+						<span> Type</span>
+						<input class="dest" type="text" value="Type of claim" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Distination';}">
+						<span> When</span>
+						<input class="date" id="datepicker" type="text" value="Select date" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Select date';}">
+						<input type="submit" value="Submit Claim" />
+					</form>-->
+				</div>
+				<div class="clear"> </div>
+			</div>
+		</div>
+		<!----//End-find-place---->
+		<!----start-offers---->
+		<div class="offers">
+			<div class="offers-head">
+				<h3>Our Products</h3>
+				<p>At IAA we offer the following packages:</p>
+			</div>
+			<!-- start content_slider -->
+			<!-- FlexSlider -->
+			 <!-- jQuery -->
+			  <link rel="stylesheet" href="./css/flexslider.css" type="text/css" media="screen">
+			  <!-- FlexSlider -->
+			  <script defer src="./js/jquery.flexslider.js.download"></script>
+			  <script type="text/javascript">
+			    $(function(){
+			      SyntaxHighlighter.all();
+			    });
+			    $(window).load(function(){
+			      $('.flexslider').flexslider({
+			        animation: "slide",
+			        animationLoop: true,
+			        itemWidth:250,
+			        itemMargin: 5,
+			        start: function(slider){
+			          $('body').removeClass('loading');
+			        }
+			      });
+			    });
+			  </script>
+			<!-- Place somewhere in the <body> of your page -->
+				 <section class="slider">
+		        <div class="flexslider carousel">
+		          
+		        <div class="flex-viewport" style="overflow: hidden; position: relative;"><ul class="slides" style="width: 5400%; transition-duration: 1s; transform: translate3d(0px, 0px, 0px);">
+					
+                     <!-- 
+		            <li onclick="location.href=&#39;index.php?id=18&#39;;" style="width: 1px; float: left; display: block;">
+	<img src="./images/all-risk.jpg" height="100">
+		  	    	    <!----place-caption-info----> <!--
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=18">All Risks Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info--
+		  	    		</li>-->
+                        <li onclick="location.href=&#39;index.php?id=70&#39;;" style="width: 350px; float: left; display: block;">
+	<img src="./images/motor-insurance.jpg" height="100">
+		  	    	    <!----place-caption-info---->
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=70">Motor Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---->
+		  	    		</li>
+                        <li onclick="location.href=&#39;index.php?id=19&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/fire&domestic.jpg" height="100">
+		  	    	    <!----place-caption-info---->
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=19">Fire & Domestic Package</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---->
+		  	    		</li>
+                        <li onclick="location.href=&#39;index.php?id=31&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/personal-accident.jpg" height="100">
+		  	    	    <!----place-caption-info---->
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=31">Personal Accident</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+                        </li>
+		  	    	     <!----//place-caption-info--
+		  	    		</li><li onclick="location.href=&#39;index.php?id=14&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/motor-private.jpg" height="100">
+		  	    	    <!----place-caption-info--
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=14">Motor Private Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=13&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/group-personal.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=13">Personal Accident</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=26&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/glass.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=26">Plate Glass Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=35&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/indemity.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=35">Professional Indemnity Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=38&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/liability.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=38">Public Liability Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=36&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/school.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=36">School Package Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---
+		  	    		</li><li onclick="location.href=&#39;index.php?id=37&#39;;" style="width: 240.4px; float: left; display: block;">
+	<img src="./images/terror.jpg" height="100">
+		  	    	    <!----place-caption-info---
+		  	    	    <div class="caption-info">
+		  	    	    	 <div class="caption-info-head">
+		  	    	    	 	<div class="caption-info-head-left">
+			  	    	    	 	<h4><a href="http://www.intraafrica.co.ke/index.php?id=37">Terrorism and Political Risks Insurance</a></h4>
+			  	    	    	 	
+		  	    	    	 	</div>
+		  	    	    	 	<div class="caption-info-head-right">
+		  	    	    	 		<span> </span>
+		  	    	    	 	</div>
+		  	    	    	 	<div class="clear"> </div>
+		  	    	    	 </div>
+		  	    	    </div>
+		  	    	     <!----//place-caption-info---->
+		          </ul></div></div>
+		      </section>
+              <!-- //End content_slider -->
+		</div>
+		<!----//End-offers---->
+		<!---start-holiday-types---->
+			<div class="holiday-types">
+				<div class="wrap">
+					<div class="holiday-type-head">
+						<h3>IAA Claim Type</h3>
+						<span>Accidents are stressful, but we don't think settling your insurance claim should be!</span>
+					</div>
+					<div class="holiday-type-grids">
+						<div class="holiday-type-grid" onclick="location.href=&#39;#&#39;;">
+							<span class="icon1"> </span>
+							<a href="http://www.intraafrica.co.ke/index.php?id=43">IAA General Claim</a>
+						</div>
+						<div class="holiday-type-grid" onclick="location.href=&#39;#&#39;;">
+							<span class="icon2"> </span>
+							<a href="http://www.intraafrica.co.ke/index.php?id=42">IAA Motor Claim</a>
+						</div>
+						<!--<div class="holiday-type-grid" onclick="location.href='#';">
+							<span class="icon4"> </span>
+							<a href="#">Adventure</a>
+						</div>
+						<div class="holiday-type-grid" onclick="location.href='#';">
+							<span class="icon5"> </span>
+							<a href="#">Safari</a>
+						</div>
+						<div class="holiday-type-grid" onclick="location.href='#';">
+							<span class="icon6"> </span>
+							<a href="#">Beach</a>
+						</div>-->
+						<div class="clear"> </div>
+					</div>
+				</div>
+				</div>
+		<!---//End-holiday-types---->
+		<!----//End-index_files-slider---->
+		<!----start-clients---->
+		<!--<div class="clients">
+			<div class="client-head">
+				<h3>Happy Clients</h3>
+				<span>what customer say about us and why love our services!</span>
+			</div>
+			<div class="client-grids">
+				<ul class="bxslider">
+				  <li>
+				  	<p>Lorem Ipsum is simply dummy text of the printing and typeset industry. Lorem Ipsum has been the industry's standard dummy text ever hen an with new version look.</p>
+				  	<a href="#">Client Name</a>
+				  	<span>United States</span>
+				  	<label> </label>
+				  </li>
+				  <li>
+				  	<p>Lorem Ipsum is simply dummy text of the printing and typeset industry. Lorem Ipsum has been the industry's standard dummy text ever hen an with new version look.</p>
+				  	<a href="#">Client Name</a>
+				  	<span>United States</span>
+				  	<label> </label>
+				  </li>
+				  <li>
+				  	<p>Lorem Ipsum is simply dummy text of the printing and typeset industry. Lorem Ipsum has been the industry's standard dummy text ever hen an with new version look.</p>
+				  	<a href="#">Client Name</a>
+				  	<span>United States</span>
+				  	<label> </label>
+				  </li>
+				  <li>
+				  	<p>Lorem Ipsum is simply dummy text of the printing and typeset industry. Lorem Ipsum has been the industry's standard dummy text ever hen an with new version look.</p>
+				  	<a href="#">Client Name</a>
+				  	<span>United States</span>
+				  	<label> </label>
+				  </li>
+				  <li>
+				  	<p>Lorem Ipsum is simply dummy text of the printing and typeset industry. Lorem Ipsum has been the industry's standard dummy text ever hen an with new version look.</p>
+				  	<a href="#">Client Name</a>
+				  	<span>United States</span>
+				  	<label> </label>
+				  </li>
+				</ul>
+			</div>
+		</div>-->
+		<!----//End-clients---->
+		<!----start-footer
+		<div class="footer">
+			<div class="wrap">
+			<div class="footer-grids">
+				<div class="footer-grid Newsletter">
+					<h3>News letter </h3>
+					<p>Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore.</p>
+					<form>
+						<input type="text" placeholder="Subscribes.." /> <input type="submit" value="GO" />
+					</form>
+				</div>
+				<div class="footer-grid Newsletter">
+					<h3>Latest News </h3>
+					<div class="news">
+						<div class="news-pic">
+							<img src="images/f01.jpg" title="news-pic1" /> 
+						</div>
+						<div class="news-info">
+							<a href="#">Postformat Gallery: Multiple index_files</a>
+							<span>December 12, 2012 - 9:11 pm</span>
+						</div>
+						<div class="clear"> </div>
+					</div>
+					<div class="news">
+						<div class="news-pic">
+							<img src="index_files/f01.jpg" title="news-pic1" /> 
+						</div>
+						<div class="news-info">
+							<a href="#">Postformat Gallery: Multiple index_files</a>
+							<span>December 12, 2012 - 9:11 pm</span>
+						</div>
+						<div class="clear"> </div>
+					</div>
+				</div>
+				<div class="footer-grid tags">
+					<h3>Tags</h3>
+					<ul>
+						<li><a href="#">Agent login</a></li>
+						<li><a href="#">Customer Login</a></li>
+						<li><a href="#">Not a Member?</a></li>
+						<li><a href="#">Contact</a></li>
+						<li><a href="#">New Horizons</a></li>
+						<li><a href="#">Lanscape</a></li>
+						<li><a href="#">Tags</a></li>
+						<li><a href="#">Nice</a></li>
+						<li><a href="#">Some</a></li>
+						<li><a href="#">Portrait</a></li>
+						<div class="clear"> </div>
+					</ul>
+				</div>
+				<div class="footer-grid address">
+					<h3>Address </h3>
+					<div class="address-info">
+						<span>DieSachbearbeiter Schonhauser </span>
+						<span>Allee 167c,10435 Berlin Germany</span>
+						<span><i>E-mail:</i><a href="mailto:moin@blindtextgenerator.de">moin@blindtextgenerator.de</a></span>
+					</div>
+					<div class="footer-social-icons">
+						<ul>
+							<li><a class="face1 simptip-position-bottom simptip-movable" data-tooltip="facebook" href="#"><span> </span></a></li>
+							<li><a class="twit1 simptip-position-bottom simptip-movable" data-tooltip="twitter" href="#"><span> </span></a></li>
+							<li><a class="tub1 simptip-position-bottom simptip-movable" data-tooltip="tumblr" href="#"><span> </span></a></li>
+							<li><a class="pin1 simptip-position-bottom simptip-movable" data-tooltip="pinterest" href="#"><span> </span></a></li>
+							<div class="clear"> </div>
+						</ul>
+					</div>
+				</div>
+				<div class="clear"> </div>
+			</div>
+			</div>
+		</div>
+		<!----//End-footer---->
+		<!---start-subfooter---->
+		<div class="subfooter">
+			<div class="wrap">
+            <p class="copy-right">© Copyright <script>var tD = new Date();var datestr = tD.getFullYear();document.write(datestr);</script>2017 Intra Africa Assurance<a href="http://www.intraafrica.co.ke/#"> Term &amp; Conditions</a>.</p>
+				<ul class="foot-nav">
+					<li><a href="http://www.intraafrica.co.ke/index.php?id=5">Contact Us</a><span>::</span></li><li><a href="http://www.intraafrica.co.ke/index.php?id=6">IAA Careers</a><span>::</span></li><li><a href="http://www.intraafrica.co.ke/index.php?id=8">Media Center</a><span>::</span></li>
+					<div class="clear"> </div>
+				</ul>
+				<!--<p class="copy-right">Template by <a href="http://w3layouts.com/">W3layouts</a></p>-->
+				<!--<a class="to-top" href="#header"><span> </span> </a>-->
+			</div>
+		</div>
+		<!---//End-subfooter---->
+		<!----//End-wrap---->
+	
+
 </body>
 </html>

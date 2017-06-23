@@ -1,64 +1,34 @@
 <?php
 use Jenga\App\Request\Url;
+
+include_once PROJECT_PATH .DS. 'forms' .DS. 'wizard' .DS. 'wizard.php';
+
 use Jenga\App\Request\Session;
-use Jenga\App\Views\HTML;
 
+//add the commercial title
+if(Session::has('motor_commercial') && Session::get('motor_commercial') === TRUE){   
+    $title_addon = ' Commercial';
+}
 ?>
-<div class="insuranceheader row">
-    <div class="insurance col-md-4 col-sm-12 col-xs-12">
-        <h2>Motor Insurance</h2>
-    </div>
-</div>
-<table class="wizard-heading row">
-    <tbody>
-    <tr>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a class="active" href="<?= Url::link('/motor/step/1') ?>"><h5>Stage 1</h5></a>
-            <a class="active" href="<?= Url::link('/motor/step/1') ?>">
-                <h6>Proposer Personal Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/motor/step/2') ?>"><h5>Stage 2</h5></a>
-            <a href="<?= Url::link('/motor/step/2') ?>">
-                <h6>Car Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/motor/step/3') ?>"><h5>Stage 3</h5></a>
-            <a href="<?= Url::link('/motor/step/3') ?>">
-                <h6>Cover Details</h6></a>
-        </th>
-        <th class="heading col-md-3 col-sm-12 col-xs-12">
-            <a href="<?= Url::link('/motor/step/4') ?>"><h5>Stage 4</h5></a>
-            <a href="<?= Url::link('/motor/step/4') ?>">
-                <h6>Quotation &amp; Payment</h6></a>
-        </th>
-    </tr>
-    </tbody>
-</table>
-<div class="formheading row">
-    <div class="formheadingcaption col-md-12 col-sm-12 col-xs-12">
-        <p>Please enter your personal details below so that we
-            can find the best insurance quote for you.</p>
-    </div>
-</div>
-<?= $form ?>
-<?= $modal_container; ?>
-<?= $modal_link; ?>
 
-<script>
-    var SITE_PATH = "<?= SITE_PATH ?>";
-    var PRELOADER1 = '<?= HTML::AddPreloader() ?>';
-    var PRELOADER2 = '<?= HTML::AddPreloader('left', '40px', '40px') ?>';
-    var customer_data = <?= json_encode($_data->customer) ?>;
-</script>
+<div class="insuranceheader row">
+    <div class="insurance col-md-12 col-sm-12 col-xs-12">
+        <h2>Motor and MotorCycle<?= $title_addon ?> Insurance</h2>
+    </div>
+</div>
+
+<?php
+    echo wizardHTML('motor','1');
+?>
+<div class="row setup-content" id="step-1">
+    <div class="col-xs-12">
+        <div class="col-md-12">
+            <?= $form ?>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
     $(document).ready(function () {
-        $("#dob").datepicker({dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true, maxDate: '-15Y'});
+        $(".datepicker").datepicker({dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true});
     });
 </script>
-
-<style>
-    form#customerloginform > table {
-        width: 100%;
-    }
-</style>
