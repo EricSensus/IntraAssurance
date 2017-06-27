@@ -1596,8 +1596,9 @@ Class QuotesController extends Controller
     }
 
     /**
-     * @param $quote_id
-     * @param $data
+     * Do a partial update of a quote
+     * @param int $quote_id
+     * @param array $data
      * @return bool
      */
     public function updateQuoteData($quote_id, $data)

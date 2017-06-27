@@ -426,12 +426,12 @@ class EntitiesController extends Controller
 
     /**
      * Saves entity date sent from remote elements into the customer_entity_data
-     *
-     * @param type $customerid
-     * @param type $entityid
-     * @param type $data
-     * @see Specify product id before cdata id
-     * @return object $results
+     * @param int $customerid
+     * @param string $entityid
+     * @param string $data
+     * @param int $product_id
+     * @param null $cdataid
+     * @return mixed
      */
 
     public function saveEntityDataRemotely($customerid, $entityid, $data, $product_id, $cdataid = null)
