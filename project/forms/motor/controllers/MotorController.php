@@ -122,9 +122,9 @@ class MotorController extends Controller
         $this->data = new \stdClass();
         $this->data->step = $step;
         $this->data->titles = ['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Dr' => 'Dr', 'Prof' => 'Prof', 'Eng' => 'Eng'];
-        $this->data->numbers = $this->__select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
-        $this->data->years = $this->__years();
-        $this->data->towns = $this->__select(['Select Town', 'Baragoi',
+        $this->data->numbers = $this->_select(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 'Over 15']);
+        $this->data->years = $this->_years();
+        $this->data->towns = $this->_select(['Select Town', 'Baragoi',
             'Bungoma', 'Busia', 'Butere', 'Dadaab', 'Diani Beach', 'Eldoret', 'Embu', 'Garissa',
             'Gede', 'Hola', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kakuma', 'Kapenguria',
             'Kericho', 'Kiambu', 'Kilifi', 'Kisii', 'Kisumu', 'Kitale', 'Lamu', 'Langata', 'Lodwar',
@@ -144,13 +144,13 @@ class MotorController extends Controller
             $make[$one->code] = $one->title;
         }
         $this->data->makes = $make;
-        $this->data->cover_type = $this->__select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
+        $this->data->cover_type = $this->_select(['Comprehensive', 'Third Party Fire and Theft', 'Third Party Only']);
 
         if ($step == 4) {
             $this->data->payments = $this->_quotes->getQuotations(Session::get('quote_id'));
         }
 
-        $this->data->pick_cert = $this->__select([
+        $this->data->pick_cert = $this->_select([
             'Nairobi, Head Office, Jubilee Insurance House, Wabera Street',
             'Nairobi, Mombasa Road, Tulip House, Ground Floor',
             'Nairobi, Fuji House, Westlands, Wing B, 6th Floor',
@@ -265,7 +265,7 @@ class MotorController extends Controller
      * @param $data
      * @return array
      */
-    private function __select($data)
+    private function _select($data)
     {
         $_data = [];
         foreach ($data as $v) {
@@ -279,7 +279,7 @@ class MotorController extends Controller
      * @param int $span
      * @return array
      */
-    private function __years($span = 100)
+    private function _years($span = 100)
     {
         $year = date('Y');
         $lastyear = ($year - $span);
