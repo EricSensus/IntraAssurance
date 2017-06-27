@@ -266,6 +266,7 @@ class MotorController extends Controller
             $customer_info = json_encode(get_object_vars($this->_customer->getCustomerById($customer, null)));
             $id = $this->_quotes->saveQuoteRemotely($ids, $customer_info);
             Session::set('quote_id', $id);
+            $this->_startMotorTracking();
             $notification = 'Saved Please proceed to step two';
             // get the verification notification if new customer registration
             if (Session::has('sent_confirmation'))
