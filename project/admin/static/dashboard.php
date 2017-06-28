@@ -47,49 +47,54 @@ HTML::script('
         } );');
 
 
-        if (Session::has('status')) {
-            switch (Session::get('status')){
-                case 'agent_attached':
-                    $quote_id = Session::get("quote_id");
+if (Session::has('status')) {
+    switch (Session::get('status')) {
+        case 'agent_attached':
+            $quote_id = Session::get("quote_id");
 
-                    HTML::script('
+            HTML::script('
                         $(function(){
                             if(confirm("Would you wish to create a task for the attached agent?")){
-                                $("#quo_'.$quote_id.'").click();
+                                $("#quo_' . $quote_id . '").click();
                             }
                         });
                     ');
-                    break;
-            }
-        }
+            break;
+    }
+}
 ?>
 
 <div class="row show-grid">
 
-<div class="col-md-8">
-    <div class="shadow white-bg leads margin-bottom-20px">
-        <?php $this->loadPanel('leads'); ?>
+    <div class="col-md-8">
+        <div class="shadow white-bg leads margin-bottom-20px">
+            <?php $this->loadPanel('leads'); ?>
+        </div>
+        <div class="shadow white-bg unfinishedquotes margin-bottom-20px">
+            <?php $this->loadPanel('unfinished-quotes'); ?>
+        </div>
+        <div class="shadow white-bg expiredpolicies margin-bottom-20px">
+            <?php $this->loadPanel('expired-policies'); ?>
+        </div>
+
+        <div class="shadow white-bg unprocessedpolicies margin-bottom-20px">
+            <?php $this->loadPanel('unprocessed-policies'); ?>
+        </div>
+
+        <div class="shadow white-bg activeclaims">
+            <?php $this->loadPanel('active-claims'); ?>
+        </div>
+
+
     </div>
 
-    <div class="shadow white-bg expiredpolicies margin-bottom-20px">
-        <?php $this->loadPanel('expired-policies'); ?>
-    </div>
+    <div class="col-md-4">
+        <div class="shadow">
+            <?php
+            $this->loadPanel('tasks');
+            ?>
+        </div>
 
-    <div class="shadow white-bg unprocessedpolicies margin-bottom-20px">
-        <?php $this->loadPanel('unprocessed-policies'); ?>
     </div>
-
-    <div class="shadow white-bg activeclaims">
-        <?php $this->loadPanel('active-claims'); ?>
-    </div>
-</div>
-    
-<div class="col-md-4">
-<div class="shadow">
-    <?php
-        $this->loadPanel('tasks');
-    ?>
-</div>
-</div>
 
 </div>

@@ -58,14 +58,15 @@ Route::group(['before' => 'auth.check'], function () {
             'unprocessed-policies' => 'PoliciesController@getUnprocessedPolicies:unprocessed-policies',
             'active-claims' => 'ClaimsController@getActiveClaims:active-claims',
             'expired-policies' => 'PoliciesController@getExpiringPolicies:expired-policies',
-            'tasks' => 'TasksController@show:tasks'
+            'tasks' => 'TasksController@show:tasks',
+            'unfinished-quotes' => 'QuotesController@unfinishedQuotes:unfinished-quotes'
         ]);
 
     Route::get('/admin/setup', 'admin' . DS . 'static' . DS . 'setup.php')
         ->attachTemplate('admin')
         ->assignPanels([
             'top' => 'NotificationsController@load:notices',
-            'navigation' => 'NavigationController@display:menus'    ,
+            'navigation' => 'NavigationController@display:menus',
             'logout' => 'UsersController@logout:logout',
             'company-details' => 'CompaniesController@ownCompany:own-company-details',
             'insurer-companies' => 'CompaniesController@getInsurers:insurer-companies',

@@ -23,6 +23,14 @@ class TrackerController extends Controller
     }
 
     /**
+     * @return array
+     */
+    public function activeTracking()
+    {
+        return $this->model->all();
+    }
+
+    /**
      * @param int $customer_id
      * @param int $product_id
      * @param int $step
@@ -55,7 +63,7 @@ class TrackerController extends Controller
      * @param int $step
      * @return bool
      */
-    public  function assign($id, $step)
+    public function assign($id, $step)
     {
         $tracker = $this->model->find($id);
         $tracker->step = $step;
@@ -71,7 +79,7 @@ class TrackerController extends Controller
      * @param int $id
      * @return bool
      */
-    public  function close($id)
+    public function close($id)
     {
         return $this->model->where('id', $id)->delete();
     }

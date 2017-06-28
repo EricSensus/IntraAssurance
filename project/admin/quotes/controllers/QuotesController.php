@@ -2,6 +2,7 @@
 
 namespace Jenga\MyProject\Quotes\Controllers;
 
+use Carbon\Carbon;
 use function DI\object;
 use Jenga\App\Controllers\Controller;
 use Jenga\App\Core\App;
@@ -18,9 +19,11 @@ use Jenga\MyProject\Customers\Controllers\CustomersController;
 use Jenga\MyProject\Elements;
 use Jenga\MyProject\Entities\Controllers\EntitiesController;
 use Jenga\MyProject\Policies\Controllers\PoliciesController;
+use Jenga\MyProject\Products\Controllers\ProductsController;
 use Jenga\MyProject\Quotes\Models\QuotesModel;
 use Jenga\MyProject\Quotes\Views\QuotesView;
 use Jenga\MyProject\Services\Charts;
+use Jenga\MyProject\Tracker\Controllers\TrackerController;
 use Jenga\MyProject\Users\Controllers\UsersController;
 
 /**
@@ -2005,6 +2008,41 @@ Class QuotesController extends Controller
         }
         $quotes = $this->getQuotations($quote, $company = null);
         $this->view->quotePreview($quotes);
+    }
+
+    /**
+     * Fetch unfinished quotes
+     */
+    public function unfinishedQuotes()
+    {
+        /** @var TrackerController $_tracker */
+        $_tracker = Elements::call('Tracker/TrackerController');
+        $ids = $_tracker->activeTracking();
+        $tracking = $this->mapTrackerQuote($ids);
+        $this->view->showUnfinished($tracking);
+    }
+
+    /**
+     * Get more detailed information of a tracker
+     * @param $trackers
+     * @return array
+     */
+    private function mapTrackerQuote($trackers)
+    {
+        $build = [];
+        foreach ($trackers as $tracker) {
+            $cust = (object)$this->getCustomerDataArray($tracker->customer_id);
+            /** @var ProductsController $prod */
+            $prod = Elements::call('Products/ProductsController');
+            $product = (object)$prod->getProduct($tracker->product_id);
+            $tracker->customer = $cust->name;
+            $tracker->email = $cust->email;
+            $tracker->begin = Carbon::createFromTimestamp($tracker->created_at);
+            $tracker->modified = Carbon::createFromTimestamp($tracker->modified_at);
+            $tracker->product = $product->name;
+            $build[] = $tracker;
+        }
+        return $build;
     }
 
     /**

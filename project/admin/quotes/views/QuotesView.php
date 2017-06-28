@@ -1238,4 +1238,34 @@ class QuotesView extends View
         $this->set('customer_data', $customer);
         $this->setViewPanel('internal/' . $pdt);
     }
+
+    /**
+     * @param $tracking
+     */
+    public function showUnfinished($tracking)
+    {
+        $schematic = [
+            'table' => [
+                'width' => '100%',
+                'class' => 'table table-striped dataTable no-footer',
+                'border' => 0,
+                'cellpadding' => 5
+            ],
+            'dom' => '<"top">rt<"bottom"p><"clear">',
+            'columns' => ['Name', 'Email', 'Product', 'Step'],
+            'ordering' => [
+                'Company Name' => 'asc',
+                'disable' => 0
+            ],
+            'row_count' => count($tracking),
+            'rows_per_page' => 25,
+            'row_source' => [
+                'object' => $tracking
+            ],
+            'row_variables' => ['{customer}', '{email}', '{product}', '{step}']
+        ];
+        $table = Generate::Table('unfinished_quotes', $schematic);
+        $render = $table->render(true);
+        $this->set('table', $render);
+    }
 }
