@@ -401,7 +401,7 @@ Class QuotesController extends Controller
     public function acceptRejectQuote(PoliciesController $_policy)
     {
         $return = Input::get('return');
-        if(empty($return))
+        if (empty($return))
             $return = 'quotes';
         else
             $skip_policy = true;
@@ -2014,16 +2014,12 @@ Class QuotesController extends Controller
      */
     public function getQuotations($quote, $company = null)
     {
-        $_insurers = Elements::call('Insurers/InsurersController');
         $the_quote = $this->getQuoteById($quote);
-        $companies = $_insurers->getInsurer();
         $values = [];
-        foreach ($companies as $insures) {
-            $alias = $insures->alias;
-            $name = "Jenga\MyProject\Quotes\Library\Companies\\" . $alias; //get class reflection
-            $r = new $name($the_quote);
-            $values[] = $r->calculate();
-        }
+        $alias = 'IntraQuotes';
+        $name = "Jenga\MyProject\Quotes\Library\Companies\\" . $alias; //get class reflection
+        $r = new $name($the_quote);
+        $values[] = $r->calculate();
         return $values;
     }
 
