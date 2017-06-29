@@ -1252,9 +1252,9 @@ class QuotesView extends View
                 'cellpadding' => 5
             ],
             'dom' => '<"top">rt<"bottom"p><"clear">',
-            'columns' => ['Name', 'Email', 'Product', 'Step'],
+            'columns' => ['Actions', 'Name', 'Email', 'Product', 'Step', 'Start', 'Last Update'],
             'ordering' => [
-                'Company Name' => 'asc',
+                'Name' => 'asc',
                 'disable' => 0
             ],
             'row_count' => count($tracking),
@@ -1262,9 +1262,15 @@ class QuotesView extends View
             'row_source' => [
                 'object' => $tracking
             ],
-            'row_variables' => ['{customer}', '{email}', '{product}', '{step}']
+            'row_variables' => ['{actions}', '{customer}', '{email}', '{product}', '{progress}', '{begin}', '{modified}']
         ];
         $table = Generate::Table('unfinished_quotes', $schematic);
+        $table->buildShortcutMenu('{actions}', 'mouseover', [
+            function ($quote_id) {
+                return '<li><a target="_blank" class="dropdown-item" title="View Info" href="' . SITE_PATH . '/quotes/previewquote/' . Help::encrypt($quote_id) . '/' . Help::encrypt('external') . '">'
+                    . '<i class="fa fa-eye"></i> View Info</a></li>';
+            },
+        ]);
         $render = $table->render(true);
         $this->set('table', $render);
     }

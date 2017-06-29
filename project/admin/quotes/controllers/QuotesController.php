@@ -2029,6 +2029,9 @@ Class QuotesController extends Controller
      */
     private function mapTrackerQuote($trackers)
     {
+        $steps = [1 => 'Personal Details',
+            2 => 'Entity Details',
+            22 => 'Other Cover Details', 3 => 'Cover Details'];
         $build = [];
         foreach ($trackers as $tracker) {
             $cust = (object)$this->getCustomerDataArray($tracker->customer_id);
@@ -2038,8 +2041,10 @@ Class QuotesController extends Controller
             $tracker->customer = $cust->name;
             $tracker->email = $cust->email;
             $tracker->begin = Carbon::createFromTimestamp($tracker->created_at);
-            $tracker->modified = Carbon::createFromTimestamp($tracker->modified_at);
+            $tracker->modified = Carbon::createFromTimestamp($tracker->modified_at)->diffForHumans();
             $tracker->product = $product->name;
+            $tracker->progress = 'Step ' . $tracker->step . ' - ' . $steps[$tracker->step];
+            $tracker->actions = '<i class="moreactions fa fa-bars fa-lg" aria-hidden="true"></i>';
             $build[] = $tracker;
         }
         return $build;
