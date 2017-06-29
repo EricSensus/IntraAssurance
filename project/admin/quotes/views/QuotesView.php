@@ -1252,7 +1252,7 @@ class QuotesView extends View
                 'cellpadding' => 5
             ],
             'dom' => '<"top">rt<"bottom"p><"clear">',
-            'columns' => ['Actions', 'Name', 'Email', 'Product', 'Step', 'Start', 'Last Update'],
+            'columns' => ['Actions', 'Name', 'Email', 'Phone', 'Product', 'Step', 'Start', 'Updated'],
             'ordering' => [
                 'Name' => 'asc',
                 'disable' => 0
@@ -1262,7 +1262,7 @@ class QuotesView extends View
             'row_source' => [
                 'object' => $tracking
             ],
-            'row_variables' => ['{actions}', '{customer}', '{email}', '{product}', '{progress}', '{begin}', '{modified}']
+            'row_variables' => ['{actions}', '{customer}', '{email}', '{phone}', '{product}', '{progress}', '{begin}', '{modified}']
         ];
         $table = Generate::Table('unfinished_quotes', $schematic);
         $table->buildShortcutMenu('{actions}', 'mouseover', [

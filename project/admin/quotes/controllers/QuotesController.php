@@ -2040,6 +2040,7 @@ Class QuotesController extends Controller
             $product = (object)$prod->getProduct($tracker->product_id);
             $tracker->customer = $cust->name;
             $tracker->email = $cust->email;
+            $tracker->phone = $cust->mobile_no;
             $tracker->begin = Carbon::createFromTimestamp($tracker->created_at);
             $tracker->modified = Carbon::createFromTimestamp($tracker->modified_at)->diffForHumans();
             $tracker->product = $product->name;
